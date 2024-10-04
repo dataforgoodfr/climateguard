@@ -56,3 +56,4 @@ Thumbs.db
 notebooks/.ipynb_checkpoints
 .env
 .env
+.venv
