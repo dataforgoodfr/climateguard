@@ -119,6 +119,7 @@ source = { editable = "." }
 dependencies = [
     { name = "anthropic" },
     { name = "beautifulsoup4" },
+    { name = "gdeltdoc" },
     { name = "gradio" },
     { name = "newspaper3k" },
     { name = "openai" },
@@ -130,6 +131,7 @@ dependencies = [
 requires-dist = [
     { name = "anthropic", specifier = ">=0.34.2" },
     { name = "beautifulsoup4", specifier = ">=4.10.0" },
+    { name = "gdeltdoc", specifier = ">=1.5.0" },
     { name = "gradio", specifier = ">=4.44.1" },
     { name = "newspaper3k", specifier = ">=0.2.8" },
     { name = "openai", specifier = ">=1.51.0" },
@@ -297,6 +299,19 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/62/7c/12b0943011daaaa9c35c2a2e22e5eb929ac90002f08f1259d69aedad84de/fsspec-2024.9.0.tar.gz", hash = "sha256:4b0afb90c2f21832df142f292649035d80b421f60a9e1c027802e5a0da2b04e8", size = 286206 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/1d/a0/6aaea0c2fbea2f89bfd5db25fb1e3481896a423002ebe4e55288907a97a3/fsspec-2024.9.0-py3-none-any.whl", hash = "sha256:a0947d552d8a6efa72cc2c730b12c41d043509156966cca4fb157b0f2a0c574b", size = 179253 },
+]
+
+[[package]]
+name = "gdeltdoc"
+version = "1.5.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pandas" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7e/95/09d4213fe00455ef2ff0151cda312b024b19d6b2b687ec3dfe8cee5ec2db/gdeltdoc-1.5.0.tar.gz", hash = "sha256:3ad0726a03325f5ea76c6bf9c00bd2680c624866130b3bc6bc90cb7297327dc3", size = 11465 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ef/da/79ab86dafbc96c67f9551b3bf1b93e97c1de687b5bab4196ed50a28ddcdc/gdeltdoc-1.5.0-py3-none-any.whl", hash = "sha256:e14775fdfe07ecd2781a1fbb836b9e97b2de3435a8ec468f1a780a3a6a8c13ec", size = 13088 },
 ]
 
 [[package]]
