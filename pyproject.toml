@@ -12,6 +12,8 @@ dependencies = [
     "openai>=1.51.0",
     "python-dotenv>=1.0.1",
     "anthropic>=0.34.2",
+    "transformers>=4.45.1",
+    "mlx-lm>=0.19.0",
 ]
 requires-python = ">=3.12"
 
