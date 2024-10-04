@@ -8,6 +8,10 @@ authors = [
 dependencies = [
     "requests>=2.26.0",
     "beautifulsoup4>=4.10.0",
+    "gradio>=4.44.1",
+    "openai>=1.51.0",
+    "python-dotenv>=1.0.1",
+    "anthropic>=0.34.2",
 ]
 requires-python = ">=3.12"
 
@@ -21,14 +25,6 @@ allow-direct-references = true
 [tool.hatch.build.targets.wheel]
 packages = ["climate_guard"]
 
-
-[tool.uv.dependencies]
-dev = [
-    "pytest>=7.0.0",
-    "black>=22.0.0",
-    "isort>=5.0.0",
-    "flake8>=4.0.0",
-]
 
 [tool.black]
 line-length = 100
