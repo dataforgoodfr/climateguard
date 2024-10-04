@@ -1,0 +1,31 @@
+[project]
+name = "climate_guard"
+version = "0.1.0"
+description = "A web scraper for Latvian news articles"
+authors = [
+    {name = "Your Name", email = "your.email@example.com"},
+]
+dependencies = [
+    "requests>=2.26.0",
+    "beautifulsoup4>=4.10.0",
+    "gradio>=4.44.1",
+    "openai>=1.51.0",
+    "python-dotenv>=1.0.1",
+    "anthropic>=0.34.2",
+]
+requires-python = ">=3.12"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["climate_guard"]
+
+
+[tool.black]
+line-length = 100
+target-version = ['py312']
