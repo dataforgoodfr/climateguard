@@ -1,0 +1,63 @@
+import requests
+from bs4 import BeautifulSoup
+import re
+
+class NewsScraper:
+    def __init__(self):
+        self.headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+
+    def scrape_article(self, url):
+        response = requests.get(url, headers=self.headers)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        
+        if 'lsm.lv' in url:
+            return self._scrape_lsm(soup)
+        elif 'delfi.lv' in url:
+            return self._scrape_delfi(soup)
+        else:
+            raise ValueError("Unsupported website")
+
+    def _scrape_lsm(self, soup):
+        full_text = ' '.join([p.text for p in soup.find_all('p')])
+        header = soup.find('h1').text.strip() if soup.find('h1') else ''
+        title = soup.find('title').text.strip() if soup.find('title') else ''
+        topic = soup.find('meta', {'property': 'article:section'})['content'] if soup.find('meta', {'property': 'article:section'}) else ''
+
+        return {
+            'full_text': full_text,
+            'header': header,
+            'title': title,
+            'topic': topic
+        }
+
+    def _scrape_delfi(self, soup):
+        full_text = ' '.join([p.text for p in soup.find_all('p')])
+        header = soup.find('h1', class_='text-size-22').text.strip() if soup.find('h1', class_='text-size-22') else ''
+        title = soup.find('title').text.strip() if soup.find('title') else ''
+        topic = soup.find('a', class_='category-title').text.strip() if soup.find('a', class_='category-title') else ''
+
+        return {
+            'full_text': full_text,
+            'header': header,
+            'title': title,
+            'topic': topic
+        }
+
+# Usage example:
+if __name__ == "__main__":
+    scraper = NewsScraper()
+    urls = [
+        "https://www.lsm.lv/raksts/dzive--stils/vide-un-dzivnieki/03.10.2024-zinojums-lidz-gadsimta-beigam-latvija-prognozeta-krasta-linijas-atkapsanas-par-47-72-metriem.a571093/",
+        "https://www.delfi.lv/bizness/56234200/eiropas-zinas/120042670/zinam-problemu-un-neizmantojam-risinajumus-ko-latvijas-iedzivotaji-doma-par-klimata-parmainam"
+    ]
+
+    for url in urls:
+        result = scraper.scrape_article(url)
+        print(f"URL: {url}")
+        print(f"Title: {result['title']}")
+        print(f"Header: {result['header']}")
+        print(f"Topic: {result['topic']}")
+        print(f"Full text (first 100 characters): {result['full_text'][:100]}...")
+        print("\n---\n")
