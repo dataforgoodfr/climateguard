@@ -13,6 +13,8 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "anthropic>=0.34.2",
     "ipykernel>=6.29.5",
+    "newspaper3k>=0.2.8",
+    "lxml[html-clean]>=5.3.0",
 ]
 requires-python = ">=3.12"
 
