@@ -57,3 +57,6 @@ notebooks/.ipynb_checkpoints
 .env
 .env
 .venv
+
+# Keep test files
+!data/test_claims_detection/
