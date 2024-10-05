@@ -1,3 +1,4 @@
+import asyncio
 import json
 from typing import Literal
 
@@ -62,3 +63,10 @@ Read the article thoroughly to fully understand its content and context. Focus e
     n_tokens = response.usage.total_tokens
 
     return claims, n_tokens
+
+
+def detect_claims(
+    input: Article | Transcript, language: Literal["French", "English", "Latvian"]
+) -> tuple[Claims, int]:
+    # Won't work if you call this function from a Jupyter notebook
+    return asyncio.run(adetect_claims(input, language))
