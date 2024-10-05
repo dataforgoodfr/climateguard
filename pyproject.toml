@@ -14,6 +14,9 @@ dependencies = [
     "anthropic>=0.34.2",
     "transformers>=4.45.1",
     "mlx-lm>=0.19.0",
+    "vllm>=0.6.2",
+    "llama-index>=0.11.16",
+    "llama-index-llms-ollama>=0.3.3",
 ]
 requires-python = ">=3.12"
 
