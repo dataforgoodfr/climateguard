@@ -4,13 +4,13 @@ from typing import Literal
 from openai import AsyncOpenAI
 from openai.lib._parsing._completions import type_to_response_format_param
 
-from climateguard.models import Article, Claims
+from climateguard.models import Article, Claims, Transcript
 
 client = AsyncOpenAI()
 
 
-async def adetect_article_claims(
-    article: Article, language: Literal["French", "English", "Latvian"]
+async def adetect_claims(
+    input: Article | Transcript, language: Literal["French", "English", "Latvian"]
 ) -> tuple[Claims, int]:
     # Prompt
     language_instruction_prompt = (
@@ -36,7 +36,7 @@ Read the article thoroughly to fully understand its content and context. Focus e
 - "The Earth naturally balances itself, so human impact isn't significant in the long run."
 - "It's more important to focus on economic growth than to worry about environmental regulations."
 - "Natural disasters are part of the Earth's natural cycles, not related to climate change.\""""
-    user_prompt = f"# {article.title}\n\n{article.content}"
+    user_prompt = f"# {input.title}\n\n{input.content}"
 
     # LLM call
     response = await client.beta.chat.completions.parse(

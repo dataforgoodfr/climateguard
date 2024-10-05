@@ -36,3 +36,12 @@ class Article(BaseModel):
     def from_json(filepath: str) -> "Article":
         with open(filepath) as f:
             return TypeAdapter(list[Article]).validate_json(f.read())
+
+
+class Transcript(BaseModel):
+    title: str
+    transcript: list[str]
+
+    @property
+    def content(self) -> str:
+        return "- " + "\n- ".join(self.transcript)
