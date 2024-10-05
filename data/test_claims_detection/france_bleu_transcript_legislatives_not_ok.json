@@ -1,0 +1,4242 @@
+{
+  "data": {
+    "video": {
+      "__typename": "Video",
+      "id": "VmlkZW86eDkxY2JldQ==",
+      "xid": "x91cbeu",
+      "isPublished": true,
+      "duration": 1101,
+      "title": "L\u00e9gislatives 2024 : D\u00e9bat entre les candidats de la 2e circonscription de la Vienne",
+      "description": "France Bleu Poitou vous fait vivre cette campagne !<br /><br />Premier de nos quatre d\u00e9bats avec les candidats de la deuxi\u00e8me circonscription de la Vienne, celle de Poitiers-sud<br /><br />Les trois participants :<br />- Sacha Houli\u00e9, d\u00e9put\u00e9 sortant Renaissance<br />- Val\u00e9rie Soumaille, candidate du Nouveau Front Populaire<br />- Estelle Chevallier, candidate du Rassemblement National",
+      "thumbnailx60": "https://s1.dmcdn.net/v/WaYd61cwNE_be2c3f/x60",
+      "thumbnailx120": "https://s1.dmcdn.net/v/WaYd61cwNE_34TpHe/x120",
+      "thumbnailx240": "https://s1.dmcdn.net/v/WaYd61cwNE_5ewXgZ/x240",
+      "thumbnailx360": "https://s1.dmcdn.net/v/WaYd61cwNE_q2YUJ5/x360",
+      "thumbnailx480": "https://s1.dmcdn.net/v/WaYd61cwNE__IV8Ig/x480",
+      "thumbnailx720": "https://s1.dmcdn.net/v/WaYd61cwNE_vYsWMY/x720",
+      "thumbnailx1080": "https://s1.dmcdn.net/v/WaYd61cwNE_IKHM2P/x1080",
+      "category": "NEWS",
+      "categories": {
+        "edges": [
+          {
+            "node": {
+              "id": "Q29udGVudENhdGVnb3J5Om5ld3M=",
+              "name": "NEWS",
+              "slug": "content-news",
+              "__typename": "ContentCategory"
+            },
+            "__typename": "CategoryEdge"
+          }
+        ],
+        "__typename": "CategoryConnection"
+      },
+      "bestAvailableQuality": "HD720P",
+      "createdAt": "2024-07-02T08:30:28+00:00",
+      "viewerEngagement": {
+        "id": "VmlkZW9WaWV3ZXJFbmdhZ2VtZW50Ong5MWNiZXU=",
+        "liked": false,
+        "favorited": false,
+        "__typename": "VideoViewerEngagement"
+      },
+      "isPrivate": false,
+      "isWatched": false,
+      "isCreatedForKids": false,
+      "isExplicit": false,
+      "canDisplayAds": true,
+      "videoWidth": 1280,
+      "videoHeight": 720,
+      "status": "PUBLISHED",
+      "hashtags": {
+        "edges": [],
+        "__typename": "HashtagConnection"
+      },
+      "stats": {
+        "id": "VmlkZW9TdGF0czp4OTFjYmV1",
+        "views": {
+          "id": "VmlkZW9TdGF0c1ZpZXdzOng5MWNiZXU=",
+          "total": 1040,
+          "__typename": "VideoStatsViews"
+        },
+        "__typename": "VideoStats"
+      },
+      "channel": {
+        "__typename": "Channel",
+        "id": "Q2hhbm5lbDp4ZGJieGQ=",
+        "xid": "xdbbxd",
+        "name": "francebleupoitou",
+        "displayName": "France Bleu Poitou",
+        "isArtist": false,
+        "logoURLx25": "https://s2.dmcdn.net/u/1LJuX1XkQOqocVkUj/25x25",
+        "logoURL": "https://s2.dmcdn.net/u/1LJuX1XkQOqQtcPoX/60x60",
+        "isFollowed": false,
+        "accountType": "verified-partner",
+        "coverURLx375": "https://s2.dmcdn.net/b/1LJuX1XkQOqdnkUFV/x375",
+        "stats": {
+          "id": "Q2hhbm5lbFN0YXRzOnhkYmJ4ZA==",
+          "views": {
+            "id": "Q2hhbm5lbFN0YXRzVmlld3M6eGRiYnhk",
+            "total": 125871,
+            "__typename": "ChannelStatsViews"
+          },
+          "followers": {
+            "id": "Q2hhbm5lbFN0YXRzRm9sbG93ZXJzOnhkYmJ4ZA==",
+            "total": 45,
+            "__typename": "ChannelStatsFollowers"
+          },
+          "videos": {
+            "id": "Q2hhbm5lbFN0YXRzVmlkZW9zOnhkYmJ4ZA==",
+            "total": 716,
+            "__typename": "ChannelStatsVideos"
+          },
+          "__typename": "ChannelStats"
+        },
+        "country": {
+          "id": "Q291bnRyeTpGUg==",
+          "codeAlpha2": "FR",
+          "__typename": "Country"
+        },
+        "organization": {
+          "id": "T3JnYW5pemF0aW9uOnhndg==",
+          "xid": "xgv",
+          "owner": {
+            "id": "VXNlcjp4Y3JvcWc=",
+            "xid": "xcroqg",
+            "__typename": "User"
+          },
+          "__typename": "Organization"
+        }
+      },
+      "language": {
+        "id": "TGFuZ3VhZ2U6ZnJh",
+        "codeAlpha2": "fr",
+        "__typename": "Language"
+      },
+      "tags": {
+        "edges": [],
+        "__typename": "MediaTagConnection"
+      },
+      "moderation": {
+        "id": "TWVkaWFNb2RlcmF0aW9uOng5MWNiZXU=",
+        "reviewedAt": "2024-07-02T09:19:23+00:00",
+        "__typename": "MediaModeration"
+      },
+      "topics": {
+        "edges": [],
+        "__typename": "TopicConnection"
+      },
+      "geoblockedCountries": {
+        "id": "R2VvYmxvY2tlZENvdW50cmllczp4OTFjYmV1",
+        "allowed": [
+          "MF",
+          "AQ",
+          "CN",
+          "BD",
+          "GM",
+          "IS",
+          "MR",
+          "TC",
+          "MX",
+          "UM",
+          "DZ",
+          "GF",
+          "EC",
+          "AR",
+          "MP",
+          "RS",
+          "DE",
+          "UZ",
+          "PA",
+          "CL",
+          "AL",
+          "HU",
+          "NL",
+          "PT",
+          "AE",
+          "BS",
+          "CK",
+          "DK",
+          "NR",
+          "CW",
+          "SB",
+          "BF",
+          "WF",
+          "AZ",
+          "CX",
+          "IN",
+          "FR",
+          "CZ",
+          "KR",
+          "GA",
+          "YE",
+          "LK",
+          "JP",
+          "BE",
+          "CD",
+          "GU",
+          "BQ",
+          "KM",
+          "LC",
+          "IO",
+          "KI",
+          "AS",
+          "DJ",
+          "HT",
+          "CY",
+          "CM",
+          "GW",
+          "NI",
+          "BV",
+          "KN",
+          "TR",
+          "AF",
+          "PF",
+          "VE",
+          "NA",
+          "JM",
+          "PS",
+          "KY",
+          "SD",
+          "BI",
+          "MQ",
+          "VA",
+          "GS",
+          "ZA",
+          "AU",
+          "NZ",
+          "DM",
+          "IT",
+          "HN",
+          "TJ",
+          "VG",
+          "ML",
+          "SR",
+          "FI",
+          "MD",
+          "TO",
+          "NO",
+          "TW",
+          "GT",
+          "AO",
+          "AW",
+          "SN",
+          "MZ",
+          "MU",
+          "IM",
+          "NE",
+          "NU",
+          "PK",
+          "BL",
+          "MM",
+          "TG",
+          "GG",
+          "LB",
+          "LU",
+          "LY",
+          "AT",
+          "NC",
+          "VC",
+          "GQ",
+          "SS",
+          "BW",
+          "JE",
+          "NP",
+          "UY",
+          "VI",
+          "BB",
+          "UA",
+          "GD",
+          "UG",
+          "PW",
+          "RE",
+          "PE",
+          "ER",
+          "BR",
+          "JO",
+          "FO",
+          "BH",
+          "MS",
+          "AX",
+          "QA",
+          "FK",
+          "KE",
+          "FJ",
+          "GY",
+          "GL",
+          "BZ",
+          "PL",
+          "TF",
+          "AM",
+          "BN",
+          "ES",
+          "SZ",
+          "ZM",
+          "EG",
+          "PH",
+          "TN",
+          "PN",
+          "SL",
+          "LV",
+          "TT",
+          "MT",
+          "LI",
+          "KP",
+          "MO",
+          "WS",
+          "MK",
+          "NG",
+          "TL",
+          "IQ",
+          "GB",
+          "AD",
+          "ZW",
+          "SK",
+          "BG",
+          "GE",
+          "MW",
+          "BJ",
+          "LA",
+          "FM",
+          "GP",
+          "KH",
+          "SA",
+          "ID",
+          "TH",
+          "HM",
+          "RW",
+          "ET",
+          "GN",
+          "PR",
+          "SM",
+          "BY",
+          "HR",
+          "PM",
+          "MV",
+          "DO",
+          "SE",
+          "HK",
+          "CO",
+          "IR",
+          "SC",
+          "BM",
+          "TD",
+          "VN",
+          "YT",
+          "CC",
+          "CR",
+          "IL",
+          "IE",
+          "KZ",
+          "SO",
+          "ME",
+          "US",
+          "EE",
+          "RO",
+          "SI",
+          "MG",
+          "BT",
+          "CU",
+          "SV",
+          "MY",
+          "BO",
+          "CG",
+          "SX",
+          "TV",
+          "GI",
+          "MN",
+          "AG",
+          "GR",
+          "SJ",
+          "OM",
+          "EH",
+          "SG",
+          "CV",
+          "KW",
+          "PY",
+          "LT",
+          "CA",
+          "SH",
+          "MH",
+          "TZ",
+          "CF",
+          "GH",
+          "LR",
+          "AI",
+          "PG",
+          "TM",
+          "BA",
+          "SY",
+          "KG",
+          "CI",
+          "RU",
+          "VU",
+          "LS",
+          "CH",
+          "TK",
+          "MA",
+          "NF",
+          "MC",
+          "ST"
+        ],
+        "denied": [],
+        "__typename": "GeoblockedCountries"
+      },
+      "transcript": {
+        "edges": [
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMQ==",
+              "timecode": "00:00:00,000",
+              "text": "8h10 sur France Bleu, Poitou Th\u00e9ocobel passe au d\u00e9bat, \u00e0 5 jours du 2\u00e8me tour des \u00e9lections l\u00e9gislatives, on re\u00e7oit les candidats de la 2\u00e8me circonscription de la Vienne.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMg==",
+              "timecode": "00:00:11,440",
+              "text": "Oui, celle qui englobe Poitiers-Sud mais \u00e9galement les communes de Vivonne, Vouill\u00e9, Ville-Dieu, Duclin.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMw==",
+              "timecode": "00:00:16,560",
+              "text": "Autour de la table, Sacha Houllier, bonjour. Vous \u00eates le d\u00e9put\u00e9 sortant, issu de la majorit\u00e9 pr\u00e9sidentielle, arriv\u00e9 premier ce dimanche avec 33% des voix.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNA==",
+              "timecode": "00:00:25,280",
+              "text": "\u00c0 c\u00f4t\u00e9 de vous, Val\u00e9rie Soumaille, bonjour. \u00c0 candidate Nouveau Front Populaire, vous \u00eates arriv\u00e9e 2\u00e8me avec 28% des voix.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNQ==",
+              "timecode": "00:00:32,000",
+              "text": "Et pour terminer, Estelle Chevalier, bonjour. \u00c0 candidate du Rassemblement National, arriv\u00e9e 3\u00e8me avec 24% des suffrages exprim\u00e9s.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNg==",
+              "timecode": "00:00:39,840",
+              "text": "Notre premier th\u00e8me ce matin, c'est le pouvoir d'achat. On commence avec vous, Sacha Houllier.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNw==",
+              "timecode": "00:00:45,520",
+              "text": "Qu'est-ce que vous proposez, qu'est-ce que propose le parti pr\u00e9sidentiel pour le pouvoir d'achat des Fran\u00e7ais ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fOA==",
+              "timecode": "00:00:50,800",
+              "text": "Bien deux choses, d'abord que le travail paye, que chacun ait un travail, et ensuite que les factures baissent.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fOQ==",
+              "timecode": "00:00:55,280",
+              "text": "Pour que le travail paye, c'est \u00e9videmment un des encouragements \u00e0 ce que les salaires soient augment\u00e9s,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTA=",
+              "timecode": "00:01:01,360",
+              "text": "ce sont des indexations du point d'indice pour les fonctionnaires ou encore pour les retrait\u00e9s,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTE=",
+              "timecode": "00:01:05,920",
+              "text": "et donc qui font qu'\u00e0 chaque fois, la fiche des payes augmente, tout comme certaines prestations qui seraient vers\u00e9es automatiquement.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTI=",
+              "timecode": "00:01:11,680",
+              "text": "C'est le versement \u00e0 la source, comme celle que nous connaissons pour le pr\u00e9l\u00e8vement \u00e0 la source,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTM=",
+              "timecode": "00:01:15,360",
+              "text": "celles qui sont li\u00e9es au travail pour les gardes d'enfants, ou qui concernent la prime d'activit\u00e9 que les salari\u00e9s n'auraient plus besoin de demander \u00e0 la CAF",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTQ=",
+              "timecode": "00:01:21,360",
+              "text": "puisqu'ils seraient automatiquement vers\u00e9s aux salari\u00e9s.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTU=",
+              "timecode": "00:01:23,760",
+              "text": "\u00c7a c'est pour que le travail paye, et pour que les factures baissent, vous savez que nous avons nationalis\u00e9 EDF",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTY=",
+              "timecode": "00:01:28,640",
+              "text": "et encourag\u00e9 le d\u00e9veloppement d'\u00e9nergie renouvelable, et donc d\u00e8s cet \u00e9t\u00e9, la facture d'\u00e9lectricit\u00e9 baissera de 15%.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTc=",
+              "timecode": "00:01:34,000",
+              "text": "D\u00e8s cet \u00e9t\u00e9 ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTg=",
+              "timecode": "00:01:34,800",
+              "text": "D\u00e8s cet \u00e9t\u00e9, la facture d'\u00e9lectricit\u00e9 baissera de 15%.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTk=",
+              "timecode": "00:01:36,320",
+              "text": "On avait entendu l'hiver prochain au d\u00e9part.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjA=",
+              "timecode": "00:01:37,920",
+              "text": "Fin de l'\u00e9t\u00e9, baissera de 15%, de la m\u00eame fa\u00e7on que nous contenons depuis maintenant un moment le prix de l'essence ou du p\u00e9trole",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjE=",
+              "timecode": "00:01:47,760",
+              "text": "pour que les fran\u00e7ais n'aient pas \u00e0 payer trop.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjI=",
+              "timecode": "00:01:50,720",
+              "text": "Nous avons fait le bouclier tarifaire, et dans cette logique-l\u00e0, toutes les factures, nous essayons de les contenir au maximum",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjM=",
+              "timecode": "00:01:55,440",
+              "text": "comme il y avait le bouclier anti-inflation dans les grandes surfaces l'hiver dernier.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjQ=",
+              "timecode": "00:02:00,320",
+              "text": "Alors Val\u00e9rie Soumaille, vous du c\u00f4t\u00e9 du Nouveau Front Populaire, qu'est-ce que vous proposez pour pr\u00e9server le pouvoir d'achat des fran\u00e7ais ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjU=",
+              "timecode": "00:02:06,320",
+              "text": "Depuis le d\u00e9but, nous d\u00e9non\u00e7ons le fait qu'effectivement, les personnes qui travaillent ne puissent pas vivre dignement de leur travail.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjY=",
+              "timecode": "00:02:16,800",
+              "text": "De plus en plus d'habitants et d'habitantes de la circonscription que nous rencontrons nous disent les difficult\u00e9s qu'ils ont \u00e0 assumer le quotidien.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjc=",
+              "timecode": "00:02:25,600",
+              "text": "Donc nous, on propose d'augmenter les salaires, de les indexer sur l'inflation, ce qui \u00e9tait le cas avant 1982,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjg=",
+              "timecode": "00:02:34,400",
+              "text": "de passer le SMIC \u00e0 1600 euros et d'augmenter les minima sociaux et les pensions.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjk=",
+              "timecode": "00:02:40,640",
+              "text": "Et on a le moyen de faire tous ces investissements-l\u00e0 ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzA=",
+              "timecode": "00:02:42,640",
+              "text": "Oui, bien s\u00fbr qu'on a les richesses, il y en a en France, ils sont d\u00e9tenus par les grandes fortunes,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzE=",
+              "timecode": "00:02:50,080",
+              "text": "ils sont d\u00e9tenus par les gens dont on a supprim\u00e9 la contribution, par exemple sur l'imp\u00f4t sur la fortune.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzI=",
+              "timecode": "00:02:59,200",
+              "text": "On a les moyens d'augmenter le revenu des fran\u00e7ais et des fran\u00e7aises qui, de toute fa\u00e7on, vont r\u00e9investir ces nouveaux revenus dans l'\u00e9conomie locale notamment,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzM=",
+              "timecode": "00:03:12,080",
+              "text": "et surtout, vivre mieux, permettre de payer leurs factures.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzQ=",
+              "timecode": "00:03:17,280",
+              "text": "Et donc, excusez-moi juste une derni\u00e8re chose, la question du blocage des prix des loyers, de l'orientation...",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzU=",
+              "timecode": "00:03:25,760",
+              "text": "On bloquait le prix des loyers, par exemple, avec le Nouveau Front Populaire ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzY=",
+              "timecode": "00:03:27,760",
+              "text": "Oui, et puis aussi l'augmentation...",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzc=",
+              "timecode": "00:03:31,120",
+              "text": "Comment on fait pour bloquer le prix des loyers ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzg=",
+              "timecode": "00:03:33,120",
+              "text": "On fait une grande loi qui permet, notamment dans les lieux de r\u00e9sidence avec des logements en tension,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzk=",
+              "timecode": "00:03:41,760",
+              "text": "d'augmenter de mani\u00e8re tout \u00e0 fait raisonnable, en tout cas, le prix des loyers.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDA=",
+              "timecode": "00:03:47,760",
+              "text": "Estelle Chevalier, on sait que le pouvoir d'achat, c'est l'une des priorit\u00e9s affich\u00e9es du Rassemblement National,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDE=",
+              "timecode": "00:03:52,240",
+              "text": "qu'est-ce que vous proposez concr\u00e8tement pour les fran\u00e7ais pour pr\u00e9server leur pouvoir d'achat ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDI=",
+              "timecode": "00:03:56,400",
+              "text": "On propose, tout d'abord, une baisse de la TVA sur les carburants, donc sur l'\u00e9nergie,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDM=",
+              "timecode": "00:04:04,400",
+              "text": "\u00e9galement une loi de finances rectificative pour baisser le prix de la taxe sur les produits de premi\u00e8re n\u00e9cessit\u00e9,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDQ=",
+              "timecode": "00:04:13,840",
+              "text": "et \u00e9galement 10% d'augmentation sur les salaires index\u00e9s pour tous les chefs d'entreprise qui r\u00e9aliseraient cette augmentation.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDU=",
+              "timecode": "00:04:22,720",
+              "text": "On passe \u00e0 notre deuxi\u00e8me th\u00e9matique ce matin, place \u00e0 la s\u00e9curit\u00e9 et l'immigration,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDY=",
+              "timecode": "00:04:27,920",
+              "text": "sujet qui revient en deuxi\u00e8me position dans les principales pr\u00e9occupations des fran\u00e7ais.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDc=",
+              "timecode": "00:04:32,240",
+              "text": "Je commence avec vous Val\u00e9rie Souma\u00ef, qu'est-ce que vous proposez du c\u00f4t\u00e9 du Nouveau Front Populaire",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDg=",
+              "timecode": "00:04:36,640",
+              "text": "sur la question de la s\u00e9curit\u00e9 et de l'immigration ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDk=",
+              "timecode": "00:04:38,640",
+              "text": "Nous, on pense que l'accueil des personnes qui quittent leur territoire parce qu'ils sont en guerre,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNTA=",
+              "timecode": "00:04:49,280",
+              "text": "parce qu'ils n'ont pas les moyens d'y vivre dignement, parce qu'ils subissent la crise climatique,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNTE=",
+              "timecode": "00:04:55,280",
+              "text": "vous voulez cr\u00e9er un statut de d\u00e9plac\u00e9 climatique ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNTI=",
+              "timecode": "00:04:57,280",
+              "text": "Oui, effectivement, ils sont essentiels, notre pays a toujours \u00e9t\u00e9 \u00e0 la hauteur de la solidarit\u00e9 internationale,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNTM=",
+              "timecode": "00:05:09,280",
+              "text": "et nous pensons que nos amis \u00e9trangers et \u00e9trang\u00e8res ne sont pas en danger.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNTQ=",
+              "timecode": "00:05:15,280",
+              "text": "Estelle Chevalier, pour le Rassemblement National, je suppose que vos mesures sont tout autres que celles du Nouveau Front Populaire ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNTU=",
+              "timecode": "00:05:21,280",
+              "text": "Oui.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNTY=",
+              "timecode": "00:05:23,280",
+              "text": "Qu'est-ce que vous proposez exactement ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNTc=",
+              "timecode": "00:05:25,280",
+              "text": "On propose une loi sur l'immigration qui viserait \u00e0 mettre fin aux droits du sol,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNTg=",
+              "timecode": "00:05:31,280",
+              "text": "et expulser les d\u00e9linquants et criminels \u00e9trangers.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNTk=",
+              "timecode": "00:05:33,280",
+              "text": "\u00c7a ne voudrait pas dire mettre fin \u00e0 l'immigration, absolument pas,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNjA=",
+              "timecode": "00:05:37,280",
+              "text": "\u00e7a veut dire la r\u00e9guler, parce qu'on ne peut pas accueillir des personnes dans les conditions actuelles.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNjE=",
+              "timecode": "00:05:41,280",
+              "text": "Sacha O'Leary, on n'expulse pas aujourd'hui les immigrants et d\u00e9linquants \u00e9trangers ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNjI=",
+              "timecode": "00:05:45,280",
+              "text": "D'abord, je ne permets pas les s\u00e9curit\u00e9s et l'immigration, et pour ce qui concerne l'immigration,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNjM=",
+              "timecode": "00:05:49,280",
+              "text": "je suis dans une position tr\u00e8s claire depuis la loi d'immigration, que je n'avais pas vot\u00e9e,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNjQ=",
+              "timecode": "00:05:53,280",
+              "text": "parce qu'elle comportait de nombreuses mesures anti-constitutionnelles,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNjU=",
+              "timecode": "00:05:55,280",
+              "text": "sur une mesure claire qui est 1. l'expulsion des \u00e9trangers et d\u00e9linquants,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNjY=",
+              "timecode": "00:05:59,280",
+              "text": "ce qui a \u00e9t\u00e9 vot\u00e9 en janvier 2024,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNjc=",
+              "timecode": "00:06:01,280",
+              "text": "et 2. la r\u00e9gularisation des travailleurs dans les m\u00e9tiers d'intention dont nous avons besoin.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNjg=",
+              "timecode": "00:06:05,280",
+              "text": "\u00c7a n'avait pas forc\u00e9ment \u00e9t\u00e9 fait dans la loi d'immigration qui a \u00e9t\u00e9 vot\u00e9e ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNjk=",
+              "timecode": "00:06:09,280",
+              "text": "Ce qui a \u00e9t\u00e9 fait, pourquoi ? Parce qu'on n'essentialise pas les gens,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNzA=",
+              "timecode": "00:06:13,280",
+              "text": "on juge les gens pour ce qu'ils font et pas pour ce qu'ils sont,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNzE=",
+              "timecode": "00:06:15,280",
+              "text": "on ne les juge pas parce qu'ils sont \u00e9trangers,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNzI=",
+              "timecode": "00:06:17,280",
+              "text": "on les juge pour les qualit\u00e9s qu'ils ont,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNzM=",
+              "timecode": "00:06:19,280",
+              "text": "est-ce qu'ils travaillent, est-ce qu'ils s'int\u00e8grent ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNzQ=",
+              "timecode": "00:06:21,280",
+              "text": "Oui, ils ont une place en France, et s'ils commettent des actes de d\u00e9linquance,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNzU=",
+              "timecode": "00:06:23,280",
+              "text": "non, ils n'ont pas leur place sur le territoire national.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNzY=",
+              "timecode": "00:06:25,280",
+              "text": "\u00c7a para\u00eet simple, mais aujourd'hui c'est le r\u00f4le du l\u00e9gislateur",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNzc=",
+              "timecode": "00:06:29,280",
+              "text": "de pouvoir leur donner les moyens d'\u00eatre en France lorsqu'ils travaillent.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNzg=",
+              "timecode": "00:06:31,280",
+              "text": "Mais quand vous voyez les scores du RN,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNzk=",
+              "timecode": "00:06:33,280",
+              "text": "est-ce qu'on n'a pas l'impression que du c\u00f4t\u00e9 de la majorit\u00e9,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fODA=",
+              "timecode": "00:06:35,280",
+              "text": "c'est peut-\u00eatre ce qui a \u00e9t\u00e9 manqu\u00e9 peut-\u00eatre ces derni\u00e8res ann\u00e9es ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fODE=",
+              "timecode": "00:06:39,280",
+              "text": "Ce qui a \u00e9t\u00e9 manqu\u00e9, c'est la clart\u00e9 en m\u00eame temps sur ce sujet,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fODI=",
+              "timecode": "00:06:41,280",
+              "text": "et le fait de ne pas essentialiser les gens,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fODM=",
+              "timecode": "00:06:43,280",
+              "text": "et moi je pense vraiment que pour le coup,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fODQ=",
+              "timecode": "00:06:45,280",
+              "text": "sur l'expulsion des \u00e9trangers d\u00e9linquants,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fODU=",
+              "timecode": "00:06:47,280",
+              "text": "nous pouvons \u00eatre intransigeants, et sur la r\u00e9gularisation...",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fODY=",
+              "timecode": "00:06:49,280",
+              "text": "On peut faire mieux qu'aujourd'hui ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fODc=",
+              "timecode": "00:06:51,280",
+              "text": "On peut faire mieux, mais il faut appliquer des dispositions",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fODg=",
+              "timecode": "00:06:53,280",
+              "text": "qui ont \u00e9t\u00e9 vot\u00e9es et qui commencent \u00e0 \u00eatre mises en oeuvre",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fODk=",
+              "timecode": "00:06:55,280",
+              "text": "sur les 4000 personnes qui sont concern\u00e9es.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fOTA=",
+              "timecode": "00:06:57,280",
+              "text": "Par ailleurs, sur la s\u00e9curit\u00e9 du quotidien,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fOTE=",
+              "timecode": "00:06:59,280",
+              "text": "ce sont 15 policiers suppl\u00e9mentaires \u00e0 Poitiers,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fOTI=",
+              "timecode": "00:07:01,280",
+              "text": "c'est une gendarmerie qui sera construite \u00e0 Fontaine-le-Comte,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fOTM=",
+              "timecode": "00:07:03,280",
+              "text": "ce sont des sapeurs-pompiers en plus, des magistrats et des greffiers,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fOTQ=",
+              "timecode": "00:07:05,280",
+              "text": "et pour ce qui concerne le personnel de la justice,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fOTU=",
+              "timecode": "00:07:07,280",
+              "text": "toutes ces personnes-l\u00e0 ont vu leur salaire revaloris\u00e9",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fOTY=",
+              "timecode": "00:07:09,280",
+              "text": "par la loi sur la justice.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fOTc=",
+              "timecode": "00:07:11,280",
+              "text": "Estelle Chevalier, vous \u00eates en retard sur le temps de parole,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fOTg=",
+              "timecode": "00:07:13,280",
+              "text": "est-ce que vous avez envie de r\u00e9pondre \u00e0 Sacha Houllier ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fOTk=",
+              "timecode": "00:07:15,280",
+              "text": "Non, c'est tr\u00e8s bien de vouloir faire son mieux pour enlever...",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTAw",
+              "timecode": "00:07:19,280",
+              "text": "Vous \u00eates d'accord ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTAx",
+              "timecode": "00:07:21,280",
+              "text": "Pour expulser les d\u00e9linquants, oui,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTAy",
+              "timecode": "00:07:23,280",
+              "text": "effectivement, je ne peux pas \u00eatre contre.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTAz",
+              "timecode": "00:07:25,280",
+              "text": "8h18 sur France Bleu Poitou,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTA0",
+              "timecode": "00:07:27,280",
+              "text": "nous poursuivons notre d\u00e9bat avec les trois candidats",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTA1",
+              "timecode": "00:07:29,280",
+              "text": "encore en lice dans la deuxi\u00e8me circonscription de la Vienne,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTA2",
+              "timecode": "00:07:31,280",
+              "text": "celle de Poitiers Sud.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTA3",
+              "timecode": "00:07:33,280",
+              "text": "Nous revenons dans quelques instants.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTA4",
+              "timecode": "00:07:35,280",
+              "text": "Donnez \u00e0 vos soir\u00e9es d'\u00e9t\u00e9 un go\u00fbt de festivit\u00e9",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTA5",
+              "timecode": "00:07:37,280",
+              "text": "gr\u00e2ce au march\u00e9 des producteurs.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTEw",
+              "timecode": "00:07:39,280",
+              "text": "Dans toute la Vienne,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTEx",
+              "timecode": "00:07:41,280",
+              "text": "venez \u00e0 la rencontre des producteurs locaux",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTEy",
+              "timecode": "00:07:43,280",
+              "text": "et d\u00e9gustez de d\u00e9licieux produits fermiers.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTEz",
+              "timecode": "00:07:45,280",
+              "text": "Ouverture \u00e0 partir de 18h,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTE0",
+              "timecode": "00:07:47,280",
+              "text": "pensez \u00e0 apporter vos couverts.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTE1",
+              "timecode": "00:07:49,280",
+              "text": "Toutes les dates sur le site de la Chambre d'agriculture de la Vienne.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTE2",
+              "timecode": "00:07:51,280",
+              "text": "Prochain rendez-vous \u00e0 Loudun et Vouill\u00e9",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTE3",
+              "timecode": "00:07:53,280",
+              "text": "le mercredi 3 juillet.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTE4",
+              "timecode": "00:07:55,280",
+              "text": "France Bleu, sp\u00e9ciale \u00e9lection.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTE5",
+              "timecode": "00:07:57,280",
+              "text": "Vous \u00e9coutez France Bleu Poitou,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTIw",
+              "timecode": "00:07:59,280",
+              "text": "nous poursuivons notre d\u00e9bat",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTIx",
+              "timecode": "00:08:01,280",
+              "text": "avec les trois candidats encore en lice",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTIy",
+              "timecode": "00:08:03,280",
+              "text": "dans la deuxi\u00e8me circonscription de la Vienne",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTIz",
+              "timecode": "00:08:05,280",
+              "text": "en votre compagnie Th\u00e9o Cobel.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTI0",
+              "timecode": "00:08:07,280",
+              "text": "On est en place \u00e0 la troisi\u00e8me th\u00e9matique de ce matin,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTI1",
+              "timecode": "00:08:09,280",
+              "text": "l'environnement. Estelle Chevalier,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTI2",
+              "timecode": "00:08:11,280",
+              "text": "on sait que ce n'est pas forc\u00e9ment la th\u00e9matique",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTI3",
+              "timecode": "00:08:13,280",
+              "text": "sur laquelle on attend votre parti, le Rassemblement National,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTI4",
+              "timecode": "00:08:15,280",
+              "text": "mais qu'est-ce que vous proposez aujourd'hui",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTI5",
+              "timecode": "00:08:17,280",
+              "text": "pour lutter contre le changement climatique",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTMw",
+              "timecode": "00:08:19,280",
+              "text": "et pour la pr\u00e9servation de l'environnement ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTMx",
+              "timecode": "00:08:21,280",
+              "text": "Alors, on peut lutter contre",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTMy",
+              "timecode": "00:08:23,280",
+              "text": "l'augmentation du climat,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTMz",
+              "timecode": "00:08:25,280",
+              "text": "mais",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTM0",
+              "timecode": "00:08:27,280",
+              "text": "rappelons-le quand m\u00eame que la terre",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTM1",
+              "timecode": "00:08:29,280",
+              "text": "se r\u00e9chauffe d'elle-m\u00eame, naturellement.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTM2",
+              "timecode": "00:08:31,280",
+              "text": "Vous ne croyez pas au r\u00e9chauffement climatique li\u00e9 \u00e0 l'homme ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTM3",
+              "timecode": "00:08:33,280",
+              "text": "Ah si, je le crois.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTM4",
+              "timecode": "00:08:35,280",
+              "text": "Mais il faut quand m\u00eame rappeler que",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTM5",
+              "timecode": "00:08:37,280",
+              "text": "la terre a eu des phases tr\u00e8s chaudes",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTQw",
+              "timecode": "00:08:39,280",
+              "text": "et des phases d'air glaciaire.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTQx",
+              "timecode": "00:08:41,280",
+              "text": "Et on est encore en air glaciaire,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTQy",
+              "timecode": "00:08:43,280",
+              "text": "et il faut un maximum",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTQz",
+              "timecode": "00:08:45,280",
+              "text": "ralentir effectivement notre production",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTQ0",
+              "timecode": "00:08:47,280",
+              "text": "de CO2",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTQ1",
+              "timecode": "00:08:49,280",
+              "text": "rejet\u00e9 dans l'air.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTQ2",
+              "timecode": "00:08:51,280",
+              "text": "Mais la France est vraiment \u00e0 0,2%",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTQ3",
+              "timecode": "00:08:53,280",
+              "text": "compar\u00e9e aux autres pays.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTQ4",
+              "timecode": "00:08:55,280",
+              "text": "Alors nous, on voudrait",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTQ5",
+              "timecode": "00:08:57,280",
+              "text": "tout d'abord remettre",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTUw",
+              "timecode": "00:08:59,280",
+              "text": "le nucl\u00e9aire en place",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTUx",
+              "timecode": "00:09:01,280",
+              "text": "parce qu'on serait ind\u00e9pendants \u00e9nerg\u00e9tiques",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTUy",
+              "timecode": "00:09:03,280",
+              "text": "\u00e0 56%.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTUz",
+              "timecode": "00:09:05,280",
+              "text": "C'est pas n\u00e9gligeable.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTU0",
+              "timecode": "00:09:07,280",
+              "text": "Elle est d\u00e9carbon\u00e9e et elle est peu ch\u00e8re.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTU1",
+              "timecode": "00:09:09,280",
+              "text": "\u00c7a permettrait...",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTU2",
+              "timecode": "00:09:11,280",
+              "text": "\u00c7a aussi, c'est une proposition de la majorit\u00e9 gouvernementale",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTU3",
+              "timecode": "00:09:13,280",
+              "text": "\u00e0 acc\u00e9l\u00e9rer sur le nucl\u00e9aire.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTU4",
+              "timecode": "00:09:15,280",
+              "text": "Tr\u00e8s bien.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTU5",
+              "timecode": "00:09:17,280",
+              "text": "Vous \u00eates d'accord sur de nombreux points ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTYw",
+              "timecode": "00:09:19,280",
+              "text": "Non.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTYx",
+              "timecode": "00:09:21,280",
+              "text": "Qu'est-ce que vous proposez d'autre",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTYy",
+              "timecode": "00:09:23,280",
+              "text": "sur l'environnement qui est diff\u00e9rent",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTYz",
+              "timecode": "00:09:25,280",
+              "text": "de la majorit\u00e9 pr\u00e9sidentielle ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTY0",
+              "timecode": "00:09:27,280",
+              "text": "Sans doute arr\u00eater",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTY1",
+              "timecode": "00:09:29,280",
+              "text": "ce...",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTY2",
+              "timecode": "00:09:31,280",
+              "text": "ce point de vue",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTY3",
+              "timecode": "00:09:33,280",
+              "text": "incroyable des",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTY4",
+              "timecode": "00:09:35,280",
+              "text": "\u00e9nergies renouvelables",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTY5",
+              "timecode": "00:09:37,280",
+              "text": "telles que les panneaux solaires et les \u00e9oliennes.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTcw",
+              "timecode": "00:09:39,280",
+              "text": "En ralentis sur le d\u00e9veloppement de l'\u00e9olien",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTcx",
+              "timecode": "00:09:41,280",
+              "text": "et des panneaux solaires ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTcy",
+              "timecode": "00:09:43,280",
+              "text": "C'est tr\u00e8s polluant. Une \u00e9olienne, c'est polluant",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTcz",
+              "timecode": "00:09:45,280",
+              "text": "et c'est dangereux pour la sant\u00e9 des personnes qui habitent autour.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTc0",
+              "timecode": "00:09:47,280",
+              "text": "Et c'est dangereux aussi pour la faune",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTc1",
+              "timecode": "00:09:49,280",
+              "text": "et la flore.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTc2",
+              "timecode": "00:09:51,280",
+              "text": "Vous arr\u00eatez les subventions \u00e0 ces investissements-l\u00e0, c'est \u00e7a ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTc3",
+              "timecode": "00:09:53,280",
+              "text": "Oui.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTc4",
+              "timecode": "00:09:55,280",
+              "text": "Sacha Houllier, vous \u00eates d'accord sur le nucl\u00e9aire",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTc5",
+              "timecode": "00:09:57,280",
+              "text": "mais pas d'accord sur le reste ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTgw",
+              "timecode": "00:09:59,280",
+              "text": "Je ne pense pas parce que le RN n'a pas vot\u00e9",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTgx",
+              "timecode": "00:10:01,280",
+              "text": "les lois d'acc\u00e9l\u00e9ration du d\u00e9ploiement des \u00e9nergies renouvelables",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTgy",
+              "timecode": "00:10:03,280",
+              "text": "et le but pour nous",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTgz",
+              "timecode": "00:10:05,280",
+              "text": "est d'avoir au moins trois actions fortes",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTg0",
+              "timecode": "00:10:07,280",
+              "text": "pour parvenir \u00e0 amplifier la baisse",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTg1",
+              "timecode": "00:10:09,280",
+              "text": "de 6% des \u00e9missions de CO2",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTg2",
+              "timecode": "00:10:11,280",
+              "text": "que nous avons constat\u00e9es en 2003.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTg3",
+              "timecode": "00:10:13,280",
+              "text": "D'abord, la d\u00e9carbonation totale",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTg4",
+              "timecode": "00:10:15,280",
+              "text": "de notre production \u00e9nerg\u00e9tique, c'est-\u00e0-dire",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTg5",
+              "timecode": "00:10:17,280",
+              "text": "100% \u00e9lectrique, en passant par 50% d'\u00e9lectricit\u00e9",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTkw",
+              "timecode": "00:10:19,280",
+              "text": "et 50% de nucl\u00e9aire.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTkx",
+              "timecode": "00:10:21,280",
+              "text": "En 2050, nous serons \u00e0 0% de carbone",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTky",
+              "timecode": "00:10:23,280",
+              "text": "dans la production d'\u00e9nergie en France.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTkz",
+              "timecode": "00:10:25,280",
+              "text": "Deuxi\u00e8me chose, la r\u00e9novation des logements",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTk0",
+              "timecode": "00:10:27,280",
+              "text": "que nous avons largement accru,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTk1",
+              "timecode": "00:10:29,280",
+              "text": "soit des logements collectifs ou des logements individuels.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTk2",
+              "timecode": "00:10:31,280",
+              "text": "Derni\u00e8re chose, la d\u00e9carbonation",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTk3",
+              "timecode": "00:10:33,280",
+              "text": "de notre pratique de d\u00e9placement,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTk4",
+              "timecode": "00:10:35,280",
+              "text": "avec l'amplification des transports doux,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMTk5",
+              "timecode": "00:10:37,280",
+              "text": "soit le v\u00e9lo, soit les transports en commun,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjAw",
+              "timecode": "00:10:39,280",
+              "text": "soit la voiture \u00e9lectrique que nous amplifions tr\u00e8s fortement",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjAx",
+              "timecode": "00:10:41,280",
+              "text": "avec des aides pour les acheteurs,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjAy",
+              "timecode": "00:10:43,280",
+              "text": "ceux qui ont des leasing,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjAz",
+              "timecode": "00:10:45,280",
+              "text": "des leasing social, c'est-\u00e0-dire",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjA0",
+              "timecode": "00:10:47,280",
+              "text": "la pr\u00e9caution d'achat social pour les gens qui n'ont pas",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjA1",
+              "timecode": "00:10:49,280",
+              "text": "les moyens, jusqu'\u00e0 pr\u00e9sent, de s'acheter une voiture \u00e9lectrique.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjA2",
+              "timecode": "00:10:51,280",
+              "text": "Vous le portez \u00e0 100 000 v\u00e9hicules \u00e9lectriques par an.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjA3",
+              "timecode": "00:10:53,280",
+              "text": "Et produits en France.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjA4",
+              "timecode": "00:10:55,280",
+              "text": "Val\u00e9rie Soumaille, vous, c'est un des points importants",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjA5",
+              "timecode": "00:10:57,280",
+              "text": "sur lesquels le Nouveau Front populaire met",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjEw",
+              "timecode": "00:10:59,280",
+              "text": "de l'importance. Qu'est-ce que vous proposez",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjEx",
+              "timecode": "00:11:01,280",
+              "text": "pour la pr\u00e9servation de l'environnement ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjEy",
+              "timecode": "00:11:03,280",
+              "text": "Nous, on fera voter",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjEz",
+              "timecode": "00:11:05,280",
+              "text": "une loi \u00e9nergie-climat",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjE0",
+              "timecode": "00:11:07,280",
+              "text": "et puis",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjE1",
+              "timecode": "00:11:09,280",
+              "text": "un des points forts,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjE2",
+              "timecode": "00:11:11,280",
+              "text": "c'est le fait d'inscrire le principe",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjE3",
+              "timecode": "00:11:13,280",
+              "text": "de la r\u00e8gle verte, c'est-\u00e0-dire",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjE4",
+              "timecode": "00:11:15,280",
+              "text": "le principe",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjE5",
+              "timecode": "00:11:17,280",
+              "text": "selon lequel on ne pr\u00e9l\u00e8ve pas \u00e0 la nature",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjIw",
+              "timecode": "00:11:19,280",
+              "text": "plus qu'elle ne peut reconstituer",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjIx",
+              "timecode": "00:11:21,280",
+              "text": "sur une ann\u00e9e.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjIy",
+              "timecode": "00:11:23,280",
+              "text": "La question de",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjIz",
+              "timecode": "00:11:25,280",
+              "text": "l'isolation des logements, elle est aussi",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjI0",
+              "timecode": "00:11:27,280",
+              "text": "extr\u00eamement importante",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjI1",
+              "timecode": "00:11:29,280",
+              "text": "pour nous, elle permet aussi",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjI2",
+              "timecode": "00:11:31,280",
+              "text": "de r\u00e9pondre aux passoires thermiques.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjI3",
+              "timecode": "00:11:33,280",
+              "text": "Papa, je rebondis quand m\u00eame tous les deux sur",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjI4",
+              "timecode": "00:11:35,280",
+              "text": "la r\u00e9novation des",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjI5",
+              "timecode": "00:11:37,280",
+              "text": "logements, c'est un sujet qui revient depuis des ann\u00e9es",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjMw",
+              "timecode": "00:11:39,280",
+              "text": "et des ann\u00e9es, on a l'impression qu'on a toujours du retard sur ce sujet,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjMx",
+              "timecode": "00:11:41,280",
+              "text": "qu'on n'arrive pas \u00e0 acc\u00e9l\u00e9rer. Pourquoi ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjMy",
+              "timecode": "00:11:43,280",
+              "text": "Qu'est-ce qu'il faudrait faire pour qu'on passe la vitesse sup\u00e9rieure ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjMz",
+              "timecode": "00:11:45,280",
+              "text": "Val\u00e9rie Soumaya en premier, je vous ferai r\u00e9agir.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjM0",
+              "timecode": "00:11:47,280",
+              "text": "Tr\u00e8s rapidement, la question",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjM1",
+              "timecode": "00:11:49,280",
+              "text": "de l'aide apport\u00e9e",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjM2",
+              "timecode": "00:11:51,280",
+              "text": "aux m\u00e9nages, par exemple, dans le cadre",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjM3",
+              "timecode": "00:11:53,280",
+              "text": "des",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjM4",
+              "timecode": "00:11:55,280",
+              "text": "habitations individuelles,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjM5",
+              "timecode": "00:11:57,280",
+              "text": "c'est extr\u00eamement important. On l'a vu tout \u00e0 l'heure,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjQw",
+              "timecode": "00:11:59,280",
+              "text": "le pouvoir d'achat",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjQx",
+              "timecode": "00:12:01,280",
+              "text": "en Berne fait que",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjQy",
+              "timecode": "00:12:03,280",
+              "text": "on n'a pas les moyens pour avancer",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjQz",
+              "timecode": "00:12:05,280",
+              "text": "les r\u00e9novations.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjQ0",
+              "timecode": "00:12:07,280",
+              "text": "Effectivement.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjQ1",
+              "timecode": "00:12:09,280",
+              "text": "Et puis,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjQ2",
+              "timecode": "00:12:11,280",
+              "text": "il faut permettre",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjQ3",
+              "timecode": "00:12:13,280",
+              "text": "aux entreprises aussi",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjQ4",
+              "timecode": "00:12:15,280",
+              "text": "de multiplier",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjQ5",
+              "timecode": "00:12:17,280",
+              "text": "les chantiers. Sacha, on a l'impression qu'on n'arrive pas",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjUw",
+              "timecode": "00:12:19,280",
+              "text": "\u00e0 acc\u00e9l\u00e9rer concr\u00e8tement l\u00e0-dessus.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjUx",
+              "timecode": "00:12:21,280",
+              "text": "On a eu des probl\u00e8mes autour de ma prime r\u00e9nov' si je reprends le cas",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjUy",
+              "timecode": "00:12:23,280",
+              "text": "de ma grand-m\u00e8re. Qui a \u00e9t\u00e9 vue, revue, gros revu.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjUz",
+              "timecode": "00:12:25,280",
+              "text": "Ma grand-m\u00e8re s'est plusieurs mois pour se faire payer une prime",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjU0",
+              "timecode": "00:12:27,280",
+              "text": "r\u00e9nov' pour pouvoir changer ses fen\u00eatres. Mais comment \u00e7a s'est fait ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjU1",
+              "timecode": "00:12:29,280",
+              "text": "Parce que les crit\u00e8res \u00e9taient trop flous",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjU2",
+              "timecode": "00:12:31,280",
+              "text": "et parce que l'ANA, qui \u00e9tait l'agence",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjU3",
+              "timecode": "00:12:33,280",
+              "text": "qui aujourd'hui payait, mettait trop de temps",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjU4",
+              "timecode": "00:12:35,280",
+              "text": "donc \u00e7a, \u00e7a a \u00e9t\u00e9 simplifi\u00e9 au tout d\u00e9but de l'ann\u00e9e.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjU5",
+              "timecode": "00:12:37,280",
+              "text": "Parce qu'ensuite, il faut appliquer les lois qu'on a vot\u00e9es",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjYw",
+              "timecode": "00:12:39,280",
+              "text": "sur la loi climat, sur l'\u00e9tiquette \u00e9nerg\u00e9tique,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjYx",
+              "timecode": "00:12:41,280",
+              "text": "sur l'interdiction des passoires \u00e9nerg\u00e9tiques",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjYy",
+              "timecode": "00:12:43,280",
+              "text": "et que tout \u00e7a, on voit que c'\u00e9tait tr\u00e8s ambitieux",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjYz",
+              "timecode": "00:12:45,280",
+              "text": "en 2021 parce qu'on a beaucoup",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjY0",
+              "timecode": "00:12:47,280",
+              "text": "de logements de propri\u00e9taires \u00e0 r\u00e9nover",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjY1",
+              "timecode": "00:12:49,280",
+              "text": "et c'est ce qu'il faut prioriser.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjY2",
+              "timecode": "00:12:51,280",
+              "text": "Et puis apr\u00e8s, il faut simplifier les r\u00e8gles des copropri\u00e9t\u00e9s",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjY3",
+              "timecode": "00:12:53,280",
+              "text": "parce qu'en copropri\u00e9t\u00e9, il faut que tout le monde",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjY4",
+              "timecode": "00:12:55,280",
+              "text": "se mette d'accord pour r\u00e9nover. \u00c7a peut prendre du temps.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjY5",
+              "timecode": "00:12:57,280",
+              "text": "\u00c7a, c'est un gros travail aussi \u00e0 r\u00e9aliser.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjcw",
+              "timecode": "00:12:59,280",
+              "text": "Estelle Chevalier, sur les passoires \u00e9nerg\u00e9tiques,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjcx",
+              "timecode": "00:13:01,280",
+              "text": "qu'est-ce que propose le Rassemblement national ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjcy",
+              "timecode": "00:13:04,280",
+              "text": "Eh bien, \u00e9coutez, de r\u00e9nover",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjcz",
+              "timecode": "00:13:06,280",
+              "text": "\u00e9galement les habitations.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjc0",
+              "timecode": "00:13:08,280",
+              "text": "Effectivement,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjc1",
+              "timecode": "00:13:10,280",
+              "text": "je sais que sur mon logement sur Poitiers,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjc2",
+              "timecode": "00:13:12,280",
+              "text": "l'hiver,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjc3",
+              "timecode": "00:13:14,280",
+              "text": "le prix de l'\u00e9lectricit\u00e9",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjc4",
+              "timecode": "00:13:16,280",
+              "text": "est en hausse.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjc5",
+              "timecode": "00:13:18,280",
+              "text": "Je paye tr\u00e8s cher et pourtant,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjgw",
+              "timecode": "00:13:20,280",
+              "text": "j'ai tr\u00e8s froid",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjgx",
+              "timecode": "00:13:22,280",
+              "text": "et effectivement, c'est quelque chose",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjgy",
+              "timecode": "00:13:24,280",
+              "text": "qu'il va falloir revoir sur tous les logements,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjgz",
+              "timecode": "00:13:26,280",
+              "text": "que ce soit",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjg0",
+              "timecode": "00:13:28,280",
+              "text": "\u00e0 l'\u00e9chelle des personnes qui ont un foyer",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjg1",
+              "timecode": "00:13:30,280",
+              "text": "mais \u00e9galement un foyer",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjg2",
+              "timecode": "00:13:33,280",
+              "text": "moi, j'habite \u00e0 Saint-\u00c9loi par exemple",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjg3",
+              "timecode": "00:13:35,280",
+              "text": "mais \u00e9galement \u00e0 l'\u00e9chelle \u00e9tudiante.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjg4",
+              "timecode": "00:13:37,280",
+              "text": "Je sais qu'\u00e9lus",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjg5",
+              "timecode": "00:13:39,280",
+              "text": "au sein de l'Uni et",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjkw",
+              "timecode": "00:13:41,280",
+              "text": "au Croust,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjkx",
+              "timecode": "00:13:43,280",
+              "text": "on essaye un maximum",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjky",
+              "timecode": "00:13:45,280",
+              "text": "de cr\u00e9er de nouvelles habitations et",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjkz",
+              "timecode": "00:13:47,280",
+              "text": "d'am\u00e9liorer",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjk0",
+              "timecode": "00:13:49,280",
+              "text": "les logements \u00e9tudiants.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjk1",
+              "timecode": "00:13:51,280",
+              "text": "On passe \u00e0 notre quatri\u00e8me sujet",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjk2",
+              "timecode": "00:13:53,280",
+              "text": "de la matin\u00e9e.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjk3",
+              "timecode": "00:13:55,280",
+              "text": "Dernier sujet, la sant\u00e9.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjk4",
+              "timecode": "00:13:57,280",
+              "text": "Le Poitou est tr\u00e8s touch\u00e9 par",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMjk5",
+              "timecode": "00:13:59,280",
+              "text": "les d\u00e9serts m\u00e9dicaux.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzAw",
+              "timecode": "00:14:01,280",
+              "text": "Sacha Ollier, qu'est-ce que propose",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzAx",
+              "timecode": "00:14:03,280",
+              "text": "la majorit\u00e9 pr\u00e9sidentielle pour lutter",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzAy",
+              "timecode": "00:14:05,280",
+              "text": "contre ce probl\u00e8me des d\u00e9serts m\u00e9dicaux ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzAz",
+              "timecode": "00:14:07,280",
+              "text": "C'est vrai qu'on a travaill\u00e9 \u00e0 l'organisation de l'h\u00f4pital",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzA0",
+              "timecode": "00:14:09,280",
+              "text": "pour qu'il n'y ait plus aucun appel qui soit non r\u00e9pondu aux 15.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzA1",
+              "timecode": "00:14:11,280",
+              "text": "La r\u00e9organisation des urgences, effectivement.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzA2",
+              "timecode": "00:14:13,280",
+              "text": "Entre soit les urgences directement,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzA3",
+              "timecode": "00:14:15,280",
+              "text": "les soins non programm\u00e9s comme",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzA4",
+              "timecode": "00:14:17,280",
+              "text": "le centre qui existe \u00e0 la zone de la R\u00e9publique",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzA5",
+              "timecode": "00:14:19,280",
+              "text": "ou l'envoi vers des m\u00e9decins g\u00e9n\u00e9ralistes.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzEw",
+              "timecode": "00:14:21,280",
+              "text": "\u00c7a suffit, \u00e7a ? Non, \u00e7a ne suffit pas parce que d'abord,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzEx",
+              "timecode": "00:14:23,280",
+              "text": "il a fallu supprimer le num\u00e9ro d'exclusus pour former un nouveau m\u00e9decin,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzEy",
+              "timecode": "00:14:25,280",
+              "text": "am\u00e9nager aussi la carte pour qu'on...",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzEz",
+              "timecode": "00:14:27,280",
+              "text": "Aujourd'hui, et c'est une proposition d'Aur\u00e9lien Bourdier",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzE0",
+              "timecode": "00:14:31,280",
+              "text": "qu'on r\u00e9partisse mieux les m\u00e9decins.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzE1",
+              "timecode": "00:14:33,280",
+              "text": "Qui \u00e9tait le candidat dissident de la gauche \u00e0 Poitiers et qui appelle \u00e0 voter pour vous.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzE2",
+              "timecode": "00:14:35,280",
+              "text": "Et qui appelle \u00e0 voter pour moi.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzE3",
+              "timecode": "00:14:37,280",
+              "text": "La r\u00e9partition des m\u00e9decins et puis apr\u00e8s,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzE4",
+              "timecode": "00:14:39,280",
+              "text": "pour ce qui concerne ces \u00e9quipements",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzE5",
+              "timecode": "00:14:41,280",
+              "text": "de sant\u00e9, je pense qu'il faut aussi",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzIw",
+              "timecode": "00:14:43,280",
+              "text": "donner les moyens aux collectivit\u00e9s et aux m\u00e9decins de s'entendre",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzIx",
+              "timecode": "00:14:45,280",
+              "text": "pour construire des maisons de sant\u00e9 comme nous l'avons fait d\u00e9j\u00e0 depuis",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzIy",
+              "timecode": "00:14:47,280",
+              "text": "plusieurs ann\u00e9es. Dans votre programme, il y a doubl\u00e9 le",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzIz",
+              "timecode": "00:14:49,280",
+              "text": "nombre de m\u00e9decins form\u00e9s d'ici 2027.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzI0",
+              "timecode": "00:14:51,280",
+              "text": "Comment on y arrive \u00e0 \u00e7a ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzI1",
+              "timecode": "00:14:53,280",
+              "text": "\u00c7a, c'est les cons\u00e9quences de la suppression du num\u00e9ro d'exclusus",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzI2",
+              "timecode": "00:14:55,280",
+              "text": "puisque c'est une d\u00e9cision prise en 2018 et vous savez",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzI3",
+              "timecode": "00:14:57,280",
+              "text": "qu'on met 9 ans pour former un m\u00e9decin",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzI4",
+              "timecode": "00:14:59,280",
+              "text": "donc les m\u00e9decins aujourd'hui arrivent mais...",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzI5",
+              "timecode": "00:15:01,280",
+              "text": "Mais on entend que en deuxi\u00e8me ann\u00e9e, il n'y a pas forc\u00e9ment",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzMw",
+              "timecode": "00:15:03,280",
+              "text": "plus de places depuis la fin du num\u00e9ro d'exclusus.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzMx",
+              "timecode": "00:15:05,280",
+              "text": "C'est-\u00e0-dire qu'il n'y aura pas forc\u00e9ment plus de m\u00e9decins form\u00e9s \u00e0 terme ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzMy",
+              "timecode": "00:15:07,280",
+              "text": "Il y en a plus,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzMz",
+              "timecode": "00:15:09,280",
+              "text": "il n'y en a pas autant qu'il en faudrait, \u00e7a c'est absolument certain.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzM0",
+              "timecode": "00:15:11,280",
+              "text": "Et puis derni\u00e8re chose, les m\u00e9decins peuvent",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzM1",
+              "timecode": "00:15:13,280",
+              "text": "avoir leur pratique qui \u00e9volue et ceux qui travaillaient",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzM2",
+              "timecode": "00:15:15,280",
+              "text": "7 jours sur 7 de nombreuses heures, \u00e7a n'est plus",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzM3",
+              "timecode": "00:15:17,280",
+              "text": "forc\u00e9ment le cas aujourd'hui. On peut les comprendre,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzM4",
+              "timecode": "00:15:19,280",
+              "text": "ils ont besoin aussi de repos comme tout le monde",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzM5",
+              "timecode": "00:15:21,280",
+              "text": "et donc il faut encore plus de m\u00e9decins que nous n'avons form\u00e9s.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzQw",
+              "timecode": "00:15:23,280",
+              "text": "Val\u00e9rie Souma\u00ef, qu'est-ce que vous proposez",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzQx",
+              "timecode": "00:15:25,280",
+              "text": "pour lutter contre les d\u00e9serts m\u00e9dicaux qui touchent",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzQy",
+              "timecode": "00:15:27,280",
+              "text": "notamment le Poitou ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzQz",
+              "timecode": "00:15:29,280",
+              "text": "Dans nos circonscriptions, il y a 12 communes",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzQ0",
+              "timecode": "00:15:31,280",
+              "text": "qui n'ont aucun m\u00e9decin.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzQ1",
+              "timecode": "00:15:33,280",
+              "text": "Qu'est-ce qu'on fait face \u00e0 ce constat-l\u00e0 ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzQ2",
+              "timecode": "00:15:35,280",
+              "text": "La question de l'attractivit\u00e9",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzQ3",
+              "timecode": "00:15:37,280",
+              "text": "des territoires, elle est extr\u00eamement",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzQ4",
+              "timecode": "00:15:39,280",
+              "text": "importante et donc",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzQ5",
+              "timecode": "00:15:41,280",
+              "text": "inciter un jeune m\u00e9decin",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzUw",
+              "timecode": "00:15:43,280",
+              "text": "ou une jeune m\u00e9decin \u00e0 venir s'installer dans une commune",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzUx",
+              "timecode": "00:15:45,280",
+              "text": "o\u00f9 il n'y a plus de service public, \u00e7a devient tr\u00e8s compliqu\u00e9.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzUy",
+              "timecode": "00:15:47,280",
+              "text": "Donc nous, on...",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzUz",
+              "timecode": "00:15:49,280",
+              "text": "Vous voulez r\u00e9guler l'installation des m\u00e9decins ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzU0",
+              "timecode": "00:15:51,280",
+              "text": "C'est dans le programme du Nouveau Front Populaire ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzU1",
+              "timecode": "00:15:53,280",
+              "text": "En tout cas, il faut permettre",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzU2",
+              "timecode": "00:15:55,280",
+              "text": "aux jeunes m\u00e9decins de s'installer partout",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzU3",
+              "timecode": "00:15:57,280",
+              "text": "de mani\u00e8re \u00e0 ce que les patients et les patientes",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzU4",
+              "timecode": "00:15:59,280",
+              "text": "aient un centre de sant\u00e9 par exemple",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzU5",
+              "timecode": "00:16:01,280",
+              "text": "\u00e0 moins de 30 minutes",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzYw",
+              "timecode": "00:16:03,280",
+              "text": "de leur logement.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzYx",
+              "timecode": "00:16:05,280",
+              "text": "\u00c7a, \u00e7a veut dire redonner",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzYy",
+              "timecode": "00:16:07,280",
+              "text": "effectivement de l'attractivit\u00e9 aux territoires,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzYz",
+              "timecode": "00:16:09,280",
+              "text": "je viens de le dire avec la question des services publics,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzY0",
+              "timecode": "00:16:11,280",
+              "text": "mais aussi permettre de d\u00e9velopper des centres de sant\u00e9",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzY1",
+              "timecode": "00:16:13,280",
+              "text": "publics et non pas des maisons",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzY2",
+              "timecode": "00:16:15,280",
+              "text": "de sant\u00e9 pour ce qui nous concerne, avec",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzY3",
+              "timecode": "00:16:17,280",
+              "text": "une pratique notamment",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzY4",
+              "timecode": "00:16:19,280",
+              "text": "de m\u00e9decins salari\u00e9s.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzY5",
+              "timecode": "00:16:21,280",
+              "text": "\u00c7a serait avec des m\u00e9decins salari\u00e9s, c'est \u00e7a ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzcw",
+              "timecode": "00:16:23,280",
+              "text": "Oui, des m\u00e9decins salari\u00e9s.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzcx",
+              "timecode": "00:16:25,280",
+              "text": "\u00c7a les inciterait plus \u00e0 venir s'installer chez nous ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzcy",
+              "timecode": "00:16:27,280",
+              "text": "Aujourd'hui, on se rend compte que les jeunes m\u00e9decins",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzcz",
+              "timecode": "00:16:29,280",
+              "text": "ne souhaitent plus travailler 70 heures par semaine",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzc0",
+              "timecode": "00:16:31,280",
+              "text": "et effectivement, ils ont",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzc1",
+              "timecode": "00:16:33,280",
+              "text": "envie de travailler en pluridisciplinarit\u00e9,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzc2",
+              "timecode": "00:16:35,280",
+              "text": "ils ont envie de travailler en \u00e9quipe",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzc3",
+              "timecode": "00:16:37,280",
+              "text": "et de pouvoir recevoir les patients",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzc4",
+              "timecode": "00:16:39,280",
+              "text": "et les patientes dans de bonnes conditions.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzc5",
+              "timecode": "00:16:41,280",
+              "text": "Donc effectivement, avec eux,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzgw",
+              "timecode": "00:16:43,280",
+              "text": "avec une semaine de travail",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzgx",
+              "timecode": "00:16:45,280",
+              "text": "\u00e0 horaire, on va dire, normal.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzgy",
+              "timecode": "00:16:47,280",
+              "text": "Estelle Chevalier, qu'est-ce que vous proposez",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzgz",
+              "timecode": "00:16:49,280",
+              "text": "du Rassemblement National pour",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzg0",
+              "timecode": "00:16:51,280",
+              "text": "lutter contre ces d\u00e9serts musicaux ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzg1",
+              "timecode": "00:16:53,280",
+              "text": "Je pense qu'il faut revenir aux \u00e9tudiants,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzg2",
+              "timecode": "00:16:55,280",
+              "text": "il faut leur donner envie de devenir",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzg3",
+              "timecode": "00:16:57,280",
+              "text": "m\u00e9decin, de devenir aide-soignante.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzg4",
+              "timecode": "00:16:59,280",
+              "text": "C'est une fili\u00e8re qui n'est pas attractive aujourd'hui ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzg5",
+              "timecode": "00:17:01,280",
+              "text": "Elle n'est pas accessible, elle est tr\u00e8s",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzkw",
+              "timecode": "00:17:03,280",
+              "text": "compliqu\u00e9e d'accessibilit\u00e9 avec Parcoursup.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzkx",
+              "timecode": "00:17:05,280",
+              "text": "C'est tr\u00e8s compliqu\u00e9 de",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzky",
+              "timecode": "00:17:07,280",
+              "text": "rentrer en \u00e9cole d'infirmi\u00e8re,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzkz",
+              "timecode": "00:17:09,280",
+              "text": "de rentrer",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzk0",
+              "timecode": "00:17:11,280",
+              "text": "en \u00e9cole d'aide-soignante ou de rentrer en m\u00e9decine.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzk1",
+              "timecode": "00:17:13,280",
+              "text": "Je pr\u00e9cise \u00e0 nos auditeurs, vous \u00eates tr\u00e8s jeune,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzk2",
+              "timecode": "00:17:15,280",
+              "text": "vous \u00eates \u00e9tudiante, vous vous rencontrez",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzk3",
+              "timecode": "00:17:17,280",
+              "text": "au quotidien des \u00e9tudiants qui se sont",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzk4",
+              "timecode": "00:17:19,280",
+              "text": "d\u00e9motiv\u00e9s parce que c'\u00e9tait trop compliqu\u00e9 de faire des \u00e9tudes",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fMzk5",
+              "timecode": "00:17:21,280",
+              "text": "d'infirmi\u00e8re, de rentrer dans des \u00e9tudes d'infirmi\u00e8re ou de m\u00e9decin.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDAw",
+              "timecode": "00:17:23,280",
+              "text": "Oui, et les stages",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDAx",
+              "timecode": "00:17:25,280",
+              "text": "ne sont pas pay\u00e9s.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDAy",
+              "timecode": "00:17:27,280",
+              "text": "Ou pour les m\u00e9decins, tr\u00e8s peu pay\u00e9s",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDAz",
+              "timecode": "00:17:29,280",
+              "text": "au bout de la 4, 5, 6\u00e8me ann\u00e9e",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDA0",
+              "timecode": "00:17:31,280",
+              "text": "de m\u00e9decine.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDA1",
+              "timecode": "00:17:33,280",
+              "text": "Donc il va falloir, nous,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDA2",
+              "timecode": "00:17:35,280",
+              "text": "on d\u00e9sire, augmenter le salaire",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDA3",
+              "timecode": "00:17:37,280",
+              "text": "de ces soignants,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDA4",
+              "timecode": "00:17:39,280",
+              "text": "du personnel soignant.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDA5",
+              "timecode": "00:17:41,280",
+              "text": "Estelle Chevalier, en 30 secondes, si le Rassemblement National",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDEw",
+              "timecode": "00:17:43,280",
+              "text": "arrive au pouvoir cet \u00e9t\u00e9,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDEx",
+              "timecode": "00:17:45,280",
+              "text": "quelle est la premi\u00e8re mesure que vous mettez en place ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDEy",
+              "timecode": "00:17:47,280",
+              "text": "La premi\u00e8re mesure, ce serait",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDEz",
+              "timecode": "00:17:49,280",
+              "text": "sur la sant\u00e9 ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDE0",
+              "timecode": "00:17:51,280",
+              "text": "Non, de mani\u00e8re g\u00e9n\u00e9rale.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDE1",
+              "timecode": "00:17:53,280",
+              "text": "Ce serait la loi de finances rectificatives sur la baisse des taxes,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDE2",
+              "timecode": "00:17:55,280",
+              "text": "sur les \u00e9nergies.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDE3",
+              "timecode": "00:17:57,280",
+              "text": "Sacha Ollier, si le gouvernement garde la majorit\u00e9",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDE4",
+              "timecode": "00:17:59,280",
+              "text": "\u00e0 l'issue des \u00e9lections, quelle sera la premi\u00e8re mesure",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDE5",
+              "timecode": "00:18:01,280",
+              "text": "qu'il mettra en place ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDIw",
+              "timecode": "00:18:03,280",
+              "text": "Je pense que ce serait comme la fois derni\u00e8re, une loi sur le pouvoir d'achat",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDIx",
+              "timecode": "00:18:05,280",
+              "text": "et sur la baisse des factures et l'augmentation des salaires.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDIy",
+              "timecode": "00:18:07,280",
+              "text": "Val\u00e9rie Souma\u00ef, m\u00eame question, si le nouveau Front Populaire",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDIz",
+              "timecode": "00:18:09,280",
+              "text": "arrive au pouvoir cet \u00e9t\u00e9, quelle premi\u00e8re mesure vous mettra en place ?",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDI0",
+              "timecode": "00:18:11,280",
+              "text": "On d\u00e9cr\u00e8terait l'\u00e9tat d'urgence social",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDI1",
+              "timecode": "00:18:13,280",
+              "text": "avec tout de suite une augmentation",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDI2",
+              "timecode": "00:18:15,280",
+              "text": "des revenus des habitants et habitantes.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDI3",
+              "timecode": "00:18:17,280",
+              "text": "Merci \u00e0 tous les trois. Je rappelle, vous \u00eates les candidats",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OTFjYmV1LmZyLWF1dG9fNDI4",
+              "timecode": "00:18:19,280",
+              "text": "sur la deuxi\u00e8me circonscription.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          }
+        ],
+        "__typename": "CaptionConnection"
+      }
+    }
+  }
+}

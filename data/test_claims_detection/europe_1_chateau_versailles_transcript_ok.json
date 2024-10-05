@@ -1,0 +1,1034 @@
+{
+  "data": {
+    "video": {
+      "__typename": "Video",
+      "id": "VmlkZW86eDhqeHFjOQ==",
+      "xid": "x8jxqc9",
+      "isPublished": true,
+      "duration": 85,
+      "title": "Climat : le ch\u00e2teau de Versailles victime du r\u00e9chauffement climatique",
+      "description": "<br /><br />Retrouvez \"Europe 1 Matin\" sur : http://www.europe1.fr/emissions/le-6-9<br />",
+      "thumbnailx60": "https://s2.dmcdn.net/v/Ur1QP1aCw7MG0hpMA/x60",
+      "thumbnailx120": "https://s2.dmcdn.net/v/Ur1QP1aCw7MLCTWEV/x120",
+      "thumbnailx240": "https://s2.dmcdn.net/v/Ur1QP1aCw7MpsPegX/x240",
+      "thumbnailx360": "https://s2.dmcdn.net/v/Ur1QP1aCw7MlI8fz3/x360",
+      "thumbnailx480": "https://s2.dmcdn.net/v/Ur1QP1aCw7MKhYa9a/x480",
+      "thumbnailx720": "https://s2.dmcdn.net/v/Ur1QP1aCw7MMGN_5t/x720",
+      "thumbnailx1080": "https://s2.dmcdn.net/v/Ur1QP1aCw7M4e_nZ9/x1080",
+      "category": "NEWS",
+      "categories": {
+        "edges": [
+          {
+            "node": {
+              "id": "Q29udGVudENhdGVnb3J5Om5ld3M=",
+              "name": "NEWS",
+              "slug": "content-news",
+              "__typename": "ContentCategory"
+            },
+            "__typename": "CategoryEdge"
+          }
+        ],
+        "__typename": "CategoryConnection"
+      },
+      "bestAvailableQuality": "HD1080P",
+      "createdAt": "2023-04-10T05:42:46+00:00",
+      "viewerEngagement": {
+        "id": "VmlkZW9WaWV3ZXJFbmdhZ2VtZW50Ong4anhxYzk=",
+        "liked": false,
+        "favorited": false,
+        "__typename": "VideoViewerEngagement"
+      },
+      "isPrivate": false,
+      "isWatched": false,
+      "isCreatedForKids": false,
+      "isExplicit": false,
+      "canDisplayAds": true,
+      "videoWidth": 1920,
+      "videoHeight": 1080,
+      "status": "PUBLISHED",
+      "hashtags": {
+        "edges": [],
+        "__typename": "HashtagConnection"
+      },
+      "stats": {
+        "id": "VmlkZW9TdGF0czp4OGp4cWM5",
+        "views": {
+          "id": "VmlkZW9TdGF0c1ZpZXdzOng4anhxYzk=",
+          "total": 115,
+          "__typename": "VideoStatsViews"
+        },
+        "__typename": "VideoStats"
+      },
+      "channel": {
+        "__typename": "Channel",
+        "id": "Q2hhbm5lbDp4ZjR3dDc=",
+        "xid": "xf4wt7",
+        "name": "Europe1fr",
+        "displayName": "Europe 1",
+        "isArtist": false,
+        "logoURLx25": "https://s2.dmcdn.net/u/1W-uR1cXxuO-zVS8Z/25x25",
+        "logoURL": "https://s2.dmcdn.net/u/1W-uR1cXxuODSfXfp/60x60",
+        "isFollowed": false,
+        "accountType": "verified-partner",
+        "coverURLx375": "https://s2.dmcdn.net/b/1W-uR1cXxuOonBapG/x375",
+        "stats": {
+          "id": "Q2hhbm5lbFN0YXRzOnhmNHd0Nw==",
+          "views": {
+            "id": "Q2hhbm5lbFN0YXRzVmlld3M6eGY0d3Q3",
+            "total": 204436263,
+            "__typename": "ChannelStatsViews"
+          },
+          "followers": {
+            "id": "Q2hhbm5lbFN0YXRzRm9sbG93ZXJzOnhmNHd0Nw==",
+            "total": 16905,
+            "__typename": "ChannelStatsFollowers"
+          },
+          "videos": {
+            "id": "Q2hhbm5lbFN0YXRzVmlkZW9zOnhmNHd0Nw==",
+            "total": 187924,
+            "__typename": "ChannelStatsVideos"
+          },
+          "__typename": "ChannelStats"
+        },
+        "country": {
+          "id": "Q291bnRyeTpGUg==",
+          "codeAlpha2": "FR",
+          "__typename": "Country"
+        },
+        "organization": {
+          "id": "T3JnYW5pemF0aW9uOnhoaA==",
+          "xid": "xhh",
+          "owner": {
+            "id": "VXNlcjp4ZjR3dDc=",
+            "xid": "xf4wt7",
+            "__typename": "User"
+          },
+          "__typename": "Organization"
+        }
+      },
+      "language": {
+        "id": "TGFuZ3VhZ2U6ZnJh",
+        "codeAlpha2": "fr",
+        "__typename": "Language"
+      },
+      "tags": {
+        "edges": [
+          {
+            "node": {
+              "id": "TWVkaWFUYWc6Tm9uZQ==",
+              "label": "europe 1",
+              "__typename": "MediaTag"
+            },
+            "__typename": "MediaTagEdge"
+          },
+          {
+            "node": {
+              "id": "TWVkaWFUYWc6Tm9uZQ==",
+              "label": "europe un",
+              "__typename": "MediaTag"
+            },
+            "__typename": "MediaTagEdge"
+          },
+          {
+            "node": {
+              "id": "TWVkaWFUYWc6Tm9uZQ==",
+              "label": "europe1",
+              "__typename": "MediaTag"
+            },
+            "__typename": "MediaTagEdge"
+          },
+          {
+            "node": {
+              "id": "TWVkaWFUYWc6Tm9uZQ==",
+              "label": "europ1",
+              "__typename": "MediaTag"
+            },
+            "__typename": "MediaTagEdge"
+          },
+          {
+            "node": {
+              "id": "TWVkaWFUYWc6Tm9uZQ==",
+              "label": "radio actu",
+              "__typename": "MediaTag"
+            },
+            "__typename": "MediaTagEdge"
+          },
+          {
+            "node": {
+              "id": "TWVkaWFUYWc6Tm9uZQ==",
+              "label": "news",
+              "__typename": "MediaTag"
+            },
+            "__typename": "MediaTagEdge"
+          },
+          {
+            "node": {
+              "id": "TWVkaWFUYWc6Tm9uZQ==",
+              "label": "actu",
+              "__typename": "MediaTag"
+            },
+            "__typename": "MediaTagEdge"
+          },
+          {
+            "node": {
+              "id": "TWVkaWFUYWc6Tm9uZQ==",
+              "label": "actualit\u00e9",
+              "__typename": "MediaTag"
+            },
+            "__typename": "MediaTagEdge"
+          },
+          {
+            "node": {
+              "id": "TWVkaWFUYWc6Tm9uZQ==",
+              "label": "radio europe 1",
+              "__typename": "MediaTag"
+            },
+            "__typename": "MediaTagEdge"
+          },
+          {
+            "node": {
+              "id": "TWVkaWFUYWc6Tm9uZQ==",
+              "label": "radio",
+              "__typename": "MediaTag"
+            },
+            "__typename": "MediaTagEdge"
+          }
+        ],
+        "__typename": "MediaTagConnection"
+      },
+      "moderation": {
+        "id": "TWVkaWFNb2RlcmF0aW9uOng4anhxYzk=",
+        "reviewedAt": "2023-04-10T06:23:04+00:00",
+        "__typename": "MediaModeration"
+      },
+      "topics": {
+        "edges": [
+          {
+            "node": {
+              "id": "VG9waWM6eDI5dQ==",
+              "xid": "x29u",
+              "name": "Palace of Versailles",
+              "names": {
+                "edges": [
+                  {
+                    "node": {
+                      "id": "VG9waWNMYWJlbDpOb25l",
+                      "name": "\u0642\u0635\u0631 \u0641\u0631\u0633\u0627\u064a",
+                      "language": {
+                        "id": "TGFuZ3VhZ2U6YXJh",
+                        "codeAlpha2": "ar",
+                        "__typename": "Language"
+                      },
+                      "__typename": "TopicLabel"
+                    },
+                    "__typename": "TopicLabelEdge"
+                  },
+                  {
+                    "node": {
+                      "id": "VG9waWNMYWJlbDpOb25l",
+                      "name": "Schloss Versailles",
+                      "language": {
+                        "id": "TGFuZ3VhZ2U6ZGV1",
+                        "codeAlpha2": "de",
+                        "__typename": "Language"
+                      },
+                      "__typename": "TopicLabel"
+                    },
+                    "__typename": "TopicLabelEdge"
+                  },
+                  {
+                    "node": {
+                      "id": "VG9waWNMYWJlbDpOb25l",
+                      "name": "\u0391\u03bd\u03ac\u03ba\u03c4\u03bf\u03c1\u03bf \u03c4\u03c9\u03bd \u0392\u03b5\u03c1\u03c3\u03b1\u03bb\u03bb\u03b9\u03ce\u03bd",
+                      "language": {
+                        "id": "TGFuZ3VhZ2U6ZWxs",
+                        "codeAlpha2": "el",
+                        "__typename": "Language"
+                      },
+                      "__typename": "TopicLabel"
+                    },
+                    "__typename": "TopicLabelEdge"
+                  },
+                  {
+                    "node": {
+                      "id": "VG9waWNMYWJlbDpOb25l",
+                      "name": "Palace of Versailles",
+                      "language": {
+                        "id": "TGFuZ3VhZ2U6ZW5n",
+                        "codeAlpha2": "en",
+                        "__typename": "Language"
+                      },
+                      "__typename": "TopicLabel"
+                    },
+                    "__typename": "TopicLabelEdge"
+                  },
+                  {
+                    "node": {
+                      "id": "VG9waWNMYWJlbDpOb25l",
+                      "name": "Palacio de Versalles",
+                      "language": {
+                        "id": "TGFuZ3VhZ2U6c3Bh",
+                        "codeAlpha2": "es",
+                        "__typename": "Language"
+                      },
+                      "__typename": "TopicLabel"
+                    },
+                    "__typename": "TopicLabelEdge"
+                  },
+                  {
+                    "node": {
+                      "id": "VG9waWNMYWJlbDpOb25l",
+                      "name": "Ch\u00e2teau de Versailles",
+                      "language": {
+                        "id": "TGFuZ3VhZ2U6ZnJh",
+                        "codeAlpha2": "fr",
+                        "__typename": "Language"
+                      },
+                      "__typename": "TopicLabel"
+                    },
+                    "__typename": "TopicLabelEdge"
+                  },
+                  {
+                    "node": {
+                      "id": "VG9waWNMYWJlbDpOb25l",
+                      "name": "Istana Versailles",
+                      "language": {
+                        "id": "TGFuZ3VhZ2U6aW5k",
+                        "codeAlpha2": "id",
+                        "__typename": "Language"
+                      },
+                      "__typename": "TopicLabel"
+                    },
+                    "__typename": "TopicLabelEdge"
+                  },
+                  {
+                    "node": {
+                      "id": "VG9waWNMYWJlbDpOb25l",
+                      "name": "Reggia di Versailles",
+                      "language": {
+                        "id": "TGFuZ3VhZ2U6aXRh",
+                        "codeAlpha2": "it",
+                        "__typename": "Language"
+                      },
+                      "__typename": "TopicLabel"
+                    },
+                    "__typename": "TopicLabelEdge"
+                  },
+                  {
+                    "node": {
+                      "id": "VG9waWNMYWJlbDpOb25l",
+                      "name": "\u30f4\u30a7\u30eb\u30b5\u30a4\u30e6\u5bae\u6bbf",
+                      "language": {
+                        "id": "TGFuZ3VhZ2U6anBu",
+                        "codeAlpha2": "ja",
+                        "__typename": "Language"
+                      },
+                      "__typename": "TopicLabel"
+                    },
+                    "__typename": "TopicLabelEdge"
+                  },
+                  {
+                    "node": {
+                      "id": "VG9waWNMYWJlbDpOb25l",
+                      "name": "\ubca0\ub974\uc0ac\uc720\uad81",
+                      "language": {
+                        "id": "TGFuZ3VhZ2U6a29y",
+                        "codeAlpha2": "ko",
+                        "__typename": "Language"
+                      },
+                      "__typename": "TopicLabel"
+                    },
+                    "__typename": "TopicLabelEdge"
+                  },
+                  {
+                    "node": {
+                      "id": "VG9waWNMYWJlbDpOb25l",
+                      "name": "Ch\u00e2teau de Versailles",
+                      "language": {
+                        "id": "TGFuZ3VhZ2U6bXNh",
+                        "codeAlpha2": "ms",
+                        "__typename": "Language"
+                      },
+                      "__typename": "TopicLabel"
+                    },
+                    "__typename": "TopicLabelEdge"
+                  },
+                  {
+                    "node": {
+                      "id": "VG9waWNMYWJlbDpOb25l",
+                      "name": "Kasteel van Versailles",
+                      "language": {
+                        "id": "TGFuZ3VhZ2U6bmxk",
+                        "codeAlpha2": "nl",
+                        "__typename": "Language"
+                      },
+                      "__typename": "TopicLabel"
+                    },
+                    "__typename": "TopicLabelEdge"
+                  },
+                  {
+                    "node": {
+                      "id": "VG9waWNMYWJlbDpOb25l",
+                      "name": "Pa\u0142ac wersalski",
+                      "language": {
+                        "id": "TGFuZ3VhZ2U6cG9s",
+                        "codeAlpha2": "pl",
+                        "__typename": "Language"
+                      },
+                      "__typename": "TopicLabel"
+                    },
+                    "__typename": "TopicLabelEdge"
+                  },
+                  {
+                    "node": {
+                      "id": "VG9waWNMYWJlbDpOb25l",
+                      "name": "Pal\u00e1cio de Versalhes",
+                      "language": {
+                        "id": "TGFuZ3VhZ2U6cG9y",
+                        "codeAlpha2": "pt",
+                        "__typename": "Language"
+                      },
+                      "__typename": "TopicLabel"
+                    },
+                    "__typename": "TopicLabelEdge"
+                  },
+                  {
+                    "node": {
+                      "id": "VG9waWNMYWJlbDpOb25l",
+                      "name": "Palatul Versailles",
+                      "language": {
+                        "id": "TGFuZ3VhZ2U6cm9u",
+                        "codeAlpha2": "ro",
+                        "__typename": "Language"
+                      },
+                      "__typename": "TopicLabel"
+                    },
+                    "__typename": "TopicLabelEdge"
+                  },
+                  {
+                    "node": {
+                      "id": "VG9waWNMYWJlbDpOb25l",
+                      "name": "\u0412\u0435\u0440\u0441\u0430\u043b\u044c",
+                      "language": {
+                        "id": "TGFuZ3VhZ2U6cnVz",
+                        "codeAlpha2": "ru",
+                        "__typename": "Language"
+                      },
+                      "__typename": "TopicLabel"
+                    },
+                    "__typename": "TopicLabelEdge"
+                  },
+                  {
+                    "node": {
+                      "id": "VG9waWNMYWJlbDpOb25l",
+                      "name": "\u0e1e\u0e23\u0e30\u0e23\u0e32\u0e0a\u0e27\u0e31\u0e07\u0e41\u0e27\u0e23\u0e4c\u0e0b\u0e32\u0e22",
+                      "language": {
+                        "id": "TGFuZ3VhZ2U6dGhh",
+                        "codeAlpha2": "th",
+                        "__typename": "Language"
+                      },
+                      "__typename": "TopicLabel"
+                    },
+                    "__typename": "TopicLabelEdge"
+                  },
+                  {
+                    "node": {
+                      "id": "VG9waWNMYWJlbDpOb25l",
+                      "name": "Versay Saray\u0131",
+                      "language": {
+                        "id": "TGFuZ3VhZ2U6dHVy",
+                        "codeAlpha2": "tr",
+                        "__typename": "Language"
+                      },
+                      "__typename": "TopicLabel"
+                    },
+                    "__typename": "TopicLabelEdge"
+                  },
+                  {
+                    "node": {
+                      "id": "VG9waWNMYWJlbDpOb25l",
+                      "name": "Cung \u0111i\u1ec7n Versailles",
+                      "language": {
+                        "id": "TGFuZ3VhZ2U6dmll",
+                        "codeAlpha2": "vi",
+                        "__typename": "Language"
+                      },
+                      "__typename": "TopicLabel"
+                    },
+                    "__typename": "TopicLabelEdge"
+                  },
+                  {
+                    "node": {
+                      "id": "VG9waWNMYWJlbDpOb25l",
+                      "name": "\u51e1\u5c14\u8d5b\u5bab",
+                      "language": {
+                        "id": "TGFuZ3VhZ2U6emhv",
+                        "codeAlpha2": "zh",
+                        "__typename": "Language"
+                      },
+                      "__typename": "TopicLabel"
+                    },
+                    "__typename": "TopicLabelEdge"
+                  }
+                ],
+                "__typename": "TopicLabelConnection"
+              },
+              "__typename": "Topic"
+            },
+            "__typename": "TopicEdge"
+          }
+        ],
+        "__typename": "TopicConnection"
+      },
+      "geoblockedCountries": {
+        "id": "R2VvYmxvY2tlZENvdW50cmllczp4OGp4cWM5",
+        "allowed": [
+          "MF",
+          "TC",
+          "DO",
+          "NR",
+          "NF",
+          "WF",
+          "LY",
+          "AQ",
+          "GG",
+          "NL",
+          "NU",
+          "TV",
+          "PH",
+          "AD",
+          "TN",
+          "UA",
+          "PG",
+          "MC",
+          "MM",
+          "BM",
+          "BB",
+          "KW",
+          "SZ",
+          "FO",
+          "HR",
+          "KZ",
+          "YT",
+          "MU",
+          "MO",
+          "LK",
+          "SY",
+          "AT",
+          "BQ",
+          "MX",
+          "GH",
+          "IR",
+          "MY",
+          "VU",
+          "GN",
+          "TT",
+          "LC",
+          "TG",
+          "ZA",
+          "ML",
+          "IE",
+          "MG",
+          "SG",
+          "AU",
+          "ET",
+          "GT",
+          "GW",
+          "CV",
+          "MZ",
+          "ER",
+          "KY",
+          "UZ",
+          "CF",
+          "BG",
+          "MN",
+          "CW",
+          "MA",
+          "CD",
+          "SL",
+          "VN",
+          "AG",
+          "TF",
+          "KI",
+          "LT",
+          "CZ",
+          "NI",
+          "IT",
+          "KG",
+          "EG",
+          "HU",
+          "DZ",
+          "VC",
+          "SE",
+          "BW",
+          "TM",
+          "SS",
+          "VE",
+          "BF",
+          "HK",
+          "NC",
+          "KP",
+          "NP",
+          "VG",
+          "PA",
+          "ZW",
+          "GY",
+          "PM",
+          "AE",
+          "TK",
+          "KE",
+          "LS",
+          "MR",
+          "TR",
+          "JE",
+          "SV",
+          "AZ",
+          "MP",
+          "AW",
+          "BR",
+          "BD",
+          "BA",
+          "DK",
+          "SJ",
+          "VI",
+          "SD",
+          "AS",
+          "PL",
+          "AX",
+          "GR",
+          "CC",
+          "VA",
+          "CU",
+          "AO",
+          "BO",
+          "AR",
+          "LI",
+          "GP",
+          "BL",
+          "FJ",
+          "BV",
+          "FI",
+          "GF",
+          "ID",
+          "BY",
+          "DM",
+          "CO",
+          "IM",
+          "FM",
+          "GQ",
+          "LB",
+          "PF",
+          "WS",
+          "FR",
+          "TZ",
+          "MT",
+          "US",
+          "AL",
+          "GS",
+          "ME",
+          "GB",
+          "GD",
+          "BZ",
+          "BJ",
+          "KM",
+          "LU",
+          "TL",
+          "IN",
+          "UM",
+          "GI",
+          "GU",
+          "TJ",
+          "LR",
+          "SO",
+          "CN",
+          "CM",
+          "HM",
+          "SA",
+          "ES",
+          "GM",
+          "SR",
+          "DE",
+          "NZ",
+          "FK",
+          "CH",
+          "MK",
+          "CR",
+          "HN",
+          "AM",
+          "UG",
+          "QA",
+          "GE",
+          "MH",
+          "IO",
+          "ZM",
+          "RO",
+          "JO",
+          "TO",
+          "MQ",
+          "NA",
+          "SB",
+          "TH",
+          "JM",
+          "SK",
+          "PK",
+          "NO",
+          "PS",
+          "PY",
+          "CG",
+          "PN",
+          "MV",
+          "JP",
+          "TD",
+          "MD",
+          "IQ",
+          "CK",
+          "EE",
+          "IL",
+          "IS",
+          "SC",
+          "CY",
+          "CI",
+          "KR",
+          "OM",
+          "ST",
+          "BH",
+          "BT",
+          "MW",
+          "CL",
+          "UY",
+          "LA",
+          "BE",
+          "RU",
+          "DJ",
+          "EC",
+          "GL",
+          "BN",
+          "PE",
+          "LV",
+          "KN",
+          "PW",
+          "SM",
+          "RS",
+          "BI",
+          "EH",
+          "NE",
+          "TW",
+          "YE",
+          "SX",
+          "GA",
+          "RW",
+          "RE",
+          "CA",
+          "HT",
+          "KH",
+          "SN",
+          "AF",
+          "MS",
+          "SH",
+          "CX",
+          "PT",
+          "BS",
+          "PR",
+          "SI",
+          "AI",
+          "NG"
+        ],
+        "denied": [],
+        "__typename": "GeoblockedCountries"
+      },
+      "transcript": {
+        "edges": [
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMQ==",
+              "timecode": "00:00:00,000",
+              "text": " mais on d\u00e9couvre que c'est aussi un danger pour nos monuments historiques.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMg==",
+              "timecode": "00:00:03,200",
+              "text": " - Oui, comme le ch\u00e2teau de Versailles, pour le pr\u00e9server des effets de la chaleur,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMw==",
+              "timecode": "00:00:06,320",
+              "text": " les conservateurs ont appliqu\u00e9 le programme EPICO,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fNA==",
+              "timecode": "00:00:09,320",
+              "text": " c'est un protocole europ\u00e9en pour la pr\u00e9vention et la conservation.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fNQ==",
+              "timecode": "00:00:13,120",
+              "text": " D'ici 2025, il \u00e9tablira une charte avec des solutions concr\u00e8tes",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fNg==",
+              "timecode": "00:00:17,400",
+              "text": " pour prot\u00e9ger tous les ch\u00e2teaux-mus\u00e9es.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fNw==",
+              "timecode": "00:00:19,200",
+              "text": " Reportage dans la demeure du roi soleil, Clotilde Dumais.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fOA==",
+              "timecode": "00:00:22,000",
+              "text": " - Dans les appartements int\u00e9rieurs de la reine,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fOQ==",
+              "timecode": "00:00:24,200",
+              "text": " Danilo Forleo se met au soleil pr\u00e8s des fen\u00eatres.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMTA=",
+              "timecode": "00:00:27,000",
+              "text": " - L'id\u00e9e, c'\u00e9tait de placer des films UV infrarouges,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMTE=",
+              "timecode": "00:00:29,720",
+              "text": " pas perceptibles \u00e0 l'oeil nu.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMTI=",
+              "timecode": "00:00:31,200",
+              "text": " Et en plus de \u00e7a, on va superposer un voilage,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMTM=",
+              "timecode": "00:00:33,600",
+              "text": " des rideaux, des sous-rideaux,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMTQ=",
+              "timecode": "00:00:35,280",
+              "text": " doubl\u00e9s et contre-doubl\u00e9s avec un tissu technique.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMTU=",
+              "timecode": "00:00:37,800",
+              "text": " - Objectif, limiter la chaleur et la lumi\u00e8re,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMTY=",
+              "timecode": "00:00:40,080",
+              "text": " qui risque de plus en plus, avec le r\u00e9chauffement climatique,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMTc=",
+              "timecode": "00:00:42,800",
+              "text": " d'alt\u00e9rer les d\u00e9cors du ch\u00e2teau, d'apr\u00e8s le responsable du programme EPICO.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMTg=",
+              "timecode": "00:00:46,520",
+              "text": " - Nous constatons une augmentation des moisissures d'un sec nuisible,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMTk=",
+              "timecode": "00:00:49,720",
+              "text": " parce qu'\u00e9videmment, il se d\u00e9veloppe davantage",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMjA=",
+              "timecode": "00:00:51,400",
+              "text": " dans des conditions d'une temp\u00e9rature plus \u00e9lev\u00e9e.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMjE=",
+              "timecode": "00:00:53,320",
+              "text": " Ensuite, les probl\u00e8mes de s\u00e9cheresse entra\u00eenent",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMjI=",
+              "timecode": "00:00:55,600",
+              "text": " des probl\u00e8mes de fissures sur les d\u00e9cors.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMjM=",
+              "timecode": "00:00:57,640",
+              "text": " - Dans toutes les pi\u00e8ces, des capteurs rel\u00e8vent la temp\u00e9rature,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMjQ=",
+              "timecode": "00:01:00,240",
+              "text": " l'humidit\u00e9, le taux de lumi\u00e8re et de poussi\u00e8re.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMjU=",
+              "timecode": "00:01:02,840",
+              "text": " Et de nouvelles technologies vont permettre d'aller encore plus loin.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMjY=",
+              "timecode": "00:01:06,360",
+              "text": " - L'imagerie hyperspectrale nous permettra,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMjc=",
+              "timecode": "00:01:08,200",
+              "text": " avec une cartographie 3D des pi\u00e8ces,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMjg=",
+              "timecode": "00:01:10,200",
+              "text": " de mesurer en temps r\u00e9el les modifications des surfaces,",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMjk=",
+              "timecode": "00:01:13,800",
+              "text": " des mat\u00e9riaux, en fonction de la situation climatique.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMzA=",
+              "timecode": "00:01:16,400",
+              "text": " - Le but est de pr\u00e9server l'esp\u00e9rance de vie du mobilier",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMzE=",
+              "timecode": "00:01:19,280",
+              "text": " en tenant compte aussi des imp\u00e9ratifs de sobri\u00e9t\u00e9 \u00e9nerg\u00e9tique.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          },
+          {
+            "node": {
+              "id": "Q2FwdGlvbjp4OGp4cWM5LmZyLWF1dG9fMzI=",
+              "timecode": "00:01:23,200",
+              "text": " - Clotilde Dumais sur la table.",
+              "__typename": "Caption"
+            },
+            "__typename": "CaptionEdge"
+          }
+        ],
+        "__typename": "CaptionConnection"
+      }
+    }
+  }
+}
