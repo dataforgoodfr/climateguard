@@ -4,7 +4,7 @@
 #     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
 
 .env
-data/*
+data/.ipynb_checkpoints/
 
 
 # Node artifact files
@@ -53,7 +53,7 @@ Thumbs.db
 *.wmv
 
 *.pyc
-notebooks/.ipynb_checkpoints
+notebooks/**/.ipynb_checkpoints/
 .env
 .env
 .venv
