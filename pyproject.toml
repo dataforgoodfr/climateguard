@@ -2,9 +2,7 @@
 name = "climate_guard"
 version = "0.1.0"
 description = "A web scraper for Latvian news articles"
-authors = [
-    {name = "Your Name", email = "your.email@example.com"},
-]
+authors = [{ name = "Your Name", email = "your.email@example.com" }]
 dependencies = [
     "requests>=2.26.0",
     "beautifulsoup4>=4.10.0",
@@ -16,12 +14,16 @@ dependencies = [
     "newspaper3k>=0.2.8",
     "lxml[html-clean]>=5.3.0",
     "gdeltdoc>=1.5.0",
-    "newspaper3k>=0.2.8",
     "lxml-html-clean>=0.2.2",
     "jupyter>=1.1.1",
-    "plotly>=5.24.1",
+    "plotly>=5.24.1",          # Plotting
+    "kaleido>=0.2.1",          # Render plotly charts as static figures
 ]
 requires-python = ">=3.12"
+
+# https://github.com/astral-sh/uv/issues/7703#issuecomment-2376674577
+[tool.uv]
+constraint-dependencies = ["kaleido!=0.2.1.post1"]
 
 [build-system]
 requires = ["hatchling"]
