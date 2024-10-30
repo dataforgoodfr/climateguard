@@ -16,8 +16,12 @@ dependencies = [
     "gdeltdoc>=1.5.0",
     "lxml-html-clean>=0.2.2",
     "jupyter>=1.1.1",
-    "plotly>=5.24.1",          # Plotting
-    "kaleido>=0.2.1",          # Render plotly charts as static figures
+    # Plotting
+    "plotly>=5.24.1",
+    # Render plotly charts as static figures
+    "kaleido>=0.2.1",
+    "pyarrow>=18.0.0",
+    "tiktoken>=0.8.0",
 ]
 requires-python = ">=3.12"
 
