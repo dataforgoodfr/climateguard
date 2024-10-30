@@ -60,3 +60,6 @@ notebooks/**/.ipynb_checkpoints/
 
 # Keep test files
 !data/test_claims_detection/
+
+# Large dataset files
+data/raw/
