@@ -21,6 +21,7 @@ dependencies = [
     # Render plotly charts as static figures
     "kaleido>=0.2.1",
     "pyarrow>=18.0.0",
+    "tiktoken>=0.8.0",
 ]
 requires-python = ">=3.12"
 
