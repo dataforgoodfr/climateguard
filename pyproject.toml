@@ -20,8 +20,20 @@ dependencies = [
     "plotly>=5.24.1",
     # Render plotly charts as static figures
     "kaleido>=0.2.1",
+    # Pandas parquet support
     "pyarrow>=18.0.0",
+    # OpenAI tokenizers
     "tiktoken>=0.8.0",
+    # Classification metrics
+    "scikit-learn>=1.5.2",
+    # Bedrock
+    "litellm>=1.51.2",
+    "boto3>=1.35.52",
+    # ROUGE score
+    "evaluate>=0.4.3",
+    "absl-py>=2.1.0",
+    "rouge-score>=0.1.2",
+    "deepmultilingualpunctuation>=1.0.1",
 ]
 requires-python = ">=3.12"
 
