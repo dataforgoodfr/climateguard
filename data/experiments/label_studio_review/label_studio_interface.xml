@@ -1,0 +1,29 @@
+<View>
+	<Header value="Métadonnées" />
+	<Text name="id" value="id : $id" />
+	<Text name="channel_name"
+		value="Chaîne : $channel_name" />
+	<Text name="channel_program_type"
+		value="Type de programme : $channel_program_type" />
+	<Text name="channel_program"
+		value="Programme : $channel_program" />
+	<Text name="start" value="Date : $start" />
+	<Header
+		value="Claim extraite par le LLM" />
+	<View style="font-style:italic;">
+		<Text name="claim_pred" value="$claim_pred" />
+	</View>
+	<Header
+		value="Transcription annotée" />
+	<View
+		style="display:flex;align-items:start;gap:8px;flex-direction:column-reverse">
+		<Text name="text" value="$text" granularity="word" />
+		<Labels name="label" toName="text" showInline="true">
+			<Label value="1_its_not_happening" background="#2169de" />
+			<Label value="2_its_not_us" background="#389E0D" />
+			<Label value="3_its_not_bad" background="#db5cd1" />
+			<Label value="4_solutions_wont_work" background="#484a4c" />
+			<Label value="5_science_is_unreliable" background="#e1141e" />
+		</Labels>
+	</View>
+</View>
