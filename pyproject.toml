@@ -16,8 +16,24 @@ dependencies = [
     "gdeltdoc>=1.5.0",
     "lxml-html-clean>=0.2.2",
     "jupyter>=1.1.1",
-    "plotly>=5.24.1",          # Plotting
-    "kaleido>=0.2.1",          # Render plotly charts as static figures
+    "plotly>=5.24.1",
+    "llama-index-llms-ollama>=0.3.4",
+    "llama-index>=0.11.20",
+    "transformers>=4.46.1",
+    "datasets>=3.0.2",
+    "tiktoken>=0.8.0",
+    "safetensors>=0.4.5",
+    "sentencepiece>=0.2.0",
+    "torch>=2.5.1",
+    "scikit-learn>=1.5.2",
+    "optimum>=1.20.0",
+    "huggingface-hub>=0.25.1",
+    "kaleido>=0.2.1",
+    "ctransformers",
+    "gguf>=0.10.0",
+    "llama-cpp-python>=0.2.90",
+    "llama-index-llms-llama-cpp>=0.2.3",
+    # Render plotly charts as static figures
 ]
 requires-python = ">=3.12"
 
