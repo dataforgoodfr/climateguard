@@ -3,9 +3,12 @@
 # Learn more about .gitignore:
 #     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
 
+models/
+data/
 .env
 data/.ipynb_checkpoints/
 
+__pycache__/
 
 # Node artifact files
 node_modules/
