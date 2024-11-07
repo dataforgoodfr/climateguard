@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict
 from st_aggrid import AgGrid, JsCode
 
 from live_detect import live_detect
+from datetime import datetime
 
 load_dotenv()
 
@@ -43,7 +44,7 @@ def load_detected_claims() -> pd.DataFrame:
             claim for claim in claims if "anti-écologie" in claim["pro_anti"].lower()
         ]
     )
-    print(df.columns)
+    df = df.loc[(pd.to_datetime(df.start) >= datetime.strptime("2023-09-01", "%Y-%m-%d")) & (pd.to_datetime(df.start) < datetime.strptime("2024-09-01", "%Y-%m-%d"))]
     df["max_claim_severity"] = df["claims"].apply(
         lambda claims: max(
             [
@@ -94,19 +95,15 @@ def generate_pie_chart(df, title):
     other_count = (df["max_claim_severity"] != 5).sum()
 
     # Create pie chart
-    fig = go.Figure(
-        data=[
-            go.Pie(
-                labels=["High Risk Claims", "Other Claims"],
-                values=[high_risk_count, other_count],
-                marker_colors=["#ff5e00", "#00c8ff"],
-                textinfo="percent",  # Show both percentage and label
-                textposition="inside",  # Position labels outside the pie
-                texttemplate="<b>%{percent:.1%}</b>",  # Format with 1 decimal place and bold
-                hovertemplate="<br>%{label}<br>Count: %{value}<br>Percentage: %{percent:.1%}<extra></extra>",
-            )
-        ]
-    )
+    fig = go.Figure(data=[go.Pie(
+        labels=['High Risk Claims', 'Other Claims'],
+        values=[high_risk_count, other_count],
+        marker_colors=['#e38690', '#ead98b'],
+        textinfo='percent',  # Show both percentage and label
+        textposition='inside',    # Position labels outside the pie
+        texttemplate='<b>%{percent:.1%}</b>',  # Format with 1 decimal place and bold
+        hovertemplate='<br>%{label}<br>Count: %{value}<br>Percentage: %{percent:.1%}<extra></extra>'
+    )])
 
     fig.update_layout(
         title={"text": title, "x": 0.4, "xanchor": "center"},
@@ -115,7 +112,11 @@ def generate_pie_chart(df, title):
         height=500,
         paper_bgcolor="rgba(0,0,0,0)",
         # plot_bgcolor='rgba(0,0,0,0)',
-        legend=dict(font=dict(color="white")),
+        legend=dict(
+            font=dict(
+                color='dark grey'
+            )
+        ),
     )
     return fig
 
@@ -205,70 +206,60 @@ def show_kpis(df: pd.DataFrame) -> None:
 
 
 def generate_stacked_bar_chart(df):
-    df["month"] = pd.to_datetime(df.start).dt.month
+    df["month"] = pd.to_datetime(df.start).dt.strftime('%b %Y')
     # Group by month and channel_name to get claim counts
     df_grouped = df[["month", "channel_name", "num_claims"]]
     df_grouped["high_risk_claims"] = (df_grouped.num_claims == 5).astype(int)
-    monthly_claims = (
-        df_grouped.groupby(["month", "channel_name"])["high_risk_claims"]
-        .sum()
-        .reset_index()
-    )
+    monthly_claims = df_grouped.groupby(['month', 'channel_name'])['high_risk_claims'].sum().reset_index()
+    monthly_claims = monthly_claims.sort_values(by='month', key=lambda x: pd.to_datetime(x, format='%b %Y'))
+    print(monthly_claims.month.unique())
+    
+    # Define a colormap for the channels
+    colormap = ['#9dc6d8', '#00b3ca', '#7dd0d6', '#1d4e89']
+    
+
 
     # Create stacked bar chart
     fig = go.Figure()
 
     # Add bars for each channel
-    for channel in monthly_claims["channel_name"].unique():
-        channel_data = monthly_claims[monthly_claims["channel_name"] == channel]
-        fig.add_trace(
-            go.Bar(
-                name=channel,
-                x=channel_data["month"],
-                y=channel_data["high_risk_claims"],
-                hovertemplate="Month: %{x}<br>Claims: %{y}<br>Channel: "
-                + channel
-                + "<extra></extra>",
-            )
-        )
-
+    for idx, channel in enumerate(monthly_claims['channel_name'].unique()):
+        channel_data = monthly_claims[monthly_claims['channel_name'] == channel]
+        fig.add_trace(go.Bar(
+            name=channel,
+            x=channel_data['month'],
+            y=channel_data['high_risk_claims'],
+            hovertemplate='Month: %{x}<br>Claims: %{y}<br>Channel: ' + channel + '<extra></extra>',
+            marker_color=colormap[idx]  # Default color if not specified
+        ))
+    
     # Update layout
     fig.update_layout(
-        barmode="stack",
-        title=None,
-        xaxis_title="Month",
-        yaxis_title="Number of Claims",
+        barmode='stack',
+        title="Number of Detected Claims Over Time",
+        xaxis_title='Month',
+        yaxis_title='Number of Claims',
         width=900,
         height=500,
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        legend=dict(font=dict(color="white")),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        legend=dict(
+            font=dict(color='dark grey')
+        ),
         xaxis=dict(
-            tickmode="array",
-            ticktext=[
-                "Jan",
-                "Feb",
-                "Mar",
-                "Apr",
-                "May",
-                "Jun",
-                "Jul",
-                "Aug",
-                "Sep",
-                "Oct",
-                "Nov",
-                "Dec",
-            ],
-            tickvals=list(range(1, 13)),
-            gridcolor="rgba(128,128,128,0.2)",
-            tickfont=dict(color="white"),
-            color="white",
+            tickmode='array',
+            ticktext=monthly_claims.month.unique(),
+            tickvals=list(range(1, len(monthly_claims.month.unique()) + 1)),
+            gridcolor='rgba(128,128,128,0.2)',
+            tickfont=dict(color='dark grey'),
+            color="dark grey",
         ),
         yaxis=dict(
-            gridcolor="rgba(128,128,128,0.2)",
-            tickfont=dict(color="white"),
-            color="white",
-        ),
+            gridcolor='rgba(128,128,128,0.2)',
+            tickfont=dict(color='dark grey'),
+            color="dark grey",
+            tickformat=',d'  # Format ticks as integers
+        )
     )
     fig.update_layout(
         dict(
