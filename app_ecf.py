@@ -190,7 +190,7 @@ def show_transcript_details(transcript: Transcript) -> None:
 - Channel: **{transcript.channel_name}**
 - Channel is radio: **{transcript.channel_is_radio}**
 - Program type: **{transcript.channel_program_type}**
-- Program: **{transcript.channel_program}**
+- Program: **{transcript.channel_program.strip()}**
 - Diffusion date: **{transcript.start}**
 """)
     st.chat_message("human").write(transcript.text)
@@ -203,7 +203,6 @@ def show_claims_details(claims: list[Claim]) -> None:
 
     for claim in claims:
         score = SCORES_MAPPING[claim.disinformation_score]
-
         col1, col2 = st.columns([1, 1])
         with col1:
             if score == 0:
