@@ -3,13 +3,14 @@ import streamlit as st
 from dotenv import load_dotenv
 from pydantic import BaseModel, ConfigDict
 from st_aggrid import AgGrid, JsCode
+import plotly.graph_objects as go
 
 load_dotenv()
 
 
 def set_page_config():
     # Set page configuration
-    st.set_page_config(page_title="CLIMATE DISINFORMATION", layout="wide")
+    st.set_page_config(page_title="CLIMATEGUARD: CLIMATE DISINFORMATION ANALYSIS ON TV TRANSMISSIONS", layout="wide")
     # Set font to Poppins
     st.markdown(
         """
@@ -23,20 +24,39 @@ def set_page_config():
         unsafe_allow_html=True,
     )
     # Main app
-    st.title("CLIMATE DISINFORMATION DETECTION")
+    st.title("CLIMATEGUARD: CLIMATE DISINFORMATION ANALYSIS")
 
 
 @st.cache_data
-def load_deteted_claims() -> pd.DataFrame:
+def load_detected_claims() -> pd.DataFrame:
     df = pd.read_parquet(
-        "data/raw/3_channels_predictions_09_2023_09_2024.parquet"
+        "data/raw/4_channels_predictions_09_2023_09_2024.parquet"
     )  # .sample(100)
     # Keep only anti-climate claims
     df["claims"] = df["claims"].apply(
         lambda claims: [
-            claim for claim in claims if claim["pro_anti"] == "anti-écologie"
+            claim for claim in claims if "anti-écologie" in claim["pro_anti"].lower()
         ]
     )
+    print(df.columns)
+    df["max_claim_severity"] = df["claims"].apply(
+        lambda claims: max(
+            [
+                SCORES_MAPPING.get(claim["disinformation_score"], 0)
+                if "anti-écologie" in claim["pro_anti"].lower()
+                and isinstance(SCORES_MAPPING, dict)
+                else 0
+                for claim in claims
+            ]
+        )
+        if len(claims)
+        else 0
+    )
+
+    # Only show transcripts for which we detected at least one claim
+    df["num_claims"] = df["claims"].str.len()
+
+    
     return df
 
 
@@ -64,10 +84,192 @@ class Transcript(BaseModel):
     claims: list[Claim]
 
 
-def show_kpis(df: pd.DataFrame) -> None:
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Number of transcripts analyzed", len(df))
+def generate_pie_chart(df, title):
 
+    # Calculate the counts
+    high_risk_count = (df["max_claim_severity"] == 5).sum()
+    other_count = (df["max_claim_severity"] != 5).sum()
+
+    # Create pie chart
+    fig = go.Figure(data=[go.Pie(
+        labels=['High Risk Claims', 'Other Claims'],
+        values=[high_risk_count, other_count],
+        marker_colors=['#ff5e00', '#00c8ff'],
+        textinfo='percent',  # Show both percentage and label
+        textposition='inside',    # Position labels outside the pie
+        texttemplate='<b>%{percent:.1%}</b>',  # Format with 1 decimal place and bold
+        hovertemplate='<br>%{label}<br>Count: %{value}<br>Percentage: %{percent:.1%}<extra></extra>'
+    )])
+
+    fig.update_layout(
+        title={
+            'text' : title,
+            'x':0.4,
+            'xanchor': 'center'
+        },
+        showlegend=True,
+        width=700,
+        height=500,
+        paper_bgcolor='rgba(0,0,0,0)',
+        # plot_bgcolor='rgba(0,0,0,0)',
+        legend=dict(
+            font=dict(
+                color='white'
+            )
+        ),
+    )
+    return fig
+
+
+def get_percentage_of_high_risk_claims(df: pd.DataFrame) -> float:
+    high_risk_count = (df["max_claim_severity"] == 5).sum()
+    other_count = (df["max_claim_severity"] != 5).sum()
+    return high_risk_count / (high_risk_count + other_count)
+
+def show_kpis(df: pd.DataFrame) -> None:
+    col1, col2, col3 = st.columns(3, gap="large")
+    
+    # Add pie chart to col1
+    with col1:
+        fig = generate_pie_chart(df, title="Percentage of extracts with <br>high disinformation risk claims")
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col2:
+        st.markdown("")
+        st.markdown("")
+        st.markdown("")
+
+        st.markdown(
+            """
+            <div style="display: flex; flex-direction: column; justify-content: center;">
+            """, 
+            unsafe_allow_html=True
+        )
+        st.markdown(
+            f"""From Date:  
+            
+            {pd.to_datetime(df.start.min()).strftime("%d/%m/%Y")}
+""",
+            )
+        st.markdown(
+            f"""To Date:  
+            
+            {pd.to_datetime(df.start.max()).strftime("%d/%m/%Y")}
+""",
+            )
+        # Calculate number of months using to_period
+        num_months = len(pd.period_range(start=pd.to_datetime(df.start.min()), end=pd.to_datetime(df.start.max()), freq='M')) + 1
+        st.markdown(
+            f"""Number of months of analyzed data:  
+            
+            {num_months}""",
+            )
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    
+    # Center metrics vertically in col4
+    with col3:
+        st.markdown("")
+        st.markdown("")
+        st.markdown("")
+        st.markdown(
+            """
+            <div style="display: flex; flex-direction: column; justify-content: center;">
+            """, 
+            unsafe_allow_html=True
+        )
+        st.markdown(    
+            f"""Number of transcripts analyzed:  
+            
+            {len(df)}
+""",
+        )
+        st.markdown(
+            f"""Percentage of transcripts with high disinformation risk claims:  
+            
+            {get_percentage_of_high_risk_claims(df):.2%}
+""",
+            )
+        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+
+def generate_stacked_bar_chart(df):
+    df["month"] = pd.to_datetime(df.start).dt.month
+    # Group by month and channel_name to get claim counts
+    df_grouped = df[['month', 'channel_name', 'num_claims']]
+    df_grouped["high_risk_claims"] = (df_grouped.num_claims == 5).astype(int)
+    monthly_claims = df_grouped.groupby(['month', 'channel_name'])['high_risk_claims'].sum().reset_index()
+    
+    # Create stacked bar chart
+    fig = go.Figure()
+    
+    # Add bars for each channel
+    for channel in monthly_claims['channel_name'].unique():
+        channel_data = monthly_claims[monthly_claims['channel_name'] == channel]
+        fig.add_trace(go.Bar(
+            name=channel,
+            x=channel_data['month'],
+            y=channel_data['high_risk_claims'],
+            hovertemplate='Month: %{x}<br>Claims: %{y}<br>Channel: ' + channel + '<extra></extra>'
+        ))
+    
+    # Update layout
+    fig.update_layout(
+        barmode='stack',
+        title=None,
+        xaxis_title='Month',
+        yaxis_title='Number of Claims',
+        width=900,
+        height=500,
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        legend=dict(
+            font=dict(color='white')
+        ),
+        xaxis=dict(
+            tickmode='array',
+            ticktext=['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            tickvals=list(range(1, 13)),
+            gridcolor='rgba(128,128,128,0.2)',
+            tickfont=dict(color='white'),
+            color="white",
+        ),
+        yaxis=dict(
+            gridcolor='rgba(128,128,128,0.2)',
+            tickfont=dict(color='white'),
+            color="white",
+        )
+    )
+    fig.update_layout(
+        dict(
+            updatemenus=[
+                dict(
+                    type="buttons",
+                    direction="left",
+                    buttons=list(
+                        [
+                            dict(
+                                args=["visible", "legendonly"],
+                                label="Deselect All",
+                                method="restyle",
+                            ),
+                            dict(args=["visible", True], label="Select All", method="restyle"),
+                        ]
+                    ),
+                    pad={"r": 10, "t": 10},
+                    showactive=False,
+                    x=1,
+                    xanchor="right",
+                    y=1.1,
+                    yanchor="top",
+                ),
+            ]
+        )
+    )
+
+    
+    return fig
 
 def show_transcripts_and_select_one(df: pd.DataFrame) -> Transcript:
     st.write("## Transcripts with claims")
@@ -229,7 +431,9 @@ SCORES_MAPPING = {
     "medium": 2,
     "high": 5,
 }
-df = load_deteted_claims()
+df = load_detected_claims()
 show_kpis(df)
+st.plotly_chart(generate_stacked_bar_chart(df), use_container_width=True)
+
 selected_transcript = show_transcripts_and_select_one(df)
 show_transcript_details(selected_transcript)
