@@ -1,6 +1,11 @@
 import streamlit as st
 import pandas as pd
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+os.getenv('OPENAI_API_KEY')
 
 # Set page configuration
 st.set_page_config(page_title="CLIMATE DISINFORMATION", layout="wide")
@@ -23,7 +28,7 @@ st.title("CLIMATE DISINFORMATION DETECTION")
 
 
 from openai import OpenAI
-client = OpenAI(api_key = OPENAI_API_KEY)
+client = OpenAI()
 
 from pydantic import BaseModel
 class Claim(BaseModel):
