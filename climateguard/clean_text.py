@@ -18,10 +18,12 @@ async def correct_text(
         text: str, tpm_limit: int = 2e6
     ):
     system_prompt = """
-        L'utilisateur va fournir un extrait de 2 minutes d'une émission de télévision ou de radio.
+        L'utilisateur va fournir un extrait de 2 minutes d'une émission de télévision ou de radio et une citation extraite du texte.
         Le transcript ne contiendra pas de ponctuation et peut être de qualité médiocre (vocabulaire incorrect, mauvais découpage du texte). 
-        La transcription est phonétique. Lorsque la phrase n'a pas de sens, reformule en prenant compte de la phonétique pour que le texte final soit en français correct.  
-        
+        La transcription est phonétique. Lorsque la phrase n'a pas de sens, reformule en tenant compte de la phonétique pour que le texte final soit en français correct.  
+        Cependant, tu ne dois pas reformuler la quote et la laisser identique, même si elle comporte des erreurs. 
+        Si tu trouves des nombres écrits en chaîne de caractères, tu dois les renvoyer sous forme de chiffres (exemple : quatre-vingt devient 80).
+
         Exemple :
         Transcription : 'elles doivent donc être renouvelés et sané col débuts en europe'
         Correction : 'Elles doivent donc être renouvelées, et ce n'est que le début en Europe.'
