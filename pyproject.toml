@@ -38,6 +38,12 @@ dependencies = [
     "seaborn>=0.13.2",
     "streamlit>=1.40.0",
     "streamlit-aggrid>=1.0.5",
+    # Developer tool
+    "ruff>=0.7.2",
+    # Create Excel file
+    "openpyxl>=3.1.5",
+    # Quote approximate matching
+    "fuzzysearch>=0.7.3",
 ]
 requires-python = ">=3.12"
 
