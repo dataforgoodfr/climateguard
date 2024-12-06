@@ -5,7 +5,7 @@
 
 .env
 data/.ipynb_checkpoints/
-
+data/processed/
 
 # Node artifact files
 node_modules/
