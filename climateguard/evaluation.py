@@ -50,6 +50,8 @@ def plot_confusion_matrix(
     y_pred: Iterable[str],
     labels: list[str],
     target_name: list[str],
+    width: int,
+    height: int,
 ) -> None:
     # Confusion matrix array
 
@@ -76,13 +78,13 @@ def plot_confusion_matrix(
         layout=go.Layout(
             title="Confusion Matrix",
             title_xref="paper",
-            title_x=0.5,
+            title_x=0.7,
             title_y=0.97,
             xaxis_title="Predicted class",
             yaxis_title="True class",
-            margin=dict(r=25, t=40, b=25),
-            width=600,
-            height=500,
+            margin=dict(r=27, t=40, b=27),
+            width=width,
+            height=height,
             yaxis_autorange="reversed",
             xaxis_tickangle=-30,
         ),
@@ -91,21 +93,25 @@ def plot_confusion_matrix(
 
 def plot_binary_confusion_matrix(y_true: Iterable[str], y_pred: Iterable[str]) -> None:
     labels = [False, True]
-    target_names = ["0_accepted", "[1-5]_contrarian"]
-    plot_confusion_matrix(y_true, y_pred, labels, target_names)
+    target_names = ["0_accepted", "[1-7]_contrarian"]
+    plot_confusion_matrix(y_true, y_pred, labels, target_names, width=450, height=400)
 
 
-def plot_cards_confusion_matrix(y_true: Iterable[str], y_pred: Iterable[str]) -> None:
+def plot_cards_confusion_matrix(
+    y_true: Iterable[str],
+    y_pred: Iterable[str],
+) -> None:
     labels = [
         "0_accepted",
         "1_its_not_happening",
-        "2_its_not_us",
-        "3_its_not_bad",
-        "4_solutions_wont_work",
-        "5_science_is_unreliable",
+        "2_humans_are_not_the_cause",
+        "3_impacts_are_not_bad",
+        "4_solutions_are_ineffective_or_harmful",
+        "5_science_is_uncertain",
+        "6_advocates_are_biased",
+        "7_fossil_fuels_are_needed",
     ]
-    target_names = labels
-    plot_confusion_matrix(y_true, y_pred, labels, target_names)
+    plot_confusion_matrix(y_true, y_pred, labels, labels, width=700, height=600)
 
 
 def evaluation_report(y_true: Iterable[str], y_pred: Iterable[str]) -> None:
