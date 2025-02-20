@@ -11,4 +11,4 @@ RUN pip install -r requirements.txt
 # Copy app code
 COPY app/ .
 
-CMD ["python", "app/main.py"]
+CMD ["python", "main.py"]

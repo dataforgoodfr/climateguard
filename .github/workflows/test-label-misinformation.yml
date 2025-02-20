@@ -26,7 +26,7 @@ jobs:
       working-directory: jobs/label_misinformation
       run: pip install -r requirements.txt
 
-    - name: Bump version (patch)
+    - name: pytest
       working-directory: jobs/label_misinformation
       run: |
         pytest
