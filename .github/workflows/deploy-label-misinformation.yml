@@ -70,12 +70,6 @@ jobs:
     - name: Push label-misinformation Image
       run: docker push --all-tags ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/label-misinformation 
 
-  update_scaleway_job:
-    runs-on: ubuntu-latest
-    needs: docker_build_and_push
-    env:
-      PROJECT_VERSION: ${{ needs.build_and_bump.outputs.PROJECT_VERSION }}
-    steps:
     - name: Update Scaleway Job Definition
       uses: jawher/action-scw@v2.34.0
       env:
