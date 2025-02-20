@@ -11,4 +11,6 @@ RUN pip install -r requirements.txt
 # Copy app code
 COPY app/ .
 
+RUN mkdir -p s3
+
 CMD ["python", "main.py"]
