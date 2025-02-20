@@ -13,7 +13,7 @@ services:
       BUCKET_SECRET: /run/secrets/bucket_secret
       AWS_DEFAULT_REGION: fr-par
       MIN_MISINFORMATION_SCORE: 10 # the minimum score to have to be kept (10 out of 10)
-      DATE: 2024-06-01 # YYYY-MM-DD
+      DATE: 2025-02-01 # YYYY-MM-DD
       # SENTRY_DSN: prod_only
       CHANNEL: itele # mediatree former channel name, not title (cnews)
     secrets:
@@ -22,7 +22,7 @@ services:
        - bucket_access
        - bucket_secret
     volumes:
-      - ./:/app/
+      - ./app:/app/
 
   test:
     build: .
