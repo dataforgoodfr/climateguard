@@ -17,3 +17,6 @@ Then install the repo:
 uv venv
 uv sync
 ```
+
+# Jobs
+You can find cron jobs inside the "jobs" folder.

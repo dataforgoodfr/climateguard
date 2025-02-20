@@ -1,0 +1,68 @@
+name: Build & Deploy to Scaleway
+
+on:
+  push:
+      # Sequence of patterns matched against refs/heads
+    branches:    
+      - feat/pipeline-model
+      - main
+    paths:
+      - 'jobs/label-misinformation/**'
+      - .github/workflows/deploy-label-misinformation.yml
+  # to be able to force deploy    
+  workflow_dispatch:
+
+
+env:
+  PYTHON_VERSION: '3.12'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Bump version (patch)
+      run: |
+        bump2version patch
+        PROJECT_VERSION=$(grep '^current_version' .bumpversion.cfg | cut -d ' ' -f 3)
+        echo "PROJECT_VERSION=$PROJECT_VERSION" >> $GITHUB_ENV
+
+    - name: Commit & push version bump
+      run: |
+        git config user.name "dataforgood-github-actions"
+        git config user.email "dataforgood-github-actions@github.com"
+        git add .
+        git commit -m "[no ci]: $PROJECT_VERSION bumping version" || echo "No changes to commit"
+        git push origin main
+  
+    - name: Login to Scaleway Container Registry
+      uses: docker/login-action@v3
+      with:
+        username: nologin
+        password: ${{ secrets.SCALEWAY_API_KEY }}
+        registry: ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}
+
+    - name: Build label-minsformation image
+      run: docker build -f jobs/label-misinformation/Dockerfile jobs/label-misinformation/Dockerfile -t ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/label-minsformation:${{ env.PROJECT_VERSION }}
+    - name: Tag label-minsformation  latest image
+      run: docker tag ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/label-minsformation:${{ env.PROJECT_VERSION }} ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/label-minsformation:latest
+    - name: Push label-minsformation  Image
+      run: docker push --all-tags ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/label-minsformation 
+
+    - name: update scaleway job definition with version label-minsformation 
+      uses: jawher/action-scw@v2.34.0
+      env:
+        SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+        SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+        SCW_ORGANIZATION_ID: ${{ secrets.SCW_ORGANIZATION_ID }}
+        SCW_ZONE: ${{ secrets.SCW_ZONE }}
+      with:
+        args: jobs definition update ${{ secrets.SCALEWAY_JOB_LABEL_ID }} image-uri=${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/label-minsformation:${{ env.PROJECT_VERSION }}
