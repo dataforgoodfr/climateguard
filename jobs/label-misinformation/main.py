@@ -11,7 +11,7 @@ from logging_utils import *
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 def get_completion(prompt, model):
-    openai.api_key = get_secret_docker("OPENAI_KEY") # TODO refacto or set OPENAI_API_KEY
+    openai.api_key = get_secret_docker("OPENAI_API_KEY")
     messages = [{"role": "user", "content": prompt}]
     logging.debug(f"Send {messages}")
     response = openai.chat.completions.create(
