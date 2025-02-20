@@ -91,7 +91,7 @@ def main():
             if not check_if_object_exists_in_s3(day=date, channel=channel, s3_client=s3_client, bucket=bucket_output, root_folder=app_name):
                 df_news = read_folder_from_s3(date=date, channel=channel, bucket=bucket_input)
                 logging.info("Schema from API before formatting :\n%s", df_news.dtypes)
-                df_news= df_news[['plaintext', 'start', 'channel_title', 'channel_program', 'channel_program_type']]
+                df_news= df_news[['plaintext', 'start', 'channel_title','channel_name', 'channel_program', 'channel_program_type']]
 
                 misinformation_only_news = detect_misinformation(df_news, model_name = model_name, min_misinformation_score = min_misinformation_score)
                 number_of_disinformation = len(misinformation_only_news)
@@ -100,17 +100,18 @@ def main():
                     logging.info(f"Misinformation detected {len(misinformation_only_news)} rows")
                     logging.info(f"Examples : {misinformation_only_news.head(10)}")
 
+                    # save TSV format (CSV)
                     save_to_s3(misinformation_only_news, channel=channel,date=date, s3_client=s3_client, \
                             bucket=bucket_output, folder_inside_bucket=app_name)
 
                     # TODO save using LabelStudio's API
-                    # 
+                    # (or use CSV import from S3)
                 else:
                     logging.info(f"No misinformation detected for channel {channel} on {date}")
             else:
                 logging.info(f"Skipping as already saved before: {channel} inside bucket {bucket_output} folder {app_name}")
         except Exception as err:
-            logging.error(f"continuing loop - but met error with {channel} - day {date}: {err}")
+            logging.error(f"continuing loop - but met error with {channel} - day {date}: error : {err}")
             continue
 
     logging.info("Exiting with success")

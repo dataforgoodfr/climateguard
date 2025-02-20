@@ -6,9 +6,9 @@ WORKDIR /app
 # Copy dependency files first for caching
 COPY pyproject.toml ./
 COPY requirements.txt requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 # Copy app code
-COPY . .
+COPY app/ .
 
-CMD ["python", "main.py"]
+CMD ["python", "app/main.py"]

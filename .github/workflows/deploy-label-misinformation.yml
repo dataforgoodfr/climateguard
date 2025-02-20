@@ -6,7 +6,7 @@ on:
       - feat/pipeline-model
       - main
     paths:
-      - 'jobs/label-misinformation/**'
+      - 'jobs/label_misinformation/**'
       - .github/workflows/deploy-label-misinformation.yml
   workflow_dispatch:
 
@@ -26,11 +26,11 @@ jobs:
         python-version: ${{ env.PYTHON_VERSION }}
 
     - name: Install dependencies
-      working-directory: jobs/label-misinformation
+      working-directory: jobs/label_misinformation
       run: pip install -r requirements.txt
 
     - name: Bump version (patch)
-      working-directory: jobs/label-misinformation
+      working-directory: jobs/label_misinformation
       run: |
         git config user.name "dataforgood-github-actions"
         git config user.email "dataforgood-github-actions@github.com"
@@ -39,7 +39,7 @@ jobs:
 
     - name: Extract new version
       id: get_version
-      working-directory: jobs/label-misinformation
+      working-directory: jobs/label_misinformation
       run: |
         PROJECT_VERSION=$(grep '^current_version' .bumpversion.cfg | cut -d ' ' -f 3)
         echo "PROJECT_VERSION=$PROJECT_VERSION" >> $GITHUB_ENV
@@ -61,7 +61,7 @@ jobs:
         registry: ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}
 
     - name: Build label-misinformation image
-      working-directory: jobs/label-misinformation
+      working-directory: jobs/label_misinformation
       run: docker build -f Dockerfile . -t ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/label-misinformation:${{ env.PROJECT_VERSION }}
 
     - name: Tag label-misinformation latest image

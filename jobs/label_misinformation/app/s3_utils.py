@@ -78,6 +78,11 @@ def check_if_object_exists_in_s3(day, channel, s3_client, bucket: str, root_fold
         logging.error(f"Error while checking folder in S3: {folder_prefix}\n{e}")
         return False
 
+def upload_file_to_s3(local_file, bucket_name, base_s3_path, s3_client):
+    s3_key = f"{base_s3_path}misinformation.tsv"
+    logging.info(f"Reading {local_file} to upload it to {s3_key}")
+    s3_client.upload_file(local_file, bucket_name, s3_key)
+
 def upload_folder_to_s3(local_folder, bucket_name, base_s3_path, s3_client):
     logging.info(f"Reading local folder {local_folder} and uploading to S3")
     for root, _, files in os.walk(local_folder):
@@ -95,6 +100,33 @@ def upload_folder_to_s3(local_folder, bucket_name, base_s3_path, s3_client):
             shutil.rmtree(local_folder)
             logging.info(f"Deleted local folder: {local_folder}")
 
+def save_csv(df: pd.DataFrame, channel: str, date: pd.Timestamp, s3_path, folder_inside_bucket = None):
+    csv_based_path = "s3"
+    local_csv = "s3/misinformation.tsv"
+    if folder_inside_bucket is not None:
+        local_csv = f"{csv_based_path}/{folder_inside_bucket}.tsv"
+    
+    df.to_csv(local_csv, sep ='\t') # tab separated
+
+    #  local_csv_folder = f"{csv_based_path}/{s3_path}"
+    logging.info(f"CSV saved locally {local_csv}")
+    return local_csv
+
+
+def save_parquet(df: pd.DataFrame, channel: str, date: pd.Timestamp, s3_path, folder_inside_bucket = None):
+    based_path = "s3/parquet"
+    local_parquet = based_path
+    if folder_inside_bucket is not None:
+        local_parquet = f"{based_path}/{folder_inside_bucket}"
+    
+    df.to_parquet(local_parquet,
+                    compression='gzip'
+                    ,partition_cols=['year', 'month', 'day', 'channel'])
+    
+    #saving full_path folder parquet to s3
+    local_folder: str = f"{based_path}/{s3_path}"
+    logging.info(f"Parquet saved locally {local_folder}")
+    return local_folder
 
 def save_to_s3(df: pd.DataFrame, channel: str, date: pd.Timestamp, s3_client, bucket: str, folder_inside_bucket = None):
     logging.info(f"Saving DF with {len(df)} elements to S3 for {date} and channel {channel}")
@@ -111,20 +143,13 @@ def save_to_s3(df: pd.DataFrame, channel: str, date: pd.Timestamp, s3_client, bu
         df['channel'] = channel # channel_name from mediatree's api
 
         df = df._to_pandas() # collect data accross ray workers to avoid multiple subfolders
-
-        based_path = "s3/parquet"
-        local_parquet = based_path
-        if folder_inside_bucket is not None:
-            local_parquet = f"{based_path}/{folder_inside_bucket}"
-        df.to_parquet(local_parquet,
-                       compression='gzip'
-                       ,partition_cols=['year', 'month', 'day', 'channel'])
-
-        #saving full_path folder parquet to s3
-        s3_path = f"{get_bucket_key_folder(date, channel, root_folder=folder_inside_bucket)}"
-        local_folder = f"{based_path}/{s3_path}"
-        upload_folder_to_s3(local_folder, bucket, s3_path, s3_client=s3_client)
+        s3_path: str = f"{get_bucket_key_folder(date, channel, root_folder=folder_inside_bucket)}"
+        
+        #  local_folder_parquet = save_parquet(df, channel, date, s3_path, folder_inside_bucket)
+        local_csv_file = save_csv(df, channel, date, s3_path, folder_inside_bucket)
+        # upload_folder_to_s3(local_folder_parquet, bucket, s3_path, s3_client=s3_client)
+        upload_file_to_s3(local_csv_file, bucket, s3_path, s3_client=s3_client)
         
     except Exception as err:
-        logging.fatal("get_and_save_api_data (%s) %s" % (type(err).__name__, err))
+        logging.fatal("save_to_s3 (%s) %s" % (type(err).__name__, err))
         raise Exception

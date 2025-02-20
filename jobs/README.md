@@ -18,10 +18,18 @@ pip freeze > requirements.txt
 ## Run
 Install [Docker](https://www.docker.com/get-started/) in a few minutes on the official website then :
 ```
-docker compose up
+docker compose up app
 ```
 
 Not working ? You have to set up your secrets (password, key etc.) inside your secrets folder
+
+## Test
+Tests are located inside tests folder
+```
+docker compose up test -d
+docker compose exec test bash
+> pytest
+```
 
 ## Configuration
 * env variable "MODEL_NAME" - the model used inside openai

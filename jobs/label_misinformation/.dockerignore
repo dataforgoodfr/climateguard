@@ -1,0 +1,24 @@
+# Ignore virtual environments
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+
+# Ignore local config & dependency files
+.DS_Store
+.vscode/
+*.log
+*.parquet
+
+# Ignore Git-related files
+.git/
+.gitignore
+
+# Ignore Docker-related files
+.dockerignore
+Dockerfile
+docker-compose.yml
