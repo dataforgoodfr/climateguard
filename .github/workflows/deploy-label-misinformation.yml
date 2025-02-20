@@ -36,7 +36,7 @@ jobs:
         git config user.name "dataforgood-github-actions"
         git config user.email "dataforgood-github-actions@github.com"
         bump2version patch
-        git push origin main
+        git push origin feat/pipeline-model
         PROJECT_VERSION=$(grep '^current_version' .bumpversion.cfg | cut -d ' ' -f 3)
         echo "PROJECT_VERSION=$PROJECT_VERSION" >> $GITHUB_ENV
   
