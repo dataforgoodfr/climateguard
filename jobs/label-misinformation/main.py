@@ -43,11 +43,18 @@ def generalfillfile(row, model, column_plaintext) -> int:
         logging.error(f"Error : {e}")
         raise Exception
 
-def get_channels() -> list[str]:
-    # #  "france2", "fr3-idf", "m6", "arte", "d8", "bfmtv", "lci", "franceinfotv", "itele",
-    #   "europe1", "france-culture", "france-inter", "sud-radio", "rmc", "rtl", "france24", "france-info", "rfi"
-    return ["itele"]
-   
+def get_channels():
+    if(os.environ.get("ENV") == "docker" or os.environ.get("CHANNEL") is not None):
+        default_channel = os.environ.get("CHANNEL") or "france2"
+        logging.warning(f"Only one channel of env var CHANNEL {default_channel} (default to france2) is used")
+
+        channels = [default_channel]
+    else: #prod  - all channels
+        logging.warning("All channels are used")
+        return ["tf1", "france2", "fr3-idf", "m6", "arte", "d8", "bfmtv", "lci", "franceinfotv", "itele",
+        "europe1", "france-culture", "france-inter", "sud-radio", "rmc", "rtl", "france24", "france-info", "rfi"]
+
+    return channels
 
 def detect_misinformation(df_news, model_name, min_misinformation_score = 10) -> pd.DataFrame:
     df_news["model_name"] = model_name
