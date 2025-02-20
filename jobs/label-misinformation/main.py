@@ -74,12 +74,12 @@ def main():
     sentry_init()
     model_name = get_secret_docker("MODEL_NAME")
     app_name = os.getenv("APP_NAME", "")
-    openai_api_key = get_secret_docker("OPENAI_KEY")
     date: datetime = set_date(os.getenv("DATE", ""))
     bucket_input = os.getenv("BUCKET_INPUT", "")
     bucket_output = os.getenv("BUCKET_OUTPUT", "")
     min_misinformation_score = int(os.getenv("MIN_MISINFORMATION_SCORE", 10))
     logging.info(f"Starting app {app_name} with model {model_name} for date {date} with bucketinput {bucket_input} and bucket output {bucket_output}, min_misinformation_score to keep is {min_misinformation_score} out of 10...")
+    openai_api_key = get_secret_docker("OPENAI_API_KEY")
     openai.api_key = openai_api_key
 
     channels = get_channels()
@@ -108,7 +108,7 @@ def main():
                 else:
                     logging.info(f"No misinformation detected for channel {channel} on {date}")
             else:
-                logging.info(f"Already saved before: {channel} inside bucket {bucket_output} folder {app_name}")
+                logging.info(f"Skipping as already saved before: {channel} inside bucket {bucket_output} folder {app_name}")
         except Exception as err:
             logging.error(f"continuing loop - but met error with {channel} - day {date}: {err}")
             continue
