@@ -27,9 +27,11 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Install dependencies
+      working-directory: jobs/label-misinformation
       run: pip install -r requirements.txt
 
     - name: Bump version (patch)
+      working-directory: jobs/label-misinformation
       run: |
         bump2version patch
         PROJECT_VERSION=$(grep '^current_version' .bumpversion.cfg | cut -d ' ' -f 3)
@@ -51,7 +53,8 @@ jobs:
         registry: ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}
 
     - name: Build label-minsformation image
-      run: docker build -f jobs/label-misinformation/Dockerfile jobs/label-misinformation/Dockerfile -t ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/label-minsformation:${{ env.PROJECT_VERSION }}
+      working-directory: jobs/label-misinformation
+      run: docker build -f Dockerfile . -t ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/label-minsformation:${{ env.PROJECT_VERSION }}
     - name: Tag label-minsformation  latest image
       run: docker tag ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/label-minsformation:${{ env.PROJECT_VERSION }} ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/label-minsformation:latest
     - name: Push label-minsformation  Image
