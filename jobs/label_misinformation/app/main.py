@@ -1,6 +1,7 @@
 import openai
 import logging
 import os
+import ray
 import sys
 from date_utils import *
 from s3_utils import *
@@ -70,6 +71,7 @@ def detect_misinformation(df_news, model_name, min_misinformation_score = 10) ->
 @monitor(monitor_slug='label-misinformation')
 def main():
     logger = getLogger()
+    ray.init(log_to_driver=True)
     pd.set_option('display.max_columns', None) 
     sentry_init()
     model_name = get_secret_docker("MODEL_NAME")
@@ -100,12 +102,12 @@ def main():
                     logging.info(f"Misinformation detected {len(misinformation_only_news)} rows")
                     logging.info(f"Examples : {misinformation_only_news.head(10)}")
 
-                    # save TSV format (CSV)
+                    # save JSON format
                     save_to_s3(misinformation_only_news, channel=channel,date=date, s3_client=s3_client, \
                             bucket=bucket_output, folder_inside_bucket=app_name)
 
                     # TODO save using LabelStudio's API
-                    # (or use CSV import from S3)
+                    # (or use JSON import from S3)
                 else:
                     logging.info(f"No misinformation detected for channel {channel} on {date}")
             else:

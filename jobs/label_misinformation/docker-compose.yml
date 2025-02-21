@@ -2,7 +2,7 @@ services:
   app:
     build: .
     environment:
-      LOGLEVEL: DEBUG
+      LOGLEVEL: INFO
       ENV: docker
       APP_NAME: label-misinformation 
       OPENAI_API_KEY: /run/secrets/openai_key
@@ -13,9 +13,9 @@ services:
       BUCKET_SECRET: /run/secrets/bucket_secret
       AWS_DEFAULT_REGION: fr-par
       MIN_MISINFORMATION_SCORE: 10 # the minimum score to have to be kept (10 out of 10)
-      DATE: 2025-02-01 # YYYY-MM-DD
+      DATE: 2025-02-19 # YYYY-MM-DD
       # SENTRY_DSN: prod_only
-      CHANNEL: itele # mediatree former channel name, not title (cnews)
+      CHANNEL: europe1 # mediatree former channel name, not title (cnews)
     secrets:
        - model_name
        - openai_key

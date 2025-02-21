@@ -3,7 +3,7 @@ import sys
 import os
 sys.path.append(os.path.abspath('/app/app'))
 import modin.pandas as pd
-from app.s3_utils import save_to_s3, save_csv, save_parquet, get_s3_client, get_bucket_key_folder
+from app.s3_utils import save_to_s3, save_csv, save_parquet, get_s3_client, get_bucket_key_folder, save_json
 from datetime import datetime, timedelta
 import logging
 
@@ -19,6 +19,18 @@ def test_save_csv():
     date: datetime = datetime.now()
     output = save_csv(df, channel="itele", date=date, s3_path="test")
     assert output == "s3/misinformation.tsv"
+
+def test_save_json():
+    df: pd.DataFrame = pd.read_parquet("tests/label_misinformation/data/misinformation.parquet")
+    date: datetime = datetime.now()
+    channel="itele"
+    df['year'] = date.year
+    df['month'] = date.month
+    df['day'] = date.day
+    df['channel'] = channel # channel_name from mediatree's api
+    
+    output = save_json(df, channel=channel, date=date, s3_path="test")
+    assert output == "s3/json"
 
 def test_save_parquet():
     df: pd.DataFrame = pd.read_parquet("tests/label_misinformation/data/misinformation.parquet")
