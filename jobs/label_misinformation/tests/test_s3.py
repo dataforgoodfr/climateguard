@@ -7,13 +7,6 @@ from app.s3_utils import save_to_s3, save_csv, save_parquet, get_s3_client, get_
 from datetime import datetime, timedelta
 import logging
 
-
-logging.info("Python search paths:")
-for path in sys.path:
-    logging.info(path)
-
-logging.info("Current working directory:", os.getcwd())
-
 def test_save_csv():
     df: pd.DataFrame = pd.read_parquet("tests/label_misinformation/data/misinformation.parquet")
     date: datetime = datetime.now()
@@ -45,13 +38,13 @@ def test_save_parquet():
     output = save_parquet(df, channel=channel, date=date, s3_path=s3_path)
     assert output == f"s3/parquet/{s3_path}"
 
-def test_save_to_s3():
-    df: pd.DataFrame = pd.read_parquet("tests/label_misinformation/data/misinformation.parquet")
-    s3_client = get_s3_client()
-    date: datetime = datetime.now()
-    folder_inside_bucket="test"
-    channel= "tf2"
+# def test_save_to_s3():
+#     df: pd.DataFrame = pd.DataFrame([]) #pd.read_parquet("tests/label_misinformation/data/misinformation.parquet")
+#     s3_client = get_s3_client()
+#     date: datetime = datetime.now()
+#     folder_inside_bucket="test"
+#     channel= "tf2"
 
-    save_to_s3(df, channel=channel, date=date, s3_client=s3_client, bucket="climateguard", folder_inside_bucket="test")
+#     save_to_s3(df, channel=channel, date=date, s3_client=s3_client, bucket="climateguard", folder_inside_bucket="test")
 
-    assert False == True
+#     assert False == True

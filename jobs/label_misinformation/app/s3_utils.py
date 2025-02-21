@@ -75,10 +75,14 @@ def check_if_object_exists_in_s3(day, channel, s3_client, bucket: str, root_fold
         logging.error(f"Error while checking folder in S3: {folder_prefix}\n{e}")
         return False
 
-def upload_file_to_s3(local_file, bucket_name, base_s3_path, s3_client, format = "json"):
-    s3_key = f"{base_s3_path}misinformation.{format}"
-    logging.info(f"Reading {local_file} to upload it to {s3_key}")
-    s3_client.upload_file(local_file, bucket_name, s3_key)
+def upload_file_to_s3(local_file, bucket_name, base_s3_path, s3_client, format = "json", name = "empty"):
+    try:
+        s3_key = f"{base_s3_path}{name}.{format}"
+        logging.info(f"Reading {local_file} to upload it to {s3_key}")
+        s3_client.upload_file(local_file, bucket_name, s3_key)
+    except Exception as err:
+        logging.fatal("upload_file_to_s3 (%s) %s" % (type(err).__name__, err))
+        raise Exception
 
 def upload_folder_to_s3(local_folder, bucket_name, base_s3_path, s3_client):
     logging.info(f"Reading local folder {local_folder} and uploading to S3")
@@ -120,7 +124,7 @@ def reformat_and_save(df, output_folder="output_json_files"):
         task_data = {
             "data": {
                 "item": {
-                    "plaintext": row["plaintext"],  # replace with your actual column name
+                    "plaintext": row["plaintext"],
                     "start": start_time,
                     "channel_title": row["channel_title"],
                     "channel_name": row["channel_name"],
@@ -147,7 +151,7 @@ def reformat_and_save(df, output_folder="output_json_files"):
 
     return output_folder
 
-# new line delimited json
+# one json file per json row
 def save_json(df: pd.DataFrame, channel: str, date: pd.Timestamp, s3_path, folder_inside_bucket = None):
     based_path = "s3"
     
@@ -155,8 +159,6 @@ def save_json(df: pd.DataFrame, channel: str, date: pd.Timestamp, s3_path, folde
     if folder_inside_bucket is not None:
         local_json = f"{based_path}/{folder_inside_bucket}"
     os.makedirs(os.path.dirname(local_json), exist_ok=True)
-    # formatted_df = reformat_for_labelstudio(df)
-    # formatted_df.to_json(local_json, orient="records", lines=True)
 
     local_json = reformat_and_save(df, output_folder=local_json)
     logging.info(f"JSON saved locally {local_json}")
@@ -187,21 +189,27 @@ def save_to_s3(df: pd.DataFrame, channel: str, date: pd.Timestamp, s3_client, bu
     logging.debug(f"Uploading partition: {object_key}")
 
     try:
-        # add partition columns year, month, day to dataframe
-        df['year'] = date.year
-        df['month'] = date.month
-        df['day'] = date.day
-        df['channel'] = channel # channel_name from mediatree's api
-
-        df = df._to_pandas() # collect data accross ray workers to avoid multiple subfolders
         s3_path: str = f"{get_bucket_key_folder(date, channel, root_folder=folder_inside_bucket)}"
-        
-        #  local_folder_parquet = save_parquet(df, channel, date, s3_path, folder_inside_bucket)
-        # local_csv_file = save_csv(df, channel, date, s3_path, folder_inside_bucket)
-        local_json_folder = save_json(df, channel, date, s3_path, folder_inside_bucket)
-        upload_folder_to_s3(local_json_folder, bucket, s3_path, s3_client=s3_client)
-        # upload_file_to_s3(local_json_file, bucket, s3_path, s3_client=s3_client, format="json")
-        
+        if(len(df) > 0):
+            # add partition columns year, month, day to dataframe
+            df['year'] = date.year
+            df['month'] = date.month
+            df['day'] = date.day
+            df['channel'] = channel # channel_name from mediatree's api
+
+            df = df._to_pandas() # collect data accross ray workers to avoid multiple subfolders
+            
+            # local_folder_parquet = save_parquet(df, channel, date, s3_path, folder_inside_bucket)
+            # upload_folder_to_s3(local_folder_parquet, bucket, s3_path, s3_client=s3_client)
+            
+            # local_csv_file = save_csv(df, channel, date, s3_path, folder_inside_bucket)
+            # upload_file_to_s3(local_json_file, bucket, s3_path, s3_client=s3_client, format="json")
+            local_json_folder = save_json(df, channel, date, s3_path, folder_inside_bucket)
+            upload_folder_to_s3(local_json_folder, bucket, s3_path, s3_client=s3_client)
+        else: # prove date and channel were done
+            logging.info("Save empty file to not reprocess these data")
+            empty_file = "s3/.gitkeep"
+            upload_file_to_s3(empty_file, bucket, s3_path, s3_client=s3_client, format="txt", name="empty")
     except Exception as err:
         logging.fatal("save_to_s3 (%s) %s" % (type(err).__name__, err))
         raise Exception
