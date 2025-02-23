@@ -15,4 +15,5 @@ jobs:
     - name: pytest
       working-directory: jobs/label_misinformation
       run: |
+        docker compose up test -d
         docker compose exec test pytest
