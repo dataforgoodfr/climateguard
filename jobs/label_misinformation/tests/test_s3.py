@@ -1,7 +1,8 @@
 import pytest
 import sys
 import os
-sys.path.append(os.path.abspath('/app/app'))
+
+# sys.path.append(os.path.abspath('/app'))
 import modin.pandas as pd
 from app.s3_utils import save_to_s3, save_csv, save_parquet, get_s3_client, get_bucket_key_folder, save_json
 from datetime import datetime, timedelta
