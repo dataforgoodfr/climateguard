@@ -5,11 +5,10 @@ on:
     branches:    
       - feat/pipeline-model
       - main
-    paths-ignore:
-      - 'jobs/label_misinformation/tests'
     paths:
       - 'jobs/label_misinformation/**'
-      - .github/workflows/deploy-label-misinformation.yml
+      - '.github/workflows/deploy-label-misinformation.yml'
+      - '!jobs/label_misinformation/tests'
   workflow_dispatch:
 
 env:
