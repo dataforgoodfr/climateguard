@@ -26,7 +26,6 @@ class PipelineOutput:
     # disinformation score (0: not disinformation - 10: disinformation)
     score: int
     # suggestion of other metadata that could be added
-    claims: Optional[List[str]] = None
     cards_category: Optional[str] = None
 
 
@@ -47,7 +46,7 @@ class SinglePromptPipeline(Pipeline):
         openai.api_key = api_key
         self._model = model_name
 
-        self._prompt = """
+        self._system_prompt = """
     You are an assistant helping editors to moderate TV and radio content.
     You will be provided with a transcript delimited by triple backticks.
     Bear in mind that the transcript may be missing punctuation and may be of very low quality, with incorrect vocabulary, cuts in the wrong places, or may include some phonetic transcription.
@@ -58,10 +57,10 @@ class SinglePromptPipeline(Pipeline):
 
 
     text:"""
-        self._steps = [f"Single Open AI prompt with {self._model} - prompt: {self._prompt}"]
+        self._steps = [f"Single Open AI prompt with {self._model} - prompt: {self._system_prompt}"]
 
     def process(self, input_data: PipelineInput) -> int:
-        prompt = self._prompt + f" '''{input_data.transcript}'''"
+        prompt = self._system_prompt + f" '''{input_data.transcript}'''"
         messages = [{"role": "user", "content": prompt}]
         logging.debug(f"Send {messages}")
 
