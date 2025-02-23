@@ -5,7 +5,7 @@ from typing import Literal
 from openai import AsyncOpenAI
 from openai.lib._parsing._completions import type_to_response_format_param
 
-from climateguard.models import Article, Claims, Transcript
+from climateguard.legacy.models import Article, Claims, Transcript
 
 client = AsyncOpenAI()
 
