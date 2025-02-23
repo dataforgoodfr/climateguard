@@ -16,5 +16,8 @@ jobs:
     - name: pytest
       working-directory: jobs/label_misinformation
       run: |
-        docker compose up test -d
-        docker compose exec test pytest
+        touch secrets/openai_key
+        touch secrets/model_name
+        touch secrets/bucket_access
+        touch secrets/bucket_secret
+        docker compose up test

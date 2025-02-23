@@ -26,7 +26,7 @@ services:
 
   test:
     build: .
-    entrypoint: ["sleep", "12000"] # use to debug the container if needed
+    entrypoint: ["pytest"] # ["sleep", "12000"] use to debug the container if needed
     environment:
       LOGLEVEL: DEBUG
       ENV: docker
