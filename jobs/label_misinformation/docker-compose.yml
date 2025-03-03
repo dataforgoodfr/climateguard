@@ -48,7 +48,7 @@ services:
        - bucket_access
        - bucket_secret
     volumes:
-      - ./app:/app/app/
+      - ./app:/app/
       - ./tests:/app/tests
 
 secrets: # https://docs.docker.com/compose/use-secrets/
