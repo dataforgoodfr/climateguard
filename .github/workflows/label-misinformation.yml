@@ -29,8 +29,8 @@ jobs:
 
   build_and_bump:
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/main' }}
-    needs: test
+    # if: ${{ github.ref == 'refs/heads/main' }}
+    # needs: test
     outputs:
       PROJECT_VERSION: ${{ steps.get_version.outputs.PROJECT_VERSION }}
     steps:
@@ -61,7 +61,7 @@ jobs:
 
   docker_build_and_push:
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/main' }}
+    # if: ${{ github.ref == 'refs/heads/main' }}
     needs: build_and_bump
     env:
       PROJECT_VERSION: ${{ needs.build_and_bump.outputs.PROJECT_VERSION }}

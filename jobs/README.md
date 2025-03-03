@@ -25,10 +25,16 @@ Not working ? You have to set up your secrets (password, key etc.) inside your s
 
 ## Test
 Tests are located inside tests folder
+### Run all test
 ```
-docker compose up test -d
+docker compose up test
+```
+
+### Target one test
+```
+docker compose up test -d --entrypoint "sleep 1200"
 docker compose exec test bash
-> pytest
+> pytest -vv -k s3_utils 
 ```
 
 ## Configuration
