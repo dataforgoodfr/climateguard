@@ -2,8 +2,10 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import logging
 from typing import List, Optional
-
+from s3_utils import get_secret_docker
+import os
 import openai
+import re
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -25,6 +27,8 @@ class PipelineInput:
 class PipelineOutput:
     # disinformation score (0: not disinformation - 10: disinformation)
     score: int
+    # a brief reason about the score
+    reason: str
     # suggestion of other metadata that could be added
     cards_category: Optional[str] = None
 
@@ -40,10 +44,24 @@ class Pipeline(ABC):
         """Describe pipeline steps - log / return"""
         pass
 
-
+def parse_response(response: str) -> PipelineOutput:
+    # must parse  "Score: 0, Reason: score too low"
+    match = re.match(r"Score: (\d+), Reason: (.+)", response)
+    if match:
+        score = int(match.group(1))  # Extract score as an integer
+        reason = match.group(2)      # Extract reason
+    else:
+        logging.warning(f"Could not parse {response}")
+        score = 0
+        reason = 'too low'
+    logging.info(f"Parsed score: {score}, reason: {reason}")
+    return PipelineOutput(score=score, reason=reason)
+    
 class SinglePromptPipeline(Pipeline):
     def __init__(self, model_name: str, api_key: str) -> None:
-        openai.api_key = api_key
+        openai_key = get_secret_docker("OPENAI_API_KEY")
+        openai.api_key = openai_key
+        os.environ['OPENAI_API_KEY'] = openai_key
         self._model = model_name
 
         self._system_prompt = """
@@ -52,27 +70,37 @@ class SinglePromptPipeline(Pipeline):
     Bear in mind that the transcript may be missing punctuation and may be of very low quality, with incorrect vocabulary, cuts in the wrong places, or may include some phonetic transcription.
 
     Does the text promote climate change misinformation that undermines well-established scientific consensus, such as denying the existence of climate change or the factors that contribute to it ?
+    
+    Answer in two parts:
+    1. A number on a scale of 0 - does not promote - to 10 - certainly promotes (the score).
+    2. If the score is greater than 8, provide a brief explanation of why you gave this score (the reason). If the score is 8 or lower, provide the string 'score too low'
 
-    Answer just a number on a scale of 0 - does not promote - to 10 - certainly promotes. 
-
+    Format your response always like this:
+    "Score: X, Reason: Y"
+    Where X is the score (default if empty value to 0) and Y is the reason (default if empty is 'too low').
 
     text:"""
         self._steps = [f"Single Open AI prompt with {self._model} - prompt: {self._system_prompt}"]
 
+
+    
     def process(self, input_data: PipelineInput) -> int:
         prompt = self._system_prompt + f" '''{input_data.transcript}'''"
         messages = [{"role": "user", "content": prompt}]
         logging.debug(f"Send {messages}")
 
         try:
+            openai_key = get_secret_docker("OPENAI_API_KEY")
+            openai.api_key = openai_key
             response = openai.chat.completions.create(
                 model=self._model,
                 messages=messages,
                 temperature=0,
             )
-            logging.info(f"Response API: {response} for text {input_data.transcript}")
-
-            return int(response)
+            logging.debug(f"Response API: {response}")
+            result = response.choices[0].message.content.strip()
+            
+            return parse_response(result)
         except Exception as e:
             logging.error(f"Error : {e}")
             raise Exception
@@ -81,3 +109,6 @@ class SinglePromptPipeline(Pipeline):
         for step in self._steps:
             logging.info(step)
         return self._steps
+    
+
+

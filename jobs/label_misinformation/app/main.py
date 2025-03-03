@@ -9,21 +9,10 @@ from s3_utils import *
 from sentry_sdk.crons import monitor
 from sentry_utils import *
 from logging_utils import *
+import modin.pandas as pd
 
 # In[2]:
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-
-
-def get_completion(prompt, model):
-    openai.api_key = get_secret_docker("OPENAI_API_KEY")
-    messages = [{"role": "user", "content": prompt}]
-    logging.debug(f"Send {messages}")
-    response = openai.chat.completions.create(
-        model=model,
-        messages=messages,
-        temperature=0,
-    )
-    return response.choices[0].message.content
 
 
 def get_channels():
@@ -42,7 +31,6 @@ def get_channels():
             "fr3-idf",
             "m6",
             "arte",
-            "d8",
             "bfmtv",
             "lci",
             "franceinfotv",
@@ -61,15 +49,36 @@ def get_channels():
     return channels
 
 
+def extract_model_result(transcript, pipeline: Pipeline):
+    try:
+        result = pipeline.process(PipelineInput(transcript=transcript))
+
+        return {
+                    "model_result": result.score,
+                    "model_reason": result.reason
+                }
+    except:
+        return {
+            "model_result": 0,
+            "model_reason": "empty"
+        }
+
 def detect_misinformation(
-    df_news: pd.DataFrame, pipeline: Pipeline, min_misinformation_score: int = 10
+    df_news: pd.DataFrame, pipeline: Pipeline, min_misinformation_score: int = 10, model_name: str = ""
 ) -> pd.DataFrame:
     """Execute the pipeline on a dataframe and filters on min_score"""
-    df_news["model_result"] = df_news.apply(
-        lambda row: pipeline(PipelineInput(transcript=row["plaintext"])).score,
-        axis=1,  # Apply function to each row
-    )
+    try:
+        df_news["model_result"] = df_news["plaintext"].apply(
+            lambda transcript: extract_model_result(transcript, pipeline)
+        )
+        df_news['model_reason'] = df_news['model_result'].apply(lambda x: x['model_reason'])
+        df_news['model_result'] = df_news['model_result'].apply(lambda x: x['model_result'])
+        df_news['model_name'] = model_name
+    except Exception as e:
+        logging.error(f"Error during apply: {e}")
+        raise
     logging.info(f"model_result Examples : {df_news.head(10)}")
+    
     misinformation_only_news = df_news[
         df_news["model_result"] >= min_misinformation_score
     ].reset_index(drop=True)
@@ -135,6 +144,7 @@ def main():
                 df_news,
                 pipeline=pipeline,
                 min_misinformation_score=min_misinformation_score,
+                model_name=model_name,
             )
 
             number_of_disinformation = len(misinformation_only_news)

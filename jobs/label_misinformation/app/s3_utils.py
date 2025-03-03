@@ -3,13 +3,14 @@ import os
 import boto3
 import modin.pandas as pd
 from sentry_sdk.crons import monitor
+from labelstudio_utils import get_label_studio_format
 import shutil
 import sys
 import json
 
 
 def get_secret_docker(secret_name):
-    secret_value = os.environ.get(secret_name, "")
+    secret_value: str = os.environ.get(secret_name, "")
 
     if secret_value and os.path.exists(secret_value):
         with open(secret_value, "r") as file:
@@ -139,29 +140,7 @@ def reformat_and_save(df, output_folder="output_json_files") -> str:
     os.makedirs(os.path.dirname(output_folder), exist_ok=True)
 
     for idx, row in df.iterrows():
-        start_time = (
-            row["start"].isoformat() if isinstance(row["start"], pd.Timestamp) else row["start"]
-        )
-        task_data = {
-            "data": {
-                "item": {
-                    "plaintext": row["plaintext"],
-                    "start": start_time,
-                    "channel_title": row["channel_title"],
-                    "channel_name": row["channel_name"],
-                    "channel_program": row["channel_program"],
-                    "channel_program_type": row["channel_program_type"],
-                    "model_name": row["model_name"],
-                    "model_result": row["model_result"],
-                    "year": row["year"],
-                    "month": row["month"],
-                    "day": row["day"],
-                    "channel": row["channel"],
-                }
-            },
-            "annotations": [],
-            "predictions": [],
-        }
+        task_data = get_label_studio_format(row)
 
         # Define the file path for each row
         file_path = os.path.join(output_folder, f"task_{idx + 1}.json")
