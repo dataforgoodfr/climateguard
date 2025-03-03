@@ -4,8 +4,7 @@ on:
   push:
     paths:
       - 'jobs/label_misinformation/**'
-      - '.github/workflows/deploy-label-misinformation.yml'
-      - '.github/workflows/test-label-misinformation.yml'
+      - '.github/workflows/label-misinformation.yml'
   workflow_dispatch:
 
 env:
