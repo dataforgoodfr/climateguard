@@ -24,7 +24,7 @@ jobs:
         touch secrets/model_name
         touch secrets/bucket_access
         touch secrets/bucket_secret
-        docker compose up test --exit-code-from
+        docker compose up --exit-code-from test
 
   build_and_bump:
     runs-on: ubuntu-latest
