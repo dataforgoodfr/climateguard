@@ -9,7 +9,7 @@ COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
 # Copy app code
-COPY app/ .
+COPY app/ app/
 
 RUN mkdir -p s3
 

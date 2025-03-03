@@ -18,6 +18,7 @@ def get_label_studio_format(row) -> str:
                     "channel_program_type": row["channel_program_type"],
                     "model_name": row["model_name"],
                     "model_result": row["model_result"],
+                    "model_reason": row["model_reason"],
                     "year": row["year"],
                     "month": row["month"],
                     "day": row["day"],
