@@ -1,4 +1,6 @@
 import pytest
+import sys, os
+sys.path.append(os.path.abspath('/app'))
 from app.labelstudio_utils import *
 from datetime import datetime
 import logging
@@ -14,7 +16,8 @@ def test_get_label_studio_format():
         "channel_program": "Morning News",
         "channel_program_type": "Live",
         "model_name": "TestModel",
-        "model_result": "Positive",
+        "model_result": "10",
+        "model_reason": "a reason",
         "year": 2024,
         "month": 3,
         "day": 3,

@@ -105,88 +105,90 @@ def main():
     openai_api_key = get_secret_docker("OPENAI_API_KEY")
 
     pipeline = SinglePromptPipeline(model_name=model_name, api_key=openai_api_key)
-
-    channels = get_channels()
-    for channel in channels:
-        try:
-            s3_client = get_s3_client()
-            logging.info(
-                f"saving channel : {channel} inside bucket {bucket_output} folder {app_name}"
-            )
-            # if the date/channel has already been saved or not
-            if check_if_object_exists_in_s3(
-                day=date,
-                channel=channel,
-                s3_client=s3_client,
-                bucket=bucket_output,
-                root_folder=app_name,
-            ):
+    try:
+        channels = get_channels()
+        for channel in channels:
+            try:
+                s3_client = get_s3_client()
                 logging.info(
-                    f"Skipping as already saved before: {channel} inside bucket {bucket_output} folder {app_name}"
+                    f"saving channel : {channel} inside bucket {bucket_output} folder {app_name}"
+                )
+                # if the date/channel has already been saved or not
+                if check_if_object_exists_in_s3(
+                    day=date,
+                    channel=channel,
+                    s3_client=s3_client,
+                    bucket=bucket_output,
+                    root_folder=app_name,
+                ):
+                    logging.info(
+                        f"Skipping as already saved before: {channel} inside bucket {bucket_output} folder {app_name}"
+                    )
+                    continue
+
+                df_news = read_folder_from_s3(date=date, channel=channel, bucket=bucket_input)
+                logging.debug("Schema from API before formatting :\n%s", df_news.dtypes)
+                df_news = df_news[
+                    [
+                        "plaintext",
+                        "start",
+                        "channel_title",
+                        "channel_name",
+                        "channel_program",
+                        "channel_program_type",
+                    ]
+                ]
+
+                # Run the pipeline on the dataframe
+                misinformation_only_news = detect_misinformation(
+                    df_news,
+                    pipeline=pipeline,
+                    min_misinformation_score=min_misinformation_score,
+                    model_name=model_name,
+                )
+
+                number_of_disinformation = len(misinformation_only_news)
+
+                if number_of_disinformation > 0:
+                    logging.warning(f"Misinformation detected {len(misinformation_only_news)} rows")
+                    logging.info(f"Examples : {misinformation_only_news.head(10)}")
+
+                    # save JSON LabelStudio format
+                    save_to_s3(
+                        misinformation_only_news,
+                        channel=channel,
+                        date=date,
+                        s3_client=s3_client,
+                        bucket=bucket_output,
+                        folder_inside_bucket=app_name,
+                    )
+
+                    # TODO maybe save using LabelStudio's API
+                    # right now, JSON import from S3 are used from Cloud Storage on LabelStudio
+                else:
+                    logging.info(
+                        f"No misinformation detected for channel {channel} on {date} - saving a empty file to not requery it"
+                    )
+                    save_to_s3(
+                        misinformation_only_news,
+                        channel=channel,
+                        date=date,
+                        s3_client=s3_client,
+                        bucket=bucket_output,
+                        folder_inside_bucket=app_name,
+                    )
+
+            except Exception as err:
+                logging.error(
+                    f"continuing loop - but met error with {channel} - day {date}: error : {err}"
                 )
                 continue
 
-            df_news = read_folder_from_s3(date=date, channel=channel, bucket=bucket_input)
-            logging.debug("Schema from API before formatting :\n%s", df_news.dtypes)
-            df_news = df_news[
-                [
-                    "plaintext",
-                    "start",
-                    "channel_title",
-                    "channel_name",
-                    "channel_program",
-                    "channel_program_type",
-                ]
-            ]
-
-            # Run the pipeline on the dataframe
-            misinformation_only_news = detect_misinformation(
-                df_news,
-                pipeline=pipeline,
-                min_misinformation_score=min_misinformation_score,
-                model_name=model_name,
-            )
-
-            number_of_disinformation = len(misinformation_only_news)
-
-            if number_of_disinformation > 0:
-                logging.warning(f"Misinformation detected {len(misinformation_only_news)} rows")
-                logging.info(f"Examples : {misinformation_only_news.head(10)}")
-
-                # save JSON LabelStudio format
-                save_to_s3(
-                    misinformation_only_news,
-                    channel=channel,
-                    date=date,
-                    s3_client=s3_client,
-                    bucket=bucket_output,
-                    folder_inside_bucket=app_name,
-                )
-
-                # TODO maybe save using LabelStudio's API
-                # right now, JSON import from S3 are used from Cloud Storage on LabelStudio
-            else:
-                logging.info(
-                    f"No misinformation detected for channel {channel} on {date} - saving a empty file to not requery it"
-                )
-                save_to_s3(
-                    misinformation_only_news,
-                    channel=channel,
-                    date=date,
-                    s3_client=s3_client,
-                    bucket=bucket_output,
-                    folder_inside_bucket=app_name,
-                )
-
-        except Exception as err:
-            logging.error(
-                f"continuing loop - but met error with {channel} - day {date}: error : {err}"
-            )
-            continue
-
-    logging.info("Exiting with success")
-    sys.exit(0)
-
+        logging.info("Exiting with success")
+        sys.exit(0)
+    except Exception as err:
+        logging.fatal("Main crash (%s) %s" % (type(err).__name__, err))
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

@@ -1,4 +1,6 @@
 import pytest
+import sys, os
+sys.path.append(os.path.abspath('/app'))
 from app.mediatree_utils import *
 from datetime import datetime
 import logging

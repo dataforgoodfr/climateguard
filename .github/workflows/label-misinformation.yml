@@ -29,7 +29,7 @@ jobs:
   build_and_bump:
     runs-on: ubuntu-latest
     # if: ${{ github.ref == 'refs/heads/main' }}
-    # needs: test
+    needs: test
     outputs:
       PROJECT_VERSION: ${{ steps.get_version.outputs.PROJECT_VERSION }}
     steps:
