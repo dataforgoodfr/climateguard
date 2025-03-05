@@ -25,10 +25,16 @@ Not working ? You have to set up your secrets (password, key etc.) inside your s
 
 ## Test
 Tests are located inside tests folder
+### Run all test
 ```
-docker compose up test -d
+docker compose up test
+```
+
+### Target one test
+```
+docker compose up test -d --entrypoint "sleep 1200"
 docker compose exec test bash
-> pytest
+> pytest -vv -k s3_utils 
 ```
 
 ## Configuration
@@ -40,7 +46,7 @@ docker compose exec test bash
 * env variable  "BUCKET_OUTPUT" - bucket name with partitions : year,month,day,channel
 * env variable "MIN_MISINFORMATION_SCORE": 10 # the minimum score to have to be kept (10 out of 10)
 * env variable : "CHANNEL" : mediatree former channel name (tf1 for TF1, itele for cnews, bfmtv for BFMTv ...)
-
+* env variable : NUMBER_OF_PREVIOUS_DAYS (integer): default 7 days to check if something missing - in case production servers had an issue
 ## Deployment
 App image is pushed on the Scaleway Container Registry, and then deployed on the Scaleway Serverless service.
 

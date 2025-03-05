@@ -1,13 +1,10 @@
-name: Build & Deploy to Scaleway
+name: Test & Build & Deploy to Scaleway
 
 on:
   push:
-    branches:    
-      - feat/pipeline-model
-      - main
     paths:
       - 'jobs/label_misinformation/**'
-      - .github/workflows/deploy-label-misinformation.yml
+      - '.github/workflows/label-misinformation.yml'
   workflow_dispatch:
 
 env:
@@ -15,8 +12,24 @@ env:
 
 jobs:
 
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: pytest
+      working-directory: jobs/label_misinformation
+      run: |
+        touch secrets/openai_key
+        touch secrets/model_name
+        touch secrets/bucket_access
+        touch secrets/bucket_secret
+        docker compose up test --exit-code-from test
+
   build_and_bump:
     runs-on: ubuntu-latest
+    # if: ${{ github.ref == 'refs/heads/main' }}
+    needs: test
     outputs:
       PROJECT_VERSION: ${{ steps.get_version.outputs.PROJECT_VERSION }}
     steps:
@@ -47,6 +60,7 @@ jobs:
 
   docker_build_and_push:
     runs-on: ubuntu-latest
+    # if: ${{ github.ref == 'refs/heads/main' }}
     needs: build_and_bump
     env:
       PROJECT_VERSION: ${{ needs.build_and_bump.outputs.PROJECT_VERSION }}
