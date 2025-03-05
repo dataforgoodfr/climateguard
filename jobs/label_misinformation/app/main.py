@@ -1,7 +1,7 @@
-import openai
 import logging
 import os
-from pipeline import Pipeline, SinglePromptPipeline, PipelineInput, PipelineOutput
+from climateguard.domain.documents import Document, MediaNameEnum
+from climateguard.usecase.pipeline import OpenAIClient, Pipeline, SinglePromptPipeline
 import ray
 import sys
 from date_utils import *
@@ -10,6 +10,7 @@ from sentry_sdk.crons import monitor
 from sentry_utils import *
 from logging_utils import *
 import modin.pandas as pd
+from datetime import datetime
 
 # In[2]:
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -51,34 +52,45 @@ def get_channels():
 
 def extract_model_result(transcript, pipeline: Pipeline):
     try:
-        result = pipeline.process(PipelineInput(transcript=transcript))
-
+        result = pipeline.process(
+            [
+                Document(
+                    document_id="Unknown",
+                    transcript=transcript,
+                    source=MediaNameEnum.UNKNOWN,
+                    diffusion_datetime=datetime.now(),
+                )
+            ]
+        )
+        classified_document = result[0]
         return {
-                    "model_result": result.score,
-                    "model_reason": result.reason
-                }
-    except:
-        return {
-            "model_result": 0,
-            "model_reason": "empty"
+            "model_result": classified_document.disinformation_label.value,
+            "model_reason": classified_document.reason,
         }
+    except Exception as e:
+        logging.error(f"Error while processing document, silently proceeding: {e}")
+        return {"model_result": 0, "model_reason": "empty"}
+
 
 def detect_misinformation(
-    df_news: pd.DataFrame, pipeline: Pipeline, min_misinformation_score: int = 10, model_name: str = ""
+    df_news: pd.DataFrame,
+    pipeline: Pipeline,
+    min_misinformation_score: int = 10,
+    model_name: str = "",
 ) -> pd.DataFrame:
     """Execute the pipeline on a dataframe and filters on min_score"""
     try:
         df_news["model_result"] = df_news["plaintext"].apply(
             lambda transcript: extract_model_result(transcript, pipeline)
         )
-        df_news['model_reason'] = df_news['model_result'].apply(lambda x: x['model_reason'])
-        df_news['model_result'] = df_news['model_result'].apply(lambda x: x['model_result'])
-        df_news['model_name'] = model_name
+        df_news["model_reason"] = df_news["model_result"].apply(lambda x: x["model_reason"])
+        df_news["model_result"] = df_news["model_result"].apply(lambda x: x["model_result"])
+        df_news["model_name"] = model_name
     except Exception as e:
         logging.error(f"Error during apply: {e}")
         raise
     logging.info(f"model_result Examples : {df_news.head(10)}")
-    
+
     misinformation_only_news = df_news[
         df_news["model_result"] >= min_misinformation_score
     ].reset_index(drop=True)
@@ -92,22 +104,25 @@ def main():
     ray.init()
     pd.set_option("display.max_columns", None)
     sentry_init()
-
-    model_name = get_secret_docker("MODEL_NAME")
     app_name = os.getenv("APP_NAME", "")
     # a security nets in case scaleway servers are done to replay data
     number_of_previous_days = int(os.environ.get("NUMBER_OF_PREVIOUS_DAYS", 7))
-    logging.info(f"Number of previous days to check for missing date (NUMBER_OF_PREVIOUS_DAYS): {number_of_previous_days}")
+    logging.info(
+        f"Number of previous days to check for missing date (NUMBER_OF_PREVIOUS_DAYS): {number_of_previous_days}"
+    )
     date_env: str = os.getenv("DATE", "")
     bucket_input = os.getenv("BUCKET_INPUT", "")
     bucket_output = os.getenv("BUCKET_OUTPUT", "")
     min_misinformation_score = int(os.getenv("MIN_MISINFORMATION_SCORE", 10))
+
+    model_name = get_secret_docker("MODEL_NAME")
+    openai_api_key = get_secret_docker("OPENAI_API_KEY")
+    os.environ["OPENAI_API_KEY"] = openai_api_key
     logging.info(
         f"Starting app {app_name} with model {model_name} for date {date_env} with bucketinput {bucket_input} and bucket output {bucket_output}, min_misinformation_score to keep is {min_misinformation_score} out of 10..."
     )
-    openai_api_key = get_secret_docker("OPENAI_API_KEY")
-
-    pipeline = SinglePromptPipeline(model_name=model_name, api_key=openai_api_key)
+    model_client = OpenAIClient(api_key=openai_api_key, model_name=model_name)
+    pipeline = SinglePromptPipeline(model_client=model_client)
     try:
         date_range = get_date_range(date_env, minus_days=number_of_previous_days)
         logging.info(f"Number of days to query : {len(date_range)} - day_range : {date_range}")
@@ -156,7 +171,9 @@ def main():
                     number_of_disinformation = len(misinformation_only_news)
 
                     if number_of_disinformation > 0:
-                        logging.warning(f"Misinformation detected {len(misinformation_only_news)} rows")
+                        logging.warning(
+                            f"Misinformation detected {len(misinformation_only_news)} rows"
+                        )
                         logging.info(f"Examples : {misinformation_only_news.head(10)}")
 
                         # save JSON LabelStudio format
@@ -194,6 +211,7 @@ def main():
     except Exception as err:
         logging.fatal("Main crash (%s) %s" % (type(err).__name__, err))
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

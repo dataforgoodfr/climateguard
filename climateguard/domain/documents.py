@@ -19,12 +19,22 @@ class CardsEnum(LabelEnum):
     TWO = "two"
 
 
-class DisinformationGradeEnum():
-    ONE = "one"
-    TWO = "two"
+class DisinformationGradeEnum(LabelEnum):
+    # NOTE: dubious
+    ONE = 1
+    TWO = 2
+    THREE = 3
+    FOUR = 4
+    FIVE = 5
+    SIX = 6
+    SEVEN = 7
+    EIGHT = 8
+    NINE = 9
+    TEN = 10
 
 
 class MediaNameEnum(Enum):
+    UNKNOWN = "unknown"
     TF1 = "tf1"
     FRANCE2 = "france2"
     FRANCE3 = "fr3-idf"
@@ -58,6 +68,7 @@ class Document:
 class ClassifiedDocument(Document):
     disinformation_document: bool
     disinformation_label: LabelEnum
+    reason: str
 
 
 @dataclass
