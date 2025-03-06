@@ -3,9 +3,8 @@ from dotenv import load_dotenv
 import gradio as gr
 import pandas as pd
 from anthropic import Anthropic
-from pydantic import BaseModel
 
-from climateguard.models import Claims
+from climateguard.legacy.models import Claims
 
 # Load environment variables from .env file
 load_dotenv()
