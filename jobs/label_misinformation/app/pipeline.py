@@ -2,11 +2,11 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import logging
 from typing import List, Optional
-from s3_utils import get_secret_docker
+from secret_utils import get_secret_docker
 import os
 import openai
 import re
-
+from secret_utils import *
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 

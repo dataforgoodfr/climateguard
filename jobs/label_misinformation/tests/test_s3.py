@@ -12,6 +12,7 @@ def test_save_csv():
     df: pd.DataFrame = pd.read_parquet("tests/label_misinformation/data/misinformation.parquet")
     date: datetime = datetime.now()
     df['model_reason'] = "test"
+    df['plaintext_whisper'] = "mytest"
     output = save_csv(df, channel="itele", date=date, s3_path="test")
     assert output == "s3/misinformation.tsv"
 
@@ -24,6 +25,7 @@ def test_save_json():
     df['day'] = date.day
     df['channel'] = channel # channel_name from mediatree's api
     df['model_reason'] = "test" 
+    df['plaintext_whisper'] = "mytest" 
     output = save_json(df, channel=channel, date=date, s3_path="test")
     assert output == "s3/json"
 
@@ -37,6 +39,7 @@ def test_save_parquet():
     df['day'] = date.day
     df['channel'] = channel # channel_name from mediatree's api
     df['model_reason'] = "test" 
+    df['plaintext_whisper'] = "mytest" 
     date: datetime = datetime.now()
     output = save_parquet(df, channel=channel, date=date, s3_path=s3_path)
     assert output == f"s3/parquet/{s3_path}"

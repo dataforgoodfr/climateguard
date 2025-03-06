@@ -28,6 +28,7 @@ jsonschema-specifications==2024.10.1
 modin==0.32.0
 msgpack==1.1.0
 multidict==6.1.0
+moviepy==2.1.2
 numpy==2.2.3
 openai==1.63.2
 packaging==24.2

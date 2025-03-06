@@ -8,6 +8,9 @@ from date_utils import *
 from s3_utils import *
 from sentry_sdk.crons import monitor
 from sentry_utils import *
+from whisper_utils import *
+from mediatree_utils import *
+from secret_utils import *
 from logging_utils import *
 import modin.pandas as pd
 
@@ -158,6 +161,10 @@ def main():
                     if number_of_disinformation > 0:
                         logging.warning(f"Misinformation detected {len(misinformation_only_news)} rows")
                         logging.info(f"Examples : {misinformation_only_news.head(10)}")
+
+                        # improve plaintext from mediatree 
+                        logging.info("improve plaintext from mediatree")
+                        df_news[WHISPER_COLUMN_NAME] = df_news['plaintext'].apply(lambda x: get_new_plaintext_from_whisper(x['plaintext'])) 
 
                         # save JSON LabelStudio format
                         save_to_s3(

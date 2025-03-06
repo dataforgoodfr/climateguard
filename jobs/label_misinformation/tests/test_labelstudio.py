@@ -10,6 +10,7 @@ def test_get_label_studio_format():
     channel_title = "Test TV"
     df = pd.DataFrame([{
         "plaintext": plaintext,
+        "plaintext_whisper": plaintext,
         "start": datetime(2024, 3, 3, 12, 0, 0),
         "channel_title": channel_title,
         "channel_name": "news123",

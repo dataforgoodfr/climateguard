@@ -34,7 +34,8 @@ docker compose up test
 ```
 docker compose up test -d --entrypoint "sleep 1200"
 docker compose exec test bash
-> pytest -vv -k s3_utils 
+> pytest --log-level INFO -vv -k s3_utils 
+> pytest --log-level INFO -vv -k get_new_plaintext_from_whisper_mp4
 ```
 
 ## Configuration

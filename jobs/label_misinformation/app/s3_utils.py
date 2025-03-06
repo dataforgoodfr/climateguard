@@ -4,18 +4,10 @@ import boto3
 import modin.pandas as pd
 from sentry_sdk.crons import monitor
 from labelstudio_utils import get_label_studio_format
+from secret_utils import get_secret_docker
 import shutil
 import sys
 import json
-
-
-def get_secret_docker(secret_name):
-    secret_value: str = os.environ.get(secret_name, "")
-
-    if secret_value and os.path.exists(secret_value):
-        with open(secret_value, "r") as file:
-            return file.read().strip()
-    return secret_value
 
 
 # Configuration for Scaleway Object Storage

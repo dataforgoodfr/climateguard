@@ -15,6 +15,7 @@ jobs/label_misinformation/jobs
 **secrets/
 **venv/
 **/s3/
+**/audio/
 **/.parquet
 # Node artifact files
 node_modules/
