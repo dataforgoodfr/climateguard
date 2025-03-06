@@ -6,7 +6,16 @@
 .env
 data/.ipynb_checkpoints/
 
-
+jobs/label_misinformation/build
+jobs/label_misinformation/jobs
+**.egg-info/
+.vscode/
+**.pytest_cache/
+**__pycache__/
+**secrets/
+**venv/
+**/s3/
+**/.parquet
 # Node artifact files
 node_modules/
 dist/

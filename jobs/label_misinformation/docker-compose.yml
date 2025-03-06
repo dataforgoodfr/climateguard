@@ -1,0 +1,63 @@
+services:
+  app:
+    build: .
+    environment:
+      LOGLEVEL: INFO
+      ENV: docker
+      APP_NAME: label-misinformation 
+      OPENAI_API_KEY: /run/secrets/openai_key
+      MODEL_NAME:  /run/secrets/model_name
+      BUCKET_INPUT: mediatree
+      BUCKET_OUTPUT: climateguard
+      BUCKET_ACCESS: /run/secrets/bucket_access
+      BUCKET_SECRET: /run/secrets/bucket_secret
+      AWS_DEFAULT_REGION: fr-par
+      MIN_MISINFORMATION_SCORE: 10 # the minimum score to have to be kept (10 out of 10)
+      DATE: 2025-02-21 # YYYY-MM-DD
+      NUMBER_OF_PREVIOUS_DAYS: 7
+      # SENTRY_DSN: prod_only
+      CHANNEL: sud-radio # mediatree former channel name, not title (cnews)
+    secrets:
+       - model_name
+       - openai_key
+       - bucket_access
+       - bucket_secret
+    volumes:
+      - ./app:/app/
+
+  test:
+    build: .
+    entrypoint: ["pytest"] # ["sleep", "12000"] use to debug the container if needed
+    environment:
+      LOGLEVEL: DEBUG
+      ENV: docker
+      APP_NAME: label-misinformation 
+      OPENAI_API_KEY: /run/secrets/openai_key
+      MODEL_NAME:  /run/secrets/model_name
+      BUCKET_INPUT: mediatree
+      BUCKET_OUTPUT: climateguard
+      BUCKET_ACCESS: /run/secrets/bucket_access
+      BUCKET_SECRET: /run/secrets/bucket_secret
+      AWS_DEFAULT_REGION: fr-par
+      MIN_MISINFORMATION_SCORE: 10 # the minimum score to have to be kept (10 out of 10)
+      # DATE: 2024-06-01 # YYYY-MM-DD
+      # SENTRY_DSN: prod_only
+      CHANNEL: itele # mediatree former channel name, not title (cnews)
+    secrets:
+       - model_name
+       - openai_key
+       - bucket_access
+       - bucket_secret
+    volumes:
+      - ./app:/app/
+      - ./tests:/app/tests
+
+secrets: # https://docs.docker.com/compose/use-secrets/
+  openai_key:
+    file: secrets/openai_key
+  model_name:
+    file: secrets/model_name
+  bucket_access:
+    file: secrets/bucket_access
+  bucket_secret:
+    file: secrets/bucket_secret
