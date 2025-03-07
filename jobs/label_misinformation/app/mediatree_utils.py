@@ -150,7 +150,6 @@ def get_new_plaintext_from_whisper(df: pd.DataFrame) -> pd.DataFrame:
     From a dataframe with the mp3 information
     """
     df = add_medias_to_df(df)
-    openai.api_key = get_secret_docker("OPENAI_API_KEY")
 
     def get_whispered_transcript(audio_bytes: Optional[bytes]) -> str:
         if audio_bytes is None:
@@ -158,11 +157,13 @@ def get_new_plaintext_from_whisper(df: pd.DataFrame) -> pd.DataFrame:
         try:
             buffer = BytesIO(audio_bytes)
             buffer.name = "audio.mp3"
+            openai.api_key = get_secret_docker("OPENAI_API_KEY")
             transcript = openai.audio.transcriptions.create(
                 model="whisper-1",
                 file=buffer,
                 response_format="text",
             )
+            logging.info(f"Whisper sample: {transcript[:100]}...")
             return transcript
         except Exception as e:
             logging.error(f"Error with whisper client: {e}")
