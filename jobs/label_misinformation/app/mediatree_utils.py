@@ -6,7 +6,9 @@ from datetime import datetime
 from typing import List
 import modin.pandas as pd
 from secret_utils import get_secret_docker
-from whisper_utils import *
+from whisper_utils import transform_mp4_to_mp3
+from typing import Optional
+import ray
 mediatree_password = get_secret_docker("MEDIATREE_PASSWORD")
 AUTH_URL : str =  os.environ.get("MEDIATREE_AUTH_URL") 
 mediatree_user = get_secret_docker("MEDIATREE_USER")
@@ -14,7 +16,7 @@ mediatree_user = get_secret_docker("MEDIATREE_USER")
 API_BASE_URL = os.environ.get("KEYWORDS_URL") 
 
 def get_auth_token(password=mediatree_password, user_name=mediatree_user):
-    logging.info(f"Getting a token for user {user_name}")
+    logging.info(f"Getting a token")
     try:
         post_arguments = {
             'grant_type': 'password'
@@ -46,78 +48,98 @@ def get_url_mediatree(date, channel) -> str:
 def get_mediatree_single_export_url(token, channel_name, start, end):
     return  f"{API_BASE_URL}?token={token}&channel={channel_name}&cts_in={start}&cts_out={end}&format=mp4"
 
-def get_video_urls(df: pd.DataFrame) -> List[str]:
+# to mock tests
+def get_response_single_export_api(single_export_api):
+    return requests.get(single_export_api)
+
+def fetch_video_url(row, token):
+    """Fetches a single video URL based on a DataFrame row."""
+    try:
+        start, end = get_start_and_end_of_chunk(datetime.fromisoformat(row["start"]))
+        channel_name = row["channel_name"]
+        logging.info(f"Fetching URL for {channel_name} {start} {end}...")
+        logging.error(f"Token : {token}")
+        single_export_api = get_mediatree_single_export_url(token, channel_name, start, end)
+        logging.info(f"Fetching URL for {channel_name} [{start}-{end}]: {single_export_api}")
+
+        response = get_response_single_export_api(single_export_api)
+        if response.status_code != 200:
+            logging.error(f"Failed to fetch URL for {channel_name} [{start}-{end}]: {response.status_code}")
+            return None  # Keep column as None for failed cases
+
+        output = response.json()
+        url = output.get("src", "")
+
+        logging.info(f"Got response URL: {url}")
+
+        if not url:
+            logging.warning(f"No video URL found for {channel_name} [{start}-{end}]")
+            return None
+        logging.debug(f"url is {url}")
+        return url
+
+    except Exception as e:
+        logging.error(f"Error fetching video URL: {e}")
+        return None
+
+def get_video_urls(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Retrieves video URLs based on position data.
+    Retrieves video URLs and adds them directly to the DataFrame using apply().
 
     :param df: DataFrame with columns ["start", "channel_name"]
-    :return: List of video URLs
+    :return: Updated DataFrame with a new "media_url" column
     """
-    logging.info(f"Getting videos urls to download files...")
-    urls = []
+    logging.info("Fetching video URLs for downloading...")
     token = get_auth_token()
-    for i in range(len(df)):
-        try:
-            start, end = get_start_and_end_of_chunk(datetime.fromisoformat(df["start"][i]))
-            channel_name = df["channel_name"][i]
+    logging.info("got token")
 
-            single_export_api = get_mediatree_single_export_url(token, channel_name, start, end)
-            logging.info(f"Fetching URL for {channel_name} [{start}-{end}]: {single_export_api}")
-            response = requests.get(single_export_api)
+    logging.info(f"{df["channel_name"].head()}")
+    df["media_url"] = df.apply(lambda row: fetch_video_url(row, token), axis=1)
 
-            if response.status_code != 200:
-                logging.error(f"Failed to fetch URL for {channel_name} [{start}-{end}]: {response.status_code}")
-                continue
-            output = response.json()
-            url = output.get("src", "")
-            logging.info(f"Got response url: {url}")
-            if not url:
-                logging.warning(f"No video URL found for {channel_name} [{start}-{end}]")
-                continue
-            urls.append(url)
+    logging.debug(f"Updated DataFrame with media URLs:\n{df[['channel_name', 'start', 'media_url']].head()}")
+    return df
 
-        except Exception as e:
-            logging.error(f"Error fetching video URL: {e}")
-            urls.append("")
-    logging.debug(f"videos urls with {urls}")
-    return urls
+def download_media(row) -> Optional[bytes]:
+    """Downloads a media file and returns its binary content."""
+    url = row["media_url"]
+    if not url:
+        logging.warning(f"Skipping empty URL for {row['channel_name']} at {row['start']}")
+        return None
 
+    try:
+        logging.info(f"Downloading: {url}")
+        response = requests.get(url, stream=True)
+        response.raise_for_status()  # Raise an error for bad responses (4xx, 5xx)
 
-def download_medias(df: pd.DataFrame, foldername: str):
+        media: bytes = response.content
+        if url.endswith(".mp4"):
+            media = transform_mp4_to_mp3(media)
+            return media
+        else:
+            return media  # Return binary MP3 data
+
+    except Exception as e:
+        logging.error(f"Error downloading {url}: {e}")
+        return None
+
+def add_medias_to_df(df: pd.DataFrame):
     """
-    Downloads videos from URLs and saves them to a folder.
-
-    :param df: DataFrame with columns ["Start", "Channel Name", "ID"]
-    :param foldername: Folder path where videos will be stored
+    Downloads videos from URLs and saves them to dataframe
     """
-    logging.info(f"Downloading medias from {foldername}...")
-    os.makedirs(foldername, exist_ok=True)
-    urls = get_video_urls(df)
-    output = []
-    for i, url in enumerate(urls):
-        if not url:
-            logging.warning(f"Skipping empty URL {url} for index {i}")
-            continue
+    logging.info(f"Downloading medias..")
 
-        file_path = os.path.join(foldername, df["channel_name"][i] + df["start"][i] + url[-4:])
-        try:
-            logging.info(f"Downloading: {url} -> {file_path}")
-            urllib.request.urlretrieve(url, file_path)
-            output.append(file_path)
+    # add  "media_url" column
+    df = get_video_urls(df)
+    df["media"] = df.apply(lambda row: download_media(row), axis=1)
 
-        except Exception as e:
-            logging.error(f"Error downloading {url}: {e}")
+    logging.debug(f"Updated DataFrame with media files:\n{df[['channel_name', 'start', 'media_url', 'media']].head()}")
+    return df
 
-    return output
 
 def get_new_plaintext_from_whisper(df: pd.DataFrame):
-    folder_audio = "output/audio/"
-    os.makedirs(os.path.dirname(folder_audio), exist_ok=True)
-    videos_url = get_video_urls(df)
-    download_medias(df, foldername=folder_audio)
-    transform_mp4_to_mp3(folder_audio)
-
-    # for each element inside folder_audio apply new whisperation and apply it to df[WHISPER_COLUMN_NAME]
-    # TODO: how to do link between audio files and df row ? start/channel
-    # df[WHISPER_COLUMN_NAME] = generalfillfile(pos,0,[],"model_name","whisper")
+    df = add_medias_to_df(df)
+    
+    # for each element inside df apply new whisperation with column "media" and apply it to df[WHISPER_COLUMN_NAME]
+    # TODO:
+    # df[WHISPER_COLUMN_NAME] =  df.apply(lambda row: whisper(row), axis=1) # generalfillfile(pos,0,[],"model_name","whisper")
     return df
