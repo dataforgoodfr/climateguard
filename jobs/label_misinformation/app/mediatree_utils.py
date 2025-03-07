@@ -161,7 +161,7 @@ def get_new_plaintext_from_whisper(df: pd.DataFrame) -> pd.DataFrame:
             transcript = openai.audio.transcriptions.create(
                 model="whisper-1",
                 file=buffer,
-                response_format="verbose_json",
+                response_format="text",
             )
             return transcript
         except Exception as e:
