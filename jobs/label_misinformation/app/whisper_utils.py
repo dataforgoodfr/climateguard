@@ -1,7 +1,5 @@
-import shutil
 import os, io
 import logging
-import modin.pandas as pd
 from moviepy import VideoFileClip
 from typing import Optional
 import tempfile

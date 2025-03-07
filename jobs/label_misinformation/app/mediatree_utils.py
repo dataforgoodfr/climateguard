@@ -1,14 +1,12 @@
 import os
 import logging
-import urllib.request
+import openai
 import requests
 from datetime import datetime
-from typing import List
 import modin.pandas as pd
 from secret_utils import get_secret_docker
-from whisper_utils import transform_mp4_to_mp3
+from whisper_utils import WHISPER_COLUMN_NAME, transform_mp4_to_mp3
 from typing import Optional
-import ray
 
 mediatree_password = get_secret_docker("MEDIATREE_PASSWORD")
 AUTH_URL: str = os.environ.get("MEDIATREE_AUTH_URL")
@@ -106,7 +104,9 @@ def get_video_urls(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def download_media(row) -> Optional[bytes]:
-    """Downloads a media file and returns its binary content."""
+    """
+    Downloads a media file, converts it to mp3 and returns its binary content.
+    """
     url = row["media_url"]
     if not url:
         logging.warning(f"Skipping empty URL for {row['channel_name']} at {row['start']}")
@@ -145,9 +145,31 @@ def add_medias_to_df(df: pd.DataFrame):
     return df
 
 
-def get_new_plaintext_from_whisper(df: pd.DataFrame):
+def get_new_plaintext_from_whisper(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    TODO: move this entire function in an abstracted client
+    From a dataframe with the mp3 information
+    """
     df = add_medias_to_df(df)
-    # for each element inside df apply new whisperation with column "media" and apply it to df[WHISPER_COLUMN_NAME]
-    # TODO:
-    # df[WHISPER_COLUMN_NAME] =  df.apply(lambda row: whisper(row), axis=1) # generalfillfile(pos,0,[],"model_name","whisper")
+    openai.api_key = os.getenv("OPENAI_API_KEY", "")
+    transcripts = []
+
+    def get_whispered_transcript(audio_bytes: Optional[bytes]) -> str:
+        if audio_bytes is None:
+            return ""
+        try:
+            transcript = openai.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_bytes,
+                response_format="verbose_json",
+            )
+            transcripts.append(transcript.text)
+        except Exception as e:
+            logging.error(f"Error with whisper client: {e}")
+        return ""
+
+    df[WHISPER_COLUMN_NAME] = df["media"].apply(
+        lambda audio_bytes: get_whispered_transcript(audio_bytes), axis=1
+    )
+
     return df

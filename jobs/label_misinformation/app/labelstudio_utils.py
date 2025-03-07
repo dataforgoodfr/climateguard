@@ -1,4 +1,3 @@
-import logging
 from mediatree_utils import get_url_mediatree
 from whisper_utils import WHISPER_COLUMN_NAME
 import modin.pandas as pd

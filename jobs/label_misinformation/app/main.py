@@ -1,7 +1,6 @@
-import openai
 import logging
 import os
-from pipeline import Pipeline, SinglePromptPipeline, PipelineInput, PipelineOutput
+from pipeline import Pipeline, SinglePromptPipeline, PipelineInput
 import ray
 import sys
 from date_utils import *
@@ -167,13 +166,11 @@ def main():
 
                         # improve plaintext from mediatree
                         logging.info("improve plaintext from mediatree")
-                        df_news[WHISPER_COLUMN_NAME] = df_news["plaintext"].apply(
-                            lambda x: get_new_plaintext_from_whisper(x["plaintext"])
-                        )
+                        df_whispered = get_new_plaintext_from_whisper(misinformation_only_news)
 
                         # save JSON LabelStudio format
                         save_to_s3(
-                            misinformation_only_news,
+                            df_whispered,
                             channel=channel,
                             date=date,
                             s3_client=s3_client,

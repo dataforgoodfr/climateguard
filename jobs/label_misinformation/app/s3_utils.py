@@ -2,11 +2,9 @@ import logging
 import os
 import boto3
 import modin.pandas as pd
-from sentry_sdk.crons import monitor
 from labelstudio_utils import get_label_studio_format
 from secret_utils import get_secret_docker
 import shutil
-import sys
 import json
 
 
