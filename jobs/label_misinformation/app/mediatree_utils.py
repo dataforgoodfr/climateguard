@@ -1,8 +1,8 @@
+from io import BytesIO
 import os
 import logging
 import openai
 import requests
-from datetime import datetime
 import modin.pandas as pd
 from secret_utils import get_secret_docker
 from whisper_utils import WHISPER_COLUMN_NAME, transform_mp4_to_mp3
@@ -150,15 +150,17 @@ def get_new_plaintext_from_whisper(df: pd.DataFrame) -> pd.DataFrame:
     From a dataframe with the mp3 information
     """
     df = add_medias_to_df(df)
-    openai.api_key =  get_secret_docker("OPENAI_API_KEY")
+    openai.api_key = get_secret_docker("OPENAI_API_KEY")
 
     def get_whispered_transcript(audio_bytes: Optional[bytes]) -> str:
         if audio_bytes is None:
             return ""
         try:
+            buffer = BytesIO(audio_bytes)
+            buffer.name = "audio.mp3"
             transcript = openai.audio.transcriptions.create(
                 model="whisper-1",
-                file=audio_bytes,
+                file=buffer,
                 response_format="verbose_json",
             )
             return transcript
