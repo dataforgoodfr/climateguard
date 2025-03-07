@@ -28,6 +28,8 @@ def get_auth_token(password=mediatree_password, user_name=mediatree_user):
 
 
 def get_start_and_end_of_chunk(start):
+    logging.info(f"get_start_and_end_of_chunk - datetime: {start}")
+    start = pd.to_datetime(start)
     two_minutes = 120
     timestamp = str(int(start.timestamp()))
     timestamp_end = str(int(start.timestamp() + two_minutes))
@@ -52,10 +54,10 @@ def get_response_single_export_api(single_export_api):
 def fetch_video_url(row, token):
     """Fetches a single video URL based on a DataFrame row."""
     try:
-        start, end = get_start_and_end_of_chunk(datetime.fromtimestamp(row["start"]))
+        start, end = get_start_and_end_of_chunk(row["start"])
         channel_name = row["channel_name"]
         logging.info(f"Fetching URL for {channel_name} {start} {end}...")
-        logging.error(f"Token : {token}")
+
         single_export_api = get_mediatree_single_export_url(token, channel_name, start, end)
         logging.info(f"Fetching URL for {channel_name} [{start}-{end}]: {single_export_api}")
 
@@ -148,7 +150,7 @@ def get_new_plaintext_from_whisper(df: pd.DataFrame) -> pd.DataFrame:
     From a dataframe with the mp3 information
     """
     df = add_medias_to_df(df)
-    openai.api_key = os.getenv("OPENAI_API_KEY", "")
+    openai.api_key =  get_secret_docker("OPENAI_API_KEY")
 
     def get_whispered_transcript(audio_bytes: Optional[bytes]) -> str:
         if audio_bytes is None:
