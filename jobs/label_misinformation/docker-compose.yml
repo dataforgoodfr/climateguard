@@ -13,7 +13,7 @@ services:
       BUCKET_SECRET: /run/secrets/bucket_secret
       AWS_DEFAULT_REGION: fr-par
       MIN_MISINFORMATION_SCORE: 10 # the minimum score to have to be kept (10 out of 10)
-      DATE: 2025-02-21 # YYYY-MM-DD
+      DATE: 2025-02-16 # YYYY-MM-DD
       NUMBER_OF_PREVIOUS_DAYS: 7
       # SENTRY_DSN: prod_only
       CHANNEL: sud-radio # mediatree former channel name, not title (cnews)

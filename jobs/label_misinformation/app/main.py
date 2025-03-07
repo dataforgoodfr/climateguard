@@ -13,7 +13,7 @@ from secret_utils import *
 from logging_utils import *
 import modin.pandas as pd
 
-# In[2]:
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
@@ -90,7 +90,6 @@ def detect_misinformation(
 def main():
     logger = getLogger()
     ray.init()
-    # ray.init(address="auto", runtime_env={"working_dir": "./"})
     pd.set_option("display.max_columns", None)
     sentry_init()
 

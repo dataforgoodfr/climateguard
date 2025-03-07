@@ -52,11 +52,7 @@ def get_response_single_export_api(single_export_api):
 def fetch_video_url(row, token):
     """Fetches a single video URL based on a DataFrame row."""
     try:
-        start, end = get_start_and_end_of_chunk(
-            datetime.fromisoformat(
-                date_string=row["start"]  # TODO: fix: fromisoformat: argument must be str
-            )
-        )
+        start, end = get_start_and_end_of_chunk(datetime.fromtimestamp(row["start"]))
         channel_name = row["channel_name"]
         logging.info(f"Fetching URL for {channel_name} {start} {end}...")
         logging.error(f"Token : {token}")
@@ -95,9 +91,7 @@ def get_video_urls(df: pd.DataFrame) -> pd.DataFrame:
     """
     logging.info("Fetching video URLs for downloading...")
     token = get_auth_token()
-    logging.info("got token")
 
-    logging.info(f"{df["channel_name"].head()}")
     df["media_url"] = df.apply(lambda row: fetch_video_url(row, token), axis=1)
 
     logging.debug(
