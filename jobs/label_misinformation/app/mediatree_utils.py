@@ -155,7 +155,6 @@ def get_new_plaintext_from_whisper(df: pd.DataFrame) -> pd.DataFrame:
     """
     df = add_medias_to_df(df)
     openai.api_key = os.getenv("OPENAI_API_KEY", "")
-    transcripts = []
 
     def get_whispered_transcript(audio_bytes: Optional[bytes]) -> str:
         if audio_bytes is None:
@@ -166,10 +165,10 @@ def get_new_plaintext_from_whisper(df: pd.DataFrame) -> pd.DataFrame:
                 file=audio_bytes,
                 response_format="verbose_json",
             )
-            transcripts.append(transcript.text)
+            return transcript
         except Exception as e:
             logging.error(f"Error with whisper client: {e}")
-        return ""
+            raise e
 
     df[WHISPER_COLUMN_NAME] = df["media"].apply(
         lambda audio_bytes: get_whispered_transcript(audio_bytes), axis=1
