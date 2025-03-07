@@ -15,8 +15,11 @@ def get_videofile_mp4_buffer(mp4_bytes: bytes):
         video = VideoFileClip(mp4_buffer)
         return video
     except Exception as e:
-        logging.error(f"get_videofile_mp4_buffer - Error transforming MP4 bytes to VideoFileClip: {e}")
+        logging.error(
+            f"get_videofile_mp4_buffer - Error transforming MP4 bytes to VideoFileClip: {e}"
+        )
         return None
+
 
 # less cost to send audio instead of video to LLM
 def transform_mp4_to_mp3(media: bytes) -> Optional[bytes]:
