@@ -31,7 +31,6 @@ def get_start_and_end_of_chunk(start):
     two_minutes = 120
     timestamp = str(int(start.timestamp()))
     timestamp_end = str(int(start.timestamp() + two_minutes))
-
     return timestamp, timestamp_end
 
 
@@ -53,7 +52,11 @@ def get_response_single_export_api(single_export_api):
 def fetch_video_url(row, token):
     """Fetches a single video URL based on a DataFrame row."""
     try:
-        start, end = get_start_and_end_of_chunk(datetime.fromisoformat(row["start"]))
+        start, end = get_start_and_end_of_chunk(
+            datetime.fromisoformat(
+                date_string=row["start"]  # TODO: fix: fromisoformat: argument must be str
+            )
+        )
         channel_name = row["channel_name"]
         logging.info(f"Fetching URL for {channel_name} {start} {end}...")
         logging.error(f"Token : {token}")

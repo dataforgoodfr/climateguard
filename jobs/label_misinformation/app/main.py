@@ -89,8 +89,8 @@ def detect_misinformation(
 @monitor(monitor_slug="label-misinformation")
 def main():
     logger = getLogger()
-    # ray.init()
-    ray.init(address="auto", runtime_env={"working_dir": "./"})
+    ray.init()
+    # ray.init(address="auto", runtime_env={"working_dir": "./"})
     pd.set_option("display.max_columns", None)
     sentry_init()
 
