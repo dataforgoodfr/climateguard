@@ -24,6 +24,8 @@ jobs:
         touch secrets/model_name
         touch secrets/bucket_access
         touch secrets/bucket_secret
+        touch secrets/pwd_api.txt
+        touch secrets/username_api.txt
         docker compose up test --exit-code-from test
 
   build_and_bump:
