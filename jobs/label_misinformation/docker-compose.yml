@@ -33,7 +33,7 @@ services:
 
   test:
     build: .
-    entrypoint: ["sleep", "12000"]  # use to debug the container if needed ["pytest", "-vv"] 
+    entrypoint: ["pytest", "-vv"]   # use to debug the container if needed ["pytest", "-vv"] 
     environment:
       LOGLEVEL: DEBUG
       ENV: docker
