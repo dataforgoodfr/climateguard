@@ -71,40 +71,10 @@ def test_get_url_mediatree():
         == "https://keywords.mediatree.fr/player/?fifo=itele&start_cts=1733998210&end_cts=1733998330&position_cts=1733998210"
     )
 
-
-def test_get_video_urls(monkeypatch):
-    def mock_get(*args, **kwargs):
-        class MockResponse:
-            status_code = 200
-
-            def json(self):
-                return {"src": "https://example.com/video.mp4"}
-
-        return MockResponse()
-
-    monkeypatch.setattr("requests.get", mock_get)
-
-    videos_urls = get_video_urls(df_with_misinformation)
-    expected = pd.DataFrame([{"media_url": "https://example.com/video.mp4"}])
-
-    pd.testing.assert_series_equal(
-        videos_urls["media_url"].reset_index(drop=True),
-        expected["media_url"].reset_index(drop=True),
-    )
-
-
 @pytest.fixture
 def mock_get_auth_token(mocker):
     # Mock the `get_auth_token` to return a fixed token.
     return mocker.patch('app.mediatree_utils.get_auth_token', return_value="mocked_token")
-
-@pytest.fixture
-def mock_get_response_single_export_api_mp3(mocker):
-    # Mock the `get_response_single_export_api` to return a mocked response.
-    mock_response_json = mocker.MagicMock()
-    mock_response_json.status_code = 200
-    mock_response_json.json.return_value = {"media_url": 'https://example.com/test.mp3'}
-    return mocker.patch('app.mediatree_utils.get_response_single_export_api', return_value=mock_response_json)
 
 @pytest.fixture
 def mock_get_response_single_export_api_mp4(mocker):
@@ -115,13 +85,30 @@ def mock_get_response_single_export_api_mp4(mocker):
     return mocker.patch('app.mediatree_utils.get_response_single_export_api', return_value=mock_response_json)
 
 @pytest.fixture
-def mock_fetch_video_url(mocker):
-    return mocker.patch('app.mediatree_utils.fetch_video_url', return_value='https://example.com/test.mp3')
-
-
-@pytest.fixture
 def mock_fetch_video_url_mp4(mocker):
     return mocker.patch('app.mediatree_utils.fetch_video_url', return_value='https://example.com/test.mp4')
+
+
+def test_get_video_urls(monkeypatch, mock_get_auth_token, mock_fetch_video_url_mp4):
+    videos_urls = get_video_urls(df_with_misinformation)
+    expected = pd.DataFrame([{"media_url": "https://example.com/test.mp4"}])
+
+    pd.testing.assert_series_equal(
+        videos_urls["media_url"].reset_index(drop=True),
+        expected["media_url"].reset_index(drop=True),
+    )
+
+@pytest.fixture
+def mock_get_response_single_export_api_mp3(mocker):
+    # Mock the `get_response_single_export_api` to return a mocked response.
+    mock_response_json = mocker.MagicMock()
+    mock_response_json.status_code = 200
+    mock_response_json.json.return_value = {"media_url": 'https://example.com/test.mp3'}
+    return mocker.patch('app.mediatree_utils.get_response_single_export_api', return_value=mock_response_json)
+
+@pytest.fixture
+def mock_fetch_video_url(mocker):
+    return mocker.patch('app.mediatree_utils.fetch_video_url', return_value='https://example.com/test.mp3')
 
 
 @pytest.fixture
