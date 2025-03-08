@@ -1,17 +1,19 @@
-import openai
 import logging
 import os
-from pipeline import Pipeline, SinglePromptPipeline, PipelineInput, PipelineOutput
+from pipeline import Pipeline, SinglePromptPipeline, PipelineInput
 import ray
 import sys
 from date_utils import *
 from s3_utils import *
 from sentry_sdk.crons import monitor
 from sentry_utils import *
+from whisper_utils import *
+from mediatree_utils import *
+from secret_utils import *
 from logging_utils import *
 import modin.pandas as pd
 
-# In[2]:
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
@@ -53,32 +55,30 @@ def extract_model_result(transcript, pipeline: Pipeline):
     try:
         result = pipeline.process(PipelineInput(transcript=transcript))
 
-        return {
-                    "model_result": result.score,
-                    "model_reason": result.reason
-                }
+        return {"model_result": result.score, "model_reason": result.reason}
     except:
-        return {
-            "model_result": 0,
-            "model_reason": "empty"
-        }
+        return {"model_result": 0, "model_reason": "empty"}
+
 
 def detect_misinformation(
-    df_news: pd.DataFrame, pipeline: Pipeline, min_misinformation_score: int = 10, model_name: str = ""
+    df_news: pd.DataFrame,
+    pipeline: Pipeline,
+    min_misinformation_score: int = 10,
+    model_name: str = "",
 ) -> pd.DataFrame:
     """Execute the pipeline on a dataframe and filters on min_score"""
     try:
         df_news["model_result"] = df_news["plaintext"].apply(
             lambda transcript: extract_model_result(transcript, pipeline)
         )
-        df_news['model_reason'] = df_news['model_result'].apply(lambda x: x['model_reason'])
-        df_news['model_result'] = df_news['model_result'].apply(lambda x: x['model_result'])
-        df_news['model_name'] = model_name
+        df_news["model_reason"] = df_news["model_result"].apply(lambda x: x["model_reason"])
+        df_news["model_result"] = df_news["model_result"].apply(lambda x: x["model_result"])
+        df_news["model_name"] = model_name
     except Exception as e:
         logging.error(f"Error during apply: {e}")
         raise
     logging.info(f"model_result Examples : {df_news.head(10)}")
-    
+
     misinformation_only_news = df_news[
         df_news["model_result"] >= min_misinformation_score
     ].reset_index(drop=True)
@@ -88,8 +88,9 @@ def detect_misinformation(
 
 @monitor(monitor_slug="label-misinformation")
 def main():
+    ray.init(log_to_driver=True)
     logger = getLogger()
-    ray.init()
+    
     pd.set_option("display.max_columns", None)
     sentry_init()
 
@@ -97,7 +98,9 @@ def main():
     app_name = os.getenv("APP_NAME", "")
     # a security nets in case scaleway servers are done to replay data
     number_of_previous_days = int(os.environ.get("NUMBER_OF_PREVIOUS_DAYS", 7))
-    logging.info(f"Number of previous days to check for missing date (NUMBER_OF_PREVIOUS_DAYS): {number_of_previous_days}")
+    logging.info(
+        f"Number of previous days to check for missing date (NUMBER_OF_PREVIOUS_DAYS): {number_of_previous_days}"
+    )
     date_env: str = os.getenv("DATE", "")
     bucket_input = os.getenv("BUCKET_INPUT", "")
     bucket_output = os.getenv("BUCKET_OUTPUT", "")
@@ -156,24 +159,28 @@ def main():
                     number_of_disinformation = len(misinformation_only_news)
 
                     if number_of_disinformation > 0:
-                        logging.warning(f"Misinformation detected {len(misinformation_only_news)} rows")
-                        logging.info(f"Examples : {misinformation_only_news.head(10)}")
+                        logging.warning(
+                            f"""Misinformation detected: {len(misinformation_only_news)} rows:
+                            {misinformation_only_news.head(10)}
+                            """
+                        )
+
+                        # improve plaintext from mediatree
+                        logging.info("improve plaintext from mediatree")
+                        df_whispered = get_new_plaintext_from_whisper(misinformation_only_news)
 
                         # save JSON LabelStudio format
                         save_to_s3(
-                            misinformation_only_news,
+                            df_whispered,
                             channel=channel,
                             date=date,
                             s3_client=s3_client,
                             bucket=bucket_output,
                             folder_inside_bucket=app_name,
                         )
-
-                        # TODO maybe save using LabelStudio's API
-                        # right now, JSON import from S3 are used from Cloud Storage on LabelStudio
                     else:
                         logging.info(
-                            f"No misinformation detected for channel {channel} on {date} - saving a empty file to not requery it"
+                            f"Nothing detected for channel {channel} on {date} - saving a empty file to not re-query it"
                         )
                         save_to_s3(
                             misinformation_only_news,
@@ -194,6 +201,7 @@ def main():
     except Exception as err:
         logging.fatal("Main crash (%s) %s" % (type(err).__name__, err))
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

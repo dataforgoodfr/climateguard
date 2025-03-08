@@ -28,6 +28,7 @@ jsonschema-specifications==2024.10.1
 modin==0.32.0
 msgpack==1.1.0
 multidict==6.1.0
+moviepy==2.1.2
 numpy==2.2.3
 openai==1.63.2
 packaging==24.2
@@ -40,6 +41,7 @@ pyarrow==19.0.1
 pydantic==2.10.6
 pydantic_core==2.27.2
 pytest==8.3.4
+pytest-mock==3.14.0
 python-dateutil==2.9.0.post0
 pytz==2025.1
 PyYAML==6.0.2

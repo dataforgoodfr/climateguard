@@ -15,11 +15,14 @@ jobs/label_misinformation/jobs
 **secrets/
 **venv/
 **/s3/
+**/audio/
 **/.parquet
 # Node artifact files
 node_modules/
 dist/
-
+# labelstudio docker image
+jobs/label_misinformation/tests/label_studio.sqlite3
+jobs/label_misinformation/tests/media/
 # Compiled Java class files
 *.class
 
