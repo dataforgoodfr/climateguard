@@ -13,14 +13,15 @@ def get_label_studio_format(row) -> str:
         row["start"].isoformat() if isinstance(row["start"], pd.Timestamp) else row["start"]
     )
 
-    media = encode_audio_base64(row['media'])
+    # TODO make it labelstudio compatible
+    # media = encode_audio_base64(row['media'])
 
     task_data = {
         "data": {
             "item": {
                 "plaintext": row["plaintext"],
                 WHISPER_COLUMN_NAME: row[WHISPER_COLUMN_NAME],
-                "media": media,
+                # "media": media,  # TODO make it labelstudio compatible
                 "start": start_time,
                 "channel_title": row["channel_title"],
                 "channel_name": row["channel_name"],

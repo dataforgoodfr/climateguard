@@ -16,7 +16,7 @@ API_BASE_URL = os.environ.get("KEYWORDS_URL")
 
 
 def get_auth_token(password=mediatree_password, user_name=mediatree_user):
-    logging.info(f"Getting a token")
+    logging.debug(f"Getting a token")
     try:
         post_arguments = {"grant_type": "password", "username": user_name, "password": password}
         response = requests.post(AUTH_URL, data=post_arguments)
@@ -54,35 +54,37 @@ def get_response_single_export_api(single_export_api):
 def fetch_video_url(row, token):
     """Fetches a single video URL based on a DataFrame row."""
     try:
-        start, end = get_start_and_end_of_chunk(row["start"])
-        channel_name = row["channel_name"]
-        logging.info(f"Fetching URL for {channel_name} {start} {end}...")
+        if not pd.isna(row["start"]): # bug modin dataframe empty when df is too small
+            start, end = get_start_and_end_of_chunk(row["start"])
+            channel_name = row["channel_name"]
+            logging.info(f"Fetching URL for {channel_name} {start} {end}...")
 
-        single_export_api = get_mediatree_single_export_url(token, channel_name, start, end)
-        logging.info(f"Fetching URL for {channel_name} [{start}-{end}]: {single_export_api}")
+            single_export_api = get_mediatree_single_export_url(token, channel_name, start, end)
+            logging.info(f"Fetching URL for {channel_name} [{start}-{end}]: {single_export_api}")
 
-        response = get_response_single_export_api(single_export_api)
-        if response.status_code != 200:
-            logging.error(
-                f"Failed to fetch URL for {channel_name} [{start}-{end}]: {response.status_code}"
-            )
-            return None  # Keep column as None for failed cases
+            response = get_response_single_export_api(single_export_api)
+            if response.status_code != 200:
+                logging.error(
+                    f"Failed to fetch URL for {channel_name} [{start}-{end}]: {response.status_code}"
+                )
+                return None  # Keep column as None for failed cases
 
-        output = response.json()
-        url = output.get("src", "")
+            output = response.json()
+            url = output.get("src", "")
 
-        logging.info(f"Got response URL: {url}")
+            logging.info(f"Got response URL: {url}")
 
-        if not url:
-            logging.warning(f"No video URL found for {channel_name} [{start}-{end}]")
+            if not url:
+                logging.warning(f"No video URL found for {channel_name} [{start}-{end}]")
+                return None
+            logging.debug(f"url is {url}")
+            return url
+        else:
             return None
-        logging.debug(f"url is {url}")
-        return url
 
     except Exception as e:
         logging.error(f"Error fetching video URL {row}: {e}")
         return None
-
 
 def get_video_urls(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -93,11 +95,11 @@ def get_video_urls(df: pd.DataFrame) -> pd.DataFrame:
     """
     logging.info("Fetching video URLs for downloading...")
     token = get_auth_token()
-
+    
     df["media_url"] = df.apply(lambda row: fetch_video_url(row, token), axis=1)
 
     logging.debug(
-        f"Updated DataFrame with media URLs:\n{df[['channel_name', 'start', 'media_url']].head()}"
+        f"Updated DataFrame with media URLs, DF :\n{df[['channel_name', 'start', 'media_url']].head()}"
     )
     return df
 
@@ -144,34 +146,40 @@ def add_medias_to_df(df: pd.DataFrame):
     )
     return df
 
+"""
+TODO: move this entire function in an abstracted client
+From a dataframe with the mp3 information
+"""
+def get_whispered_transcript(audio_bytes: Optional[bytes]) -> str:
+    if audio_bytes is None:
+        logging.warning(f"get_whispered_transcript - audio bytes is None")
+        return ""
+    try:
+        buffer = BytesIO(audio_bytes)
+        buffer.name = "audio.mp3"
+        openai.api_key = get_secret_docker("OPENAI_API_KEY")
+        transcript = openai.audio.transcriptions.create(
+            model="whisper-1",
+            file=buffer,
+            response_format="text",
+        )
+        logging.info(f"Whisper sample: {transcript[:100]}...")
+        return transcript
+    except Exception as e:
+        logging.error(f"Error with whisper client: {e}")
+        raise e
 
-def get_new_plaintext_from_whisper(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    TODO: move this entire function in an abstracted client
-    From a dataframe with the mp3 information
-    """
-    df = add_medias_to_df(df)
-
-    def get_whispered_transcript(audio_bytes: Optional[bytes]) -> str:
-        if audio_bytes is None:
-            return ""
-        try:
-            buffer = BytesIO(audio_bytes)
-            buffer.name = "audio.mp3"
-            openai.api_key = get_secret_docker("OPENAI_API_KEY")
-            transcript = openai.audio.transcriptions.create(
-                model="whisper-1",
-                file=buffer,
-                response_format="text",
-            )
-            logging.info(f"Whisper sample: {transcript[:100]}...")
-            return transcript
-        except Exception as e:
-            logging.error(f"Error with whisper client: {e}")
-            raise e
-
+def add_new_plaintext_column_from_whister(df: pd.DataFrame) -> pd.DataFrame:
     df[WHISPER_COLUMN_NAME] = df["media"].apply(
         lambda audio_bytes: get_whispered_transcript(audio_bytes), axis=1
     )
+
+    return df
+
+def get_new_plaintext_from_whisper(df: pd.DataFrame) -> pd.DataFrame:
+
+    df = add_medias_to_df(df)
+
+    df = add_new_plaintext_column_from_whister(df)
 
     return df

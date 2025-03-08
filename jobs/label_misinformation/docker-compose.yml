@@ -16,7 +16,7 @@ services:
       DATE: 2025-02-04 # YYYY-MM-DD
       NUMBER_OF_PREVIOUS_DAYS: 7
       # SENTRY_DSN: prod_only
-      CHANNEL: sud-radio # mediatree former channel name, not title (cnews)
+      CHANNEL: europe1 # mediatree former channel name, not title (cnews)
       MEDIATREE_USER : /run/secrets/username_api
       MEDIATREE_PASSWORD: /run/secrets/pwd_api
       MEDIATREE_AUTH_URL: https://keywords.mediatree.fr/api/auth/token/
@@ -30,6 +30,16 @@ services:
        - username_api
     volumes:
       - ./app:/app/
+
+  label_studio:
+    image: heartexlabs/label-studio:latest
+    container_name: label_studio
+    ports:
+      - 8080:8080
+    environment:
+      LOG_LEVEL: DEBUG
+    volumes:
+      - ./tests:/label-studio/data
 
   test:
     build: .

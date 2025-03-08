@@ -88,8 +88,9 @@ def detect_misinformation(
 
 @monitor(monitor_slug="label-misinformation")
 def main():
+    ray.init(log_to_driver=True)
     logger = getLogger()
-    ray.init()
+    
     pd.set_option("display.max_columns", None)
     sentry_init()
 
@@ -159,9 +160,10 @@ def main():
 
                     if number_of_disinformation > 0:
                         logging.warning(
-                            f"Misinformation detected {len(misinformation_only_news)} rows"
+                            f"""Misinformation detected: {len(misinformation_only_news)} rows:
+                            {misinformation_only_news.head(10)}
+                            """
                         )
-                        logging.info(f"Examples : {misinformation_only_news.head(10)}")
 
                         # improve plaintext from mediatree
                         logging.info("improve plaintext from mediatree")
@@ -176,12 +178,9 @@ def main():
                             bucket=bucket_output,
                             folder_inside_bucket=app_name,
                         )
-
-                        # TODO maybe save using LabelStudio's API
-                        # right now, JSON import from S3 are used from Cloud Storage on LabelStudio
                     else:
                         logging.info(
-                            f"No misinformation detected for channel {channel} on {date} - saving a empty file to not requery it"
+                            f"Nothing detected for channel {channel} on {date} - saving a empty file to not re-query it"
                         )
                         save_to_s3(
                             misinformation_only_news,
