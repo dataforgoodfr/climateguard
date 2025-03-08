@@ -80,7 +80,7 @@ def fetch_video_url(row, token):
         return url
 
     except Exception as e:
-        logging.error(f"Error fetching video URL: {e}")
+        logging.error(f"Error fetching video URL {row}: {e}")
         return None
 
 
@@ -132,13 +132,14 @@ def add_medias_to_df(df: pd.DataFrame):
     """
     Downloads videos from URLs and saves them to dataframe
     """
-    logging.info(f"Downloading medias..")
+    number_of_medias = len(df)
+    logging.info(f"Downloading {number_of_medias} medias..")
 
     # add  "media_url" column
     df = get_video_urls(df)
     df["media"] = df.apply(lambda row: download_media(row), axis=1)
 
-    logging.debug(
+    logging.info(
         f"Updated DataFrame with media files:\n{df[['channel_name', 'start', 'media_url', 'media']].head()}"
     )
     return df
