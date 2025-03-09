@@ -97,13 +97,13 @@ def get_video_urls(df: pd.DataFrame) -> pd.DataFrame:
     """
     logging.info("Fetching video URLs for downloading...")
     token = get_auth_token()
-    
-    df["media_url"] = df.apply(lambda row: fetch_video_url(row, token), axis=1)
+    try:
+        df["media_url"] = df.apply(lambda row: fetch_video_url(row, token), axis=1)
 
-    logging.debug(
-        f"Updated DataFrame with media URLs, DF :\n{df[['channel_name', 'start', 'media_url']].head()}"
-    )
-    return df
+        return df
+    except Exception as e:
+        logging.error(f"get_video_urls {df}: {e}")
+        return None
 
 
 def download_media(row) -> Optional[bytes]:
@@ -137,9 +137,6 @@ def add_medias_to_df(df: pd.DataFrame):
     """
 
     try:
-        number_of_medias = len(df)
-        logging.info(f"Downloading {number_of_medias} medias..")
-
         # add  "media_url" column
         df = get_video_urls(df)
         df["media"] = df.apply(lambda row: download_media(row), axis=1)

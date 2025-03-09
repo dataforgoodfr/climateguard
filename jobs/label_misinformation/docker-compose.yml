@@ -21,6 +21,8 @@ services:
       MEDIATREE_PASSWORD: /run/secrets/pwd_api
       MEDIATREE_AUTH_URL: https://keywords.mediatree.fr/api/auth/token/
       KEYWORDS_URL: https://keywords.mediatree.fr/api/export/single # https://keywords.mediatree.fr/api/docs/#/paths/~1api~1export~1single/get
+      MODIN_MEMORY: 3000000000
+      RAY_COLOR_PREFIX: 1
     secrets:
        - model_name
        - openai_key
