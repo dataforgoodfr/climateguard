@@ -110,12 +110,11 @@ def download_media(row) -> Optional[bytes]:
     """
     Downloads a media file, converts it to mp3 and returns its binary content.
     """
-    url = row["media_url"]
-    if not url:
-        logging.warning(f"Skipping empty URL for {row['channel_name']} at {row['start']}")
-        return None
-
     try:
+        url = row["media_url"]
+        if not url:
+            logging.warning(f"Skipping empty URL for {row['channel_name']} at {row['start']}")
+            return None
         logging.info(f"Downloading: {url}")
         response = requests.get(url, stream=True)
         response.raise_for_status()  # Raise an error for bad responses (4xx, 5xx)
@@ -145,9 +144,6 @@ def add_medias_to_df(df: pd.DataFrame):
         df = get_video_urls(df)
         df["media"] = df.apply(lambda row: download_media(row), axis=1)
 
-        logging.info(
-            f"Updated DataFrame with media files:\n{df[['channel_name', 'start', 'media_url', 'media']].head()}"
-        )
         return df
     except Exception as e:
         logging.error(f"Error with add_medias_to_df: {e}")
