@@ -21,3 +21,7 @@ def sentry_init(version = "0.0"):
         )
     else:
         logging.info("Sentry not init - SENTRY_DSN not found")
+
+
+def sentry_close():
+    sentry_sdk.flush(timeout=2.0)

@@ -201,7 +201,7 @@ def save_to_s3(
             df["day"] = date.day
             df["channel"] = channel  # channel_name from mediatree's api
 
-            df = df._to_pandas()  # collect data accross ray workers to avoid multiple subfolders
+            # df = df._to_pandas()  # collect data accross ray workers to avoid multiple subfolders
 
             # local_folder_parquet = save_parquet(df, channel, date, s3_path, folder_inside_bucket)
             # upload_folder_to_s3(local_folder_parquet, bucket, s3_path, s3_client=s3_client)
