@@ -110,6 +110,8 @@ def main():
     )
     openai_api_key = get_secret_docker("OPENAI_API_KEY")
 
+    mediatree_check_secrets()
+
     pipeline = SinglePromptPipeline(model_name=model_name, api_key=openai_api_key)
     try:
         date_range = get_date_range(date_env, minus_days=number_of_previous_days)
