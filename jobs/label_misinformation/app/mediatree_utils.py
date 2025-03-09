@@ -22,6 +22,7 @@ def get_auth_token(password=mediatree_password, user_name=mediatree_user):
         response = requests.post(AUTH_URL, data=post_arguments)
         output = response.json()
         token = output["data"]["access_token"]
+        logging.debug(f"got a token")
         return token
     except Exception as err:
         logging.error("Could not get token %s:(%s) %s" % (type(err).__name__, err))
@@ -54,7 +55,8 @@ def get_response_single_export_api(single_export_api):
 def fetch_video_url(row, token):
     """Fetches a single video URL based on a DataFrame row."""
     try:
-        if not pd.isna(row["start"]): # bug modin dataframe empty when df is too small
+        if not pd.isna(row["start"]) and not pd.isna(row['channel_name']):
+            logging.info(f"fetch_video_url for : {row}")
             start, end = get_start_and_end_of_chunk(row["start"])
             channel_name = row["channel_name"]
             logging.info(f"Fetching URL for {channel_name} {start} {end}...")
@@ -98,9 +100,6 @@ def get_video_urls(df: pd.DataFrame) -> pd.DataFrame:
     
     df["media_url"] = df.apply(lambda row: fetch_video_url(row, token), axis=1)
 
-    logging.debug(
-        f"Updated DataFrame with media URLs, DF :\n{df[['channel_name', 'start', 'media_url']].head()}"
-    )
     return df
 
 
@@ -134,17 +133,22 @@ def add_medias_to_df(df: pd.DataFrame):
     """
     Downloads videos from URLs and saves them to dataframe
     """
-    number_of_medias = len(df)
-    logging.info(f"Downloading {number_of_medias} medias..")
 
-    # add  "media_url" column
-    df = get_video_urls(df)
-    df["media"] = df.apply(lambda row: download_media(row), axis=1)
+    try:
+        number_of_medias = len(df)
+        logging.info(f"Downloading {number_of_medias} medias..")
 
-    logging.info(
-        f"Updated DataFrame with media files:\n{df[['channel_name', 'start', 'media_url', 'media']].head()}"
-    )
-    return df
+        # add  "media_url" column
+        df = get_video_urls(df)
+        df["media"] = df.apply(lambda row: download_media(row), axis=1)
+
+        logging.info(
+            f"Updated DataFrame with media files:\n{df[['channel_name', 'start', 'media_url', 'media']].head()}"
+        )
+        return df
+    except Exception as e:
+        logging.error(f"Error with add_medias_to_df: {e}")
+        raise e
 
 """
 TODO: move this entire function in an abstracted client
@@ -170,14 +174,13 @@ def get_whispered_transcript(audio_bytes: Optional[bytes]) -> str:
         raise e
 
 def add_new_plaintext_column_from_whister(df: pd.DataFrame) -> pd.DataFrame:
-    df[WHISPER_COLUMN_NAME] = df["media"].apply(
-        lambda audio_bytes: get_whispered_transcript(audio_bytes), axis=1
+    df[WHISPER_COLUMN_NAME] = df.apply(
+        lambda row: get_whispered_transcript(row["media"]), axis=1
     )
 
     return df
 
 def get_new_plaintext_from_whisper(df: pd.DataFrame) -> pd.DataFrame:
-
     df = add_medias_to_df(df)
 
     df = add_new_plaintext_column_from_whister(df)

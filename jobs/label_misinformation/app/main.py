@@ -165,8 +165,9 @@ def main():
                             """
                         )
 
-                        # improve plaintext from mediatree
-                        logging.info("improve plaintext from mediatree")
+                        # ray has problem with tiny dataframes
+                        misinformation_only_news = misinformation_only_news._to_pandas()
+
                         df_whispered = get_new_plaintext_from_whisper(misinformation_only_news)
 
                         # save JSON LabelStudio format
@@ -197,7 +198,7 @@ def main():
                     continue
 
         logging.info("Exiting with success")
-        sys.exit(0)
+        return True
     except Exception as err:
         logging.fatal("Main crash (%s) %s" % (type(err).__name__, err))
         sys.exit(1)
@@ -205,3 +206,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+    sentry_close()
+    sys.exit(0)
