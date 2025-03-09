@@ -14,13 +14,10 @@ mediatree_user = get_secret_docker("MEDIATREE_USER")
 # https://keywords.mediatree.fr/api/docs/#/paths/~1api~1export~1single/get
 API_BASE_URL = os.environ.get("KEYWORDS_URL")
 
-
-def get_auth_token():
+def get_auth_token(user=mediatree_user, password=mediatree_password):
     logging.debug(f"Getting a token")
     try:
-        mediatree_password = get_secret_docker("MEDIATREE_PASSWORD")
-        mediatree_user = get_secret_docker("MEDIATREE_USER")
-        post_arguments = {"grant_type": "password", "username": mediatree_user, "password": mediatree_password}
+        post_arguments = {"grant_type": "password", "username": user, "password": password}
         response = requests.post(AUTH_URL, data=post_arguments)
         output = response.json()
         token = output["data"]["access_token"]
@@ -53,10 +50,9 @@ def get_response_single_export_api(single_export_api):
     return requests.get(single_export_api)
 
 
-def fetch_video_url(row):
+def fetch_video_url(row, token):
     """Fetches a single video URL based on a DataFrame row."""
     try:
-        token = get_auth_token() # in worker context
         if not pd.isna(row["start"]) and not pd.isna(row['channel_name']):
             logging.info(f"fetch_video_url for : {row}")
             start, end = get_start_and_end_of_chunk(row["start"])
@@ -100,7 +96,8 @@ def get_video_urls(df: pd.DataFrame) -> pd.DataFrame:
     logging.info("Fetching video URLs for downloading...")
 
     try:
-        df["media_url"] = df.apply(lambda row: fetch_video_url(row), axis=1)
+        token = token = get_auth_token()
+        df["media_url"] = df.apply(lambda row: fetch_video_url(row,token), axis=1)
 
         return df
     except Exception as e:
