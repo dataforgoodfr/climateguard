@@ -15,18 +15,19 @@ mediatree_user = get_secret_docker("MEDIATREE_USER")
 API_BASE_URL = os.environ.get("KEYWORDS_URL")
 
 
-def get_auth_token(password=mediatree_password, user_name=mediatree_user):
+def get_auth_token():
     logging.debug(f"Getting a token")
     try:
-        post_arguments = {"grant_type": "password", "username": user_name, "password": password}
+        mediatree_password = get_secret_docker("MEDIATREE_PASSWORD")
+        mediatree_user = get_secret_docker("MEDIATREE_USER")
+        post_arguments = {"grant_type": "password", "username": mediatree_user, "password": mediatree_password}
         response = requests.post(AUTH_URL, data=post_arguments)
         output = response.json()
         token = output["data"]["access_token"]
         logging.debug(f"got a token")
         return token
     except Exception as err:
-        logging.error("Could not get token %s:(%s) %s" % (type(err).__name__, err))
-
+        logging.error(f"Could not get token {err}")
 
 def get_start_and_end_of_chunk(start):
     logging.info(f"get_start_and_end_of_chunk - datetime: {start}")
@@ -52,9 +53,10 @@ def get_response_single_export_api(single_export_api):
     return requests.get(single_export_api)
 
 
-def fetch_video_url(row, token):
+def fetch_video_url(row):
     """Fetches a single video URL based on a DataFrame row."""
     try:
+        token = get_auth_token() # in worker context
         if not pd.isna(row["start"]) and not pd.isna(row['channel_name']):
             logging.info(f"fetch_video_url for : {row}")
             start, end = get_start_and_end_of_chunk(row["start"])
@@ -96,9 +98,9 @@ def get_video_urls(df: pd.DataFrame) -> pd.DataFrame:
     :return: Updated DataFrame with a new "media_url" column
     """
     logging.info("Fetching video URLs for downloading...")
-    token = get_auth_token()
+
     try:
-        df["media_url"] = df.apply(lambda row: fetch_video_url(row, token), axis=1)
+        df["media_url"] = df.apply(lambda row: fetch_video_url(row), axis=1)
 
         return df
     except Exception as e:
