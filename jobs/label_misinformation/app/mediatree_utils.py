@@ -100,6 +100,9 @@ def get_video_urls(df: pd.DataFrame) -> pd.DataFrame:
     
     df["media_url"] = df.apply(lambda row: fetch_video_url(row, token), axis=1)
 
+    logging.debug(
+        f"Updated DataFrame with media URLs, DF :\n{df[['channel_name', 'start', 'media_url']].head()}"
+    )
     return df
 
 
