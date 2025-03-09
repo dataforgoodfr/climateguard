@@ -14,6 +14,12 @@ mediatree_user = get_secret_docker("MEDIATREE_USER")
 # https://keywords.mediatree.fr/api/docs/#/paths/~1api~1export~1single/get
 API_BASE_URL = os.environ.get("KEYWORDS_URL")
 
+
+def mediatree_check_secrets():
+     if mediatree_user is None or mediatree_password is None or AUTH_URL is None or API_BASE_URL is None:
+        logging.error(f"Config missing: MEDIATREE_USER/MEDIATREE_PASSWORD/MEDIATREE_AUTH_URL/KEYWORDS_URL missing")
+        raise Exception("Config missing: user/password/auth url missing")
+
 def get_auth_token(user=mediatree_user, password=mediatree_password):
     logging.debug(f"Getting a token")
     try:
@@ -24,7 +30,7 @@ def get_auth_token(user=mediatree_user, password=mediatree_password):
         logging.debug(f"got a token")
         return token
     except Exception as err:
-        logging.error(f"Could not get token {err}")
+        raise Exception(f"Could not get token {err}")
 
 def get_start_and_end_of_chunk(start):
     logging.info(f"get_start_and_end_of_chunk - datetime: {start}")
