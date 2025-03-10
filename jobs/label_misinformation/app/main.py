@@ -136,7 +136,9 @@ def main():
                             f"Skipping as already saved before: {channel} inside bucket {bucket_output} folder {app_name}"
                         )
                         continue
-
+                    
+                    # TODO get_keywords_for_a_day
+                    # get_keywords_for_a_day(date)
                     df_news = read_folder_from_s3(date=date, channel=channel, bucket=bucket_input)
                     logging.debug("Schema from API before formatting :\n%s", df_news.dtypes)
                     df_news = df_news[
