@@ -3,7 +3,7 @@ from datetime import datetime
 
 from sqlalchemy import URL, Column, DateTime, String, Text, Boolean, ARRAY, JSON, Integer, Table, MetaData, ForeignKey, create_engine, select, and_
 from sqlalchemy.orm import Session, declarative_base, sessionmaker, Session
-import pandas as pd
+import modin.pandas as pd
 from sqlalchemy import text
 import os
 import json

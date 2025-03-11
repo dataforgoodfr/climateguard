@@ -3,7 +3,7 @@ services:
     build: .
     environment:
       LOGLEVEL: INFO
-      ENV: docker
+      ENV: prod
       APP_NAME: label-misinformation 
       OPENAI_API_KEY: /run/secrets/openai_key
       MODEL_NAME:  /run/secrets/model_name
@@ -14,10 +14,10 @@ services:
       BUCKET_SECRET: /run/secrets/bucket_secret
       AWS_DEFAULT_REGION: fr-par
       MIN_MISINFORMATION_SCORE: 10 # the minimum score to have to be kept (10 out of 10)
-      DATE: 2025-03-09 # YYYY-MM-DD
+      DATE: 2025-03-10 # YYYY-MM-DD
       NUMBER_OF_PREVIOUS_DAYS: 10
       # SENTRY_DSN: prod_only
-      # CHANNEL: europe1 # mediatree former channel name, not title (cnews)
+      CHANNEL: rmc # mediatree former channel name, not title (cnews)
       MEDIATREE_USER : /run/secrets/username_api
       MEDIATREE_PASSWORD: /run/secrets/pwd_api
       MEDIATREE_AUTH_URL: https://keywords.mediatree.fr/api/auth/token/
