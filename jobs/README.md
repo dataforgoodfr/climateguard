@@ -13,7 +13,7 @@
 
 ## Label Studio locally
 ```
-docker compose up label_studio
+docker compose up labelstudio
 ```
 
 ## Build
@@ -54,12 +54,16 @@ docker compose exec testconsole bash
 * env variable  "APP_NAME" - will be used as folder inside bucket_output bucket
 * env variable "OPENAI_KEY"
 * env variable  "DATE" : to query a date with format YYYY-MM-DD, if none the date is yesterday
-* env variable  "BUCKET_INPUT" - bucket name with partitions : year,month,day,channel
 * env variable  "BUCKET_OUTPUT" - bucket name with partitions : year,month,day,channel
 * env variable "MIN_MISINFORMATION_SCORE": 10 # the minimum score to have to be kept (10 out of 10)
 * env variable : "CHANNEL" : mediatree former channel name (tf1 for TF1, itele for cnews, bfmtv for BFMTv ...)
 * env variable : NUMBER_OF_PREVIOUS_DAYS (integer): default 7 days to check if something missing - in case production servers had an issue
 
+### To sync data after each process
+This can be done manually by clicking on UI, but if you set this it will be done after each cron job :
+* env variable : LABEL_STUDIO_URL = container url
+* env variable : LABEL_STUDIO_PROJECT_ID = project id inside label studio
+* env variable : API_LABEL_STUDIO_KEY = label studio API key
 
 ## Deployment
 

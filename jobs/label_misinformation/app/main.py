@@ -9,6 +9,7 @@ from sentry_sdk.crons import monitor
 from sentry_utils import *
 from whisper_utils import *
 from pg_utils import *
+from labelstudio_utils import *
 from mediatree_utils import *
 from secret_utils import *
 from logging_utils import *
@@ -186,6 +187,11 @@ def main():
                             bucket=bucket_output,
                             folder_inside_bucket=bucket_output_folder,
                         )
+
+
+
+                        # sync label studio only if there are new data
+                        wait_and_sync_label_studio()
                     else:
                         logging.info(
                             f"Nothing detected for channel {channel} on {date} - saving a empty file to not re-query it"
