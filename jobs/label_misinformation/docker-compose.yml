@@ -27,8 +27,12 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_HOST: postgres_db
       POSTGRES_PORT: 5432
+      LABEL_STUDIO_URL: http://labelstudio:8080
+      LABEL_STUDIO_PROJECT_ID: 1
+      API_LABEL_STUDIO_KEY: a606fee81ebf4fbc1c14a615c6561aaac54842e7
     depends_on:
       - postgres_db
+      - labelstudio
     secrets:
        - model_name
        - openai_key
@@ -39,13 +43,18 @@ services:
     volumes:
       - ./app:/app/
 
-  label_studio:
+  labelstudio:
     image: heartexlabs/label-studio:latest
-    container_name: label_studio
+    container_name: labelstudio
     ports:
       - 8080:8080
     environment:
       LOG_LEVEL: DEBUG
+      # LABEL_STUDIO_HOST: 0.0.0.0
+      # LABEL_STUDIO_ALLOW_ORIGIN: "*"
+      # ALLOWED_HOSTS: "*"
+      # LABEL_STUDIO_CORS_ORIGIN_ALLOW_ALL: true  # Enable CORS
+      # LABEL_STUDIO_CORS_ALLOW_CREDENTIALS: true  # Allow credentials
     volumes:
       - ./tests:/label-studio/data
 
