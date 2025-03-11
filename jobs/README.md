@@ -26,6 +26,9 @@ pip freeze > requirements.txt
 ## Run
 Install [Docker](https://www.docker.com/get-started/) in a few minutes on the official website then :
 ```
+docker compose up testconsole -d
+docker compose exec testconsole bash
+> pytest -vv -k test_pg_insert_data # will insert misinformation data linked to rmc on 2025 march 10
 docker compose up app
 ```
 
