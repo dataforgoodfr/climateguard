@@ -16,9 +16,15 @@ def get_label_studio_format(row) -> str:
     # TODO make it labelstudio compatible
     # media = encode_audio_base64(row['media'])
 
+    # safe id
+    row["id"] = row.get("id", "")
+    if pd.isna(row["id"]):
+        row["id"] = ""
+
     task_data = {
         "data": {
             "item": {
+                "id": row["id"], # from keywords.id
                 "plaintext": row["plaintext"],
                 WHISPER_COLUMN_NAME: row[WHISPER_COLUMN_NAME],
                 # "media": media,  # TODO make it labelstudio compatible

@@ -194,6 +194,7 @@ def save_to_s3(
 
     try:
         s3_path: str = f"{get_bucket_key_folder(date, channel, root_folder=folder_inside_bucket)}"
+        logging.info(f"S3 path: {s3_path}")
         if len(df) > 0:
             # add partition columns year, month, day to dataframe
             df["year"] = date.year

@@ -1,8 +1,8 @@
 import logging
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, String, Text, Boolean, ARRAY, JSON, Integer, Table, MetaData, ForeignKey, create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker, relationship
+from sqlalchemy import URL, Column, DateTime, String, Text, Boolean, ARRAY, JSON, Integer, Table, MetaData, ForeignKey, create_engine, select, and_
+from sqlalchemy.orm import Session, declarative_base, sessionmaker, Session
 import pandas as pd
 from sqlalchemy import text
 import os
@@ -72,11 +72,11 @@ def create_tables(conn=None):
         if engine is not None:
             engine.dispose()
 
-def get_keywords_for_a_day(session: Session, date: datetime, limit: int = 10000) -> list:
-    logging.debug(f"Getting {batch_size} elements from offset {offset}")
+def get_keywords_for_a_day_and_channel(session: Session, date: datetime, channel_name: str, limit: int = 10000) -> pd.DataFrame:
+    logging.info(f"Getting keywords table from {date} and channel_name : {channel_name}")
 
     statement = select(
-                Stop_Word.id,
+                Keywords.id,
                 Keywords.start,
                 Keywords.channel_program,
                 Keywords.channel_program_type,
@@ -87,6 +87,7 @@ def get_keywords_for_a_day(session: Session, date: datetime, limit: int = 10000)
     .limit(limit)     
 
     statement = statement.filter(Keywords.number_of_keywords_climat > 0)
+    statement = statement.filter(Keywords.channel_name == channel_name)
 
     # filter records where 'start' is within the same day
     start_of_day = date.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -98,4 +99,10 @@ def get_keywords_for_a_day(session: Session, date: datetime, limit: int = 10000)
         )
     )
 
-    return session.execute(statement).fetchall()
+    output = session.execute(statement).fetchall()
+
+    columns = ["id", "start", "channel_program", "channel_program_type", "channel_title", "channel_name", "plaintext"]
+    dataframe = pd.DataFrame(output, columns=columns)
+
+    logging.info(f"Got {len(dataframe)} keywords from SQL Table Keywords")
+    return dataframe

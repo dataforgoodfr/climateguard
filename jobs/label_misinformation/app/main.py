@@ -8,6 +8,7 @@ from s3_utils import *
 from sentry_sdk.crons import monitor
 from sentry_utils import *
 from whisper_utils import *
+from pg_utils import *
 from mediatree_utils import *
 from secret_utils import *
 from logging_utils import *
@@ -104,6 +105,7 @@ def main():
     date_env: str = os.getenv("DATE", "")
     bucket_input = os.getenv("BUCKET_INPUT", "")
     bucket_output = os.getenv("BUCKET_OUTPUT", "")
+    bucket_output_folder = os.getenv("BUCKET_OUTPUT_FOLDER", "")
     min_misinformation_score = int(os.getenv("MIN_MISINFORMATION_SCORE", 10))
     logging.info(
         f"Starting app {app_name} with model {model_name} for date {date_env} with bucketinput {bucket_input} and bucket output {bucket_output}, min_misinformation_score to keep is {min_misinformation_score} out of 10..."
@@ -122,7 +124,7 @@ def main():
                 try:
                     s3_client = get_s3_client()
                     logging.info(
-                        f"processing date {date} for channel : {channel} inside bucket {bucket_output} folder {app_name}"
+                        f"processing date {date} for channel : {channel} inside bucket {bucket_output} folder {bucket_output_folder}"
                     )
                     # if the date/channel has already been saved or not
                     if check_if_object_exists_in_s3(
@@ -130,19 +132,20 @@ def main():
                         channel=channel,
                         s3_client=s3_client,
                         bucket=bucket_output,
-                        root_folder=app_name,
+                        root_folder=bucket_output_folder,
                     ):
                         logging.info(
-                            f"Skipping as already saved before: {channel} inside bucket {bucket_output} folder {app_name}"
+                            f"Skipping as already saved before: {channel} inside bucket {bucket_output} folder {bucket_output_folder}"
                         )
                         continue
                     
-                    # TODO get_keywords_for_a_day
-                    # get_keywords_for_a_day(date)
-                    df_news = read_folder_from_s3(date=date, channel=channel, bucket=bucket_input)
+                    session = get_db_session()
+                    df_news= get_keywords_for_a_day_and_channel(session=session, date=date, channel_name=channel)
+
                     logging.debug("Schema from API before formatting :\n%s", df_news.dtypes)
                     df_news = df_news[
                         [
+                            "id",
                             "plaintext",
                             "start",
                             "channel_title",
@@ -181,7 +184,7 @@ def main():
                             date=date,
                             s3_client=s3_client,
                             bucket=bucket_output,
-                            folder_inside_bucket=app_name,
+                            folder_inside_bucket=bucket_output_folder,
                         )
                     else:
                         logging.info(
@@ -193,7 +196,7 @@ def main():
                             date=date,
                             s3_client=s3_client,
                             bucket=bucket_output,
-                            folder_inside_bucket=app_name,
+                            folder_inside_bucket=bucket_output_folder,
                         )
                 except Exception as err:
                     logging.error(
