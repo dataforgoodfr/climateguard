@@ -23,6 +23,7 @@ dist/
 # labelstudio docker image
 jobs/label_misinformation/tests/label_studio.sqlite3
 jobs/label_misinformation/tests/media/
+jobs/label_misinformation/pgdata
 # Compiled Java class files
 *.class
 

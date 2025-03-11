@@ -9,20 +9,26 @@ services:
       MODEL_NAME:  /run/secrets/model_name
       BUCKET_INPUT: mediatree
       BUCKET_OUTPUT: climateguard
+      BUCKET_OUTPUT_FOLDER: label-misinformation-tmp
       BUCKET_ACCESS: /run/secrets/bucket_access
       BUCKET_SECRET: /run/secrets/bucket_secret
       AWS_DEFAULT_REGION: fr-par
       MIN_MISINFORMATION_SCORE: 10 # the minimum score to have to be kept (10 out of 10)
-      DATE: 2025-02-04 # YYYY-MM-DD
-      NUMBER_OF_PREVIOUS_DAYS: 7
+      DATE: 2025-03-09 # YYYY-MM-DD
+      NUMBER_OF_PREVIOUS_DAYS: 10
       # SENTRY_DSN: prod_only
-      CHANNEL: europe1 # mediatree former channel name, not title (cnews)
+      # CHANNEL: europe1 # mediatree former channel name, not title (cnews)
       MEDIATREE_USER : /run/secrets/username_api
       MEDIATREE_PASSWORD: /run/secrets/pwd_api
       MEDIATREE_AUTH_URL: https://keywords.mediatree.fr/api/auth/token/
       KEYWORDS_URL: https://keywords.mediatree.fr/api/export/single # https://keywords.mediatree.fr/api/docs/#/paths/~1api~1export~1single/get
-      MODIN_MEMORY: 3000000000
-      RAY_COLOR_PREFIX: 1
+      POSTGRES_USER: user
+      POSTGRES_DB: barometre
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST: postgres_db
+      POSTGRES_PORT: 5432
+    depends_on:
+      - postgres_db
     secrets:
        - model_name
        - openai_key
@@ -43,6 +49,24 @@ services:
     volumes:
       - ./tests:/label-studio/data
 
+  postgres_db:
+    image: postgres:15
+    ports:
+      - 5432:5432
+    volumes:
+      - './pgdata:/var/lib/postgresql/data' # persist data https://stackoverflow.com/a/41650891/3535853
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_DB: barometre
+      POSTGRES_PASSWORD: password
+    logging: # no logs for postgres container
+            driver: none
+
   test:
     build: .
     entrypoint: ["pytest", "-vv"]   # use to debug the container if needed ["pytest", "-vv"] 
@@ -54,6 +78,7 @@ services:
       MODEL_NAME:  /run/secrets/model_name
       BUCKET_INPUT: mediatree
       BUCKET_OUTPUT: climateguard
+      BUCKET_OUTPUT_FOLDER: label-misinformation-tmp
       BUCKET_ACCESS: /run/secrets/bucket_access
       BUCKET_SECRET: /run/secrets/bucket_secret
       AWS_DEFAULT_REGION: fr-par
@@ -65,6 +90,13 @@ services:
       MEDIATREE_PASSWORD: /run/secrets/pwd_api
       MEDIATREE_AUTH_URL: https://keywords.mediatree.fr/api/auth/token/
       KEYWORDS_URL: https://keywords.mediatree.fr/api/export/single 
+      POSTGRES_USER: user
+      POSTGRES_DB: barometre
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST: postgres_db
+      POSTGRES_PORT: 5432
+    depends_on:
+      - postgres_db
     secrets:
        - model_name
        - openai_key
@@ -87,6 +119,7 @@ services:
       MODEL_NAME:  /run/secrets/model_name
       BUCKET_INPUT: mediatree
       BUCKET_OUTPUT: climateguard
+      BUCKET_OUTPUT_FOLDER: label-misinformation-tmp
       BUCKET_ACCESS: /run/secrets/bucket_access
       BUCKET_SECRET: /run/secrets/bucket_secret
       AWS_DEFAULT_REGION: fr-par
@@ -98,6 +131,13 @@ services:
       MEDIATREE_PASSWORD: /run/secrets/pwd_api
       MEDIATREE_AUTH_URL: https://keywords.mediatree.fr/api/auth/token/
       KEYWORDS_URL: https://keywords.mediatree.fr/api/export/single 
+      POSTGRES_USER: user
+      POSTGRES_DB: barometre
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST: postgres_db
+      POSTGRES_PORT: 5432
+    depends_on:
+      - postgres_db
     secrets:
        - model_name
        - openai_key
