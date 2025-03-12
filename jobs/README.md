@@ -62,7 +62,7 @@ docker compose exec testconsole bash
 ### To sync data after each process
 This can be done manually by clicking on UI, but if you set this it will be done after each cron job :
 * env variable : LABEL_STUDIO_URL = container url
-* env variable : LABEL_STUDIO_PROJECT_ID = project id inside label studio
+* env variable : LABEL_STUDIO_PROJECT_ID = project id inside label studio --> new to see labelstudio logs when cliking on "sync" it can be different from the one inside the label interface.
 * env variable : API_LABEL_STUDIO_KEY = label studio API key
 
 ## Deployment
