@@ -106,6 +106,9 @@ def sync_s3_storage(api_key):
         logging.warning(f"Error syncing S3 storage: {e}")
 
 def wait_and_sync_label_studio():
-    logging.info("Syncronize S3 data to Label Studio API...")
-    if wait_for_health(HEALTH_ENDPOINT):
-        return sync_s3_storage(API_LABEL_STUDIO_KEY)
+    if LABEL_STUDIO_PROJECT_ID != "":
+        logging.info("Syncronize S3 data to Label Studio API...")
+        if wait_for_health(HEALTH_ENDPOINT):
+            return sync_s3_storage(API_LABEL_STUDIO_KEY)
+    else:
+        logging.warning(f"To activate label studio import, set LABEL_STUDIO_PROJECT_ID")
