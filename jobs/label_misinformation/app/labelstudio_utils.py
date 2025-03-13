@@ -10,6 +10,8 @@ import os
 
 LABEL_STUDIO_URL = os.getenv("LABEL_STUDIO_URL", "")
 HEALTH_ENDPOINT = f"{LABEL_STUDIO_URL}/health"
+
+# Storage ID (not project id @see https://api.labelstud.io/api-reference/api-reference/import-storage/s-3/sync)
 LABEL_STUDIO_PROJECT_ID = os.getenv("LABEL_STUDIO_PROJECT_ID", "")
 SYNC_ENDPOINT = f"{LABEL_STUDIO_URL}/api/storages/s3/{LABEL_STUDIO_PROJECT_ID}/sync"
 API_LABEL_STUDIO_KEY = os.getenv("API_LABEL_STUDIO_KEY", "")  # Replace with your actual API key
@@ -18,6 +20,7 @@ API_LABEL_STUDIO_KEY = os.getenv("API_LABEL_STUDIO_KEY", "")  # Replace with you
 def encode_audio_base64(audio_bytes):
     return f"data:audio/mp3;base64,{base64.b64encode(audio_bytes).decode('utf-8')}"
 
+# https://labelstud.io/guide/storage#Amazon-S3
 def get_label_studio_format(row) -> str:
     url_mediatree = url_mediatree = get_url_mediatree(row["start"], row["channel_name"])
     start_time = (
@@ -84,13 +87,15 @@ def wait_for_health(url, timeout=240, interval=5):
     logging.warning("Timed out waiting for the service to become healthy.")
     return False
 
+# https://api.labelstud.io/api-reference/api-reference/import-storage/s-3/sync
 def sync_s3_storage(api_key):
     """Triggers the S3 sync in Label Studio."""
     headers = {"Authorization": f"Token {api_key}"}
-    
+   
     try:
-        logging.info(f"POST to {SYNC_ENDPOINT}")
-        response = requests.post(SYNC_ENDPOINT, headers=headers, timeout=10)
+        timeout = 60 * 5
+        logging.info(f"POST to {SYNC_ENDPOINT} and waiting a maximum of {timeout} seconds for the sync...")
+        response = requests.post(SYNC_ENDPOINT, headers=headers, timeout=timeout)
         if response.status_code == 200:
             logging.info("Label Studio - S3 sync successful!")
             return True
@@ -101,6 +106,9 @@ def sync_s3_storage(api_key):
         logging.warning(f"Error syncing S3 storage: {e}")
 
 def wait_and_sync_label_studio():
-    logging.info("Syncronize S3 data to Label Studio API...")
-    if wait_for_health(HEALTH_ENDPOINT):
-        return sync_s3_storage(API_LABEL_STUDIO_KEY)
+    if LABEL_STUDIO_PROJECT_ID != "":
+        logging.info("Syncronize S3 data to Label Studio API...")
+        if wait_for_health(HEALTH_ENDPOINT):
+            return sync_s3_storage(API_LABEL_STUDIO_KEY)
+    else:
+        logging.warning(f"To activate label studio import, set LABEL_STUDIO_PROJECT_ID")

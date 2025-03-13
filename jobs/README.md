@@ -60,9 +60,9 @@ docker compose exec testconsole bash
 * env variable : NUMBER_OF_PREVIOUS_DAYS (integer): default 7 days to check if something missing - in case production servers had an issue
 
 ### To sync data after each process
-This can be done manually by clicking on UI, but if you set this it will be done after each cron job :
+This can be done manually by clicking on UI, but if you set this it will be done after each cron job if LABEL_STUDIO_PROJECT_ID is set :
 * env variable : LABEL_STUDIO_URL = container url
-* env variable : LABEL_STUDIO_PROJECT_ID = project id inside label studio --> new to see labelstudio logs when cliking on "sync" it can be different from the one inside the label interface.
+* env variable : LABEL_STUDIO_PROJECT_ID = Storage ID (not project id) inside label studio --> new to see labelstudio logs when cliking on "sync" it can be different from the one inside the label interface. @see https://api.labelstud.io/api-reference/api-reference/import-storage/s-3/sync
 * env variable : API_LABEL_STUDIO_KEY = label studio API key
 
 ## Deployment
