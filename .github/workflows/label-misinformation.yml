@@ -1,0 +1,97 @@
+name: Test & Build & Deploy to Scaleway
+
+on:
+  push:
+    paths:
+      - 'jobs/label_misinformation/**'
+      - '.github/workflows/label-misinformation.yml'
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.12'
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: pytest
+      working-directory: jobs/label_misinformation
+      run: |
+        touch secrets/openai_key
+        touch secrets/model_name
+        touch secrets/bucket_access
+        touch secrets/bucket_secret
+        touch secrets/pwd_api.txt
+        touch secrets/username_api.txt
+        docker compose up test --exit-code-from test
+
+  build_and_bump:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' }}
+    needs: test
+    outputs:
+      PROJECT_VERSION: ${{ steps.get_version.outputs.PROJECT_VERSION }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      working-directory: jobs/label_misinformation
+      run: pip install -r requirements.txt
+
+    - name: Bump version (patch)
+      working-directory: jobs/label_misinformation
+      run: |
+        git config user.name "dataforgood-github-actions"
+        git config user.email "dataforgood-github-actions@github.com"
+        bump2version patch
+        git push origin main
+
+    - name: Extract new version
+      id: get_version
+      working-directory: jobs/label_misinformation
+      run: |
+        PROJECT_VERSION=$(grep '^current_version' .bumpversion.cfg | cut -d ' ' -f 3)
+        echo "PROJECT_VERSION=$PROJECT_VERSION" >> $GITHUB_ENV
+        echo "PROJECT_VERSION=$PROJECT_VERSION" >> $GITHUB_OUTPUT
+
+  docker_build_and_push:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' }}
+    needs: build_and_bump
+    env:
+      PROJECT_VERSION: ${{ needs.build_and_bump.outputs.PROJECT_VERSION }}
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Login to Scaleway Container Registry
+      uses: docker/login-action@v3
+      with:
+        username: nologin
+        password: ${{ secrets.SCW_SECRET_KEY }}
+        registry: ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}
+
+    - name: Build label-misinformation image
+      working-directory: jobs/label_misinformation
+      run: docker build -f Dockerfile . -t ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/label-misinformation:${{ env.PROJECT_VERSION }}
+
+    - name: Tag label-misinformation latest image
+      run: docker tag ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/label-misinformation:${{ env.PROJECT_VERSION }} ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/label-misinformation:latest
+
+    - name: Push label-misinformation Image
+      run: docker push --all-tags ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/label-misinformation 
+
+    - name: Update Scaleway Job Definition
+      uses: jawher/action-scw@v2.34.0
+      env:
+        SCW_ACCESS_KEY: ${{ secrets.SCALEWAY_API_KEY }}
+        SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+        SCW_ORGANIZATION_ID: ${{ secrets.SCW_ORGANIZATION_ID }}
+        SCW_ZONE: ${{ secrets.SCW_ZONE }}
+      with:
+        args: jobs definition update ${{ secrets.SCALEWAY_JOB_LABEL_ID }} image-uri=${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/label-misinformation:${{ env.PROJECT_VERSION }}

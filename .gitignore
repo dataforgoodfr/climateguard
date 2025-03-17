@@ -7,10 +7,25 @@
 data/.ipynb_checkpoints/
 data
 
+
+jobs/label_misinformation/build
+jobs/label_misinformation/jobs
+**.egg-info/
+.vscode/
+**.pytest_cache/
+**__pycache__/
+**secrets/
+**venv/
+**/s3/
+**/audio/
+**/.parquet
 # Node artifact files
 node_modules/
 dist/
-
+# labelstudio docker image
+jobs/label_misinformation/tests/label_studio.sqlite3
+jobs/label_misinformation/tests/media/
+jobs/label_misinformation/pgdata
 # Compiled Java class files
 *.class
 
