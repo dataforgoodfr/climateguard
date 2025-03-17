@@ -116,3 +116,17 @@ def test_pg_insert_data():
     dataframe_to_save = pd.DataFrame(data_sample)
     save_to_pg(dataframe_to_save, table=keywords_table, conn=conn)
     assert True == True
+
+def test_is_there_data_for_this_day_safe_guard():
+    date = pd.to_datetime("2024-12-12 10:10:10")
+    session = get_db_session()
+    result = is_there_data_for_this_day_safe_guard(session, date)
+
+    assert result == True
+
+def test_is_there_data_for_this_day_safe_guard_future():
+    date = pd.to_datetime("2100-12-12 10:10:10")
+    session = get_db_session()
+    result = is_there_data_for_this_day_safe_guard(session, date)
+
+    assert result == False

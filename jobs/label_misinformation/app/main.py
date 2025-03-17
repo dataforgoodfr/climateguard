@@ -120,90 +120,95 @@ def main():
         date_range = get_date_range(date_env, minus_days=number_of_previous_days)
         logging.info(f"Number of days to query : {len(date_range)} - day_range : {date_range}")
         channels = get_channels()
+        session = get_db_session()
         for date in date_range:
-            for channel in channels:
-                try:
-                    s3_client = get_s3_client()
-                    logging.info(
-                        f"processing date {date} for channel : {channel} inside bucket {bucket_output} folder {bucket_output_folder}"
-                    )
-                    # if the date/channel has already been saved or not
-                    if check_if_object_exists_in_s3(
-                        day=date,
-                        channel=channel,
-                        s3_client=s3_client,
-                        bucket=bucket_output,
-                        root_folder=bucket_output_folder,
-                    ):
+            was_the_day_processed_in_keywords = is_there_data_for_this_day_safe_guard(session=session, date=date)
+            if was_the_day_processed_in_keywords:
+                for channel in channels:
+                    try:
+                        s3_client = get_s3_client()
                         logging.info(
-                            f"Skipping as already saved before: {channel} inside bucket {bucket_output} folder {bucket_output_folder}"
+                            f"processing date {date} for channel : {channel} inside bucket {bucket_output} folder {bucket_output_folder}"
+                        )
+                        # if the date/channel has already been saved or not
+                        if check_if_object_exists_in_s3(
+                            day=date,
+                            channel=channel,
+                            s3_client=s3_client,
+                            bucket=bucket_output,
+                            root_folder=bucket_output_folder,
+                        ):
+                            logging.info(
+                                f"Skipping as already saved before: {channel} inside bucket {bucket_output} folder {bucket_output_folder}"
+                            )
+                            continue
+
+                        df_news= get_keywords_for_a_day_and_channel(session=session, date=date, channel_name=channel)
+
+                        logging.debug("Schema from API before formatting :\n%s", df_news.dtypes)
+                        df_news = df_news[
+                            [
+                                "id",
+                                "plaintext",
+                                "start",
+                                "channel_title",
+                                "channel_name",
+                                "channel_program",
+                                "channel_program_type",
+                            ]
+                        ]
+
+                        # Run the pipeline on the dataframe
+                        misinformation_only_news = detect_misinformation(
+                            df_news,
+                            pipeline=pipeline,
+                            min_misinformation_score=min_misinformation_score,
+                            model_name=model_name,
+                        )
+
+                        number_of_disinformation = len(misinformation_only_news)
+
+                        if number_of_disinformation > 0:
+                            logging.warning(
+                                f"""Misinformation detected: {len(misinformation_only_news)} rows:
+                                {misinformation_only_news.head(10)}
+                                """
+                            )
+
+                            # ray has problem with tiny dataframes
+                            misinformation_only_news = misinformation_only_news._to_pandas()
+
+                            df_whispered = get_new_plaintext_from_whisper(misinformation_only_news)
+
+                            # save JSON LabelStudio format
+                            save_to_s3(
+                                df_whispered,
+                                channel=channel,
+                                date=date,
+                                s3_client=s3_client,
+                                bucket=bucket_output,
+                                folder_inside_bucket=bucket_output_folder,
+                            )
+                        else:
+                            logging.info(
+                                f"Nothing detected for channel {channel} on {date} - saving a empty file to not re-query it"
+                            )
+                            save_to_s3(
+                                misinformation_only_news,
+                                channel=channel,
+                                date=date,
+                                s3_client=s3_client,
+                                bucket=bucket_output,
+                                folder_inside_bucket=bucket_output_folder,
+                            )
+                    except Exception as err:
+                        logging.error(
+                            f"continuing loop - but met error with {channel} - day {date}: error : {err}"
                         )
                         continue
-                    
-                    session = get_db_session()
-                    df_news= get_keywords_for_a_day_and_channel(session=session, date=date, channel_name=channel)
-
-                    logging.debug("Schema from API before formatting :\n%s", df_news.dtypes)
-                    df_news = df_news[
-                        [
-                            "id",
-                            "plaintext",
-                            "start",
-                            "channel_title",
-                            "channel_name",
-                            "channel_program",
-                            "channel_program_type",
-                        ]
-                    ]
-
-                    # Run the pipeline on the dataframe
-                    misinformation_only_news = detect_misinformation(
-                        df_news,
-                        pipeline=pipeline,
-                        min_misinformation_score=min_misinformation_score,
-                        model_name=model_name,
-                    )
-
-                    number_of_disinformation = len(misinformation_only_news)
-
-                    if number_of_disinformation > 0:
-                        logging.warning(
-                            f"""Misinformation detected: {len(misinformation_only_news)} rows:
-                            {misinformation_only_news.head(10)}
-                            """
-                        )
-
-                        # ray has problem with tiny dataframes
-                        misinformation_only_news = misinformation_only_news._to_pandas()
-
-                        df_whispered = get_new_plaintext_from_whisper(misinformation_only_news)
-
-                        # save JSON LabelStudio format
-                        save_to_s3(
-                            df_whispered,
-                            channel=channel,
-                            date=date,
-                            s3_client=s3_client,
-                            bucket=bucket_output,
-                            folder_inside_bucket=bucket_output_folder,
-                        )
-                    else:
-                        logging.info(
-                            f"Nothing detected for channel {channel} on {date} - saving a empty file to not re-query it"
-                        )
-                        save_to_s3(
-                            misinformation_only_news,
-                            channel=channel,
-                            date=date,
-                            s3_client=s3_client,
-                            bucket=bucket_output,
-                            folder_inside_bucket=bucket_output_folder,
-                        )
-                except Exception as err:
-                    logging.error(
-                        f"continuing loop - but met error with {channel} - day {date}: error : {err}"
-                    )
-                    continue
+            else:
+                logging.error(f"This day {date} was not processed by job-mediatree, skipping as it will be tomorrow")
+                continue
 
         logging.info("Exiting with success")
         return True
@@ -215,7 +220,7 @@ def main():
 if __name__ == "__main__":
     main()
 
-     # sync label studio only if there are new data
+    # sync label studio only if there are new data
     wait_and_sync_label_studio()
 
     sentry_close()
