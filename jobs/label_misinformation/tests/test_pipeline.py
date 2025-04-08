@@ -1,7 +1,7 @@
 import sys, os
 
 sys.path.append(os.path.abspath("/app"))
-from jobs.label_misinformation.app.pipeline import parse_response
+from app.pipeline import parse_response
 
 
 def test_parse_response():
