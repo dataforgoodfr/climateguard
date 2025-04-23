@@ -76,3 +76,10 @@ notebooks/**/.ipynb_checkpoints/
 
 # Large dataset files
 data/raw/
+data/benchmark
+data/qdrant
+data/processed
+data/annotated
+notebooks/experiments/data
+notebooks/experiments/*.csv
+deployments/checkpoints
