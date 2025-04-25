@@ -1,0 +1,38 @@
+services:
+  llamacpp-server:
+    ipc: host
+    image: ghcr.io/ggml-org/llama.cpp:server
+    ports:
+      - 8080
+    volumes:
+      - ./models:/models
+      - llama-cache:/root/.cache/llama.cpp/
+    environment:
+      # alternatively, you can use "LLAMA_ARG_MODEL_URL" to download the model
+      LLAMA_ARG_HF_REPO: unsloth/gemma-3-4b-it-GGUF
+      LLAMA_ARG_HF_FILE: gemma-3-4b-it-Q4_K_M.gguf
+      LLAMA_ARG_CTX_SIZE: 4096
+      LLAMA_ARG_N_PARALLEL: 2
+      LLAMA_ARG_ENDPOINT_METRICS: 1
+      LLAMA_ARG_PORT: 8080
+      LLAMA_API_KEY: ${LLAMA_API_KEY:-12345}
+      HF_TOKEN: ${HF_TOKEN:-token}
+  proxy:
+    image: caddy:2.10.0-alpine
+    restart: unless-stopped
+    depends_on:
+      - llamacpp-server
+    ports:
+      - 443:443
+      - 80:80
+    volumes:
+      - ./caddy:/etc/caddy/:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      - CADDY_DOMAIN=${CADDY_DOMAIN:-localhost}
+
+volumes:
+  caddy_data:
+  caddy_config:
+  llama-cache:

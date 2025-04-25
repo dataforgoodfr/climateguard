@@ -1,0 +1,7 @@
+{ 
+    local_certs 
+}
+
+{$CADDY_DOMAIN:localhost} {
+    reverse_proxy llamacpp-server:8080
+}
