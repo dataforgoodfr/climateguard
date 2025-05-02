@@ -28,6 +28,8 @@ class Keywords(Base):
     updated_at = Column(DateTime(), default=datetime.now, onupdate=text("now() at time zone 'Europe/Paris'"), nullable=True)
     keywords_with_timestamp = Column(JSON) # ALTER TABLE keywords ADD keywords_with_timestamp json;
     number_of_keywords_climat = Column(Integer) # sum of all climatique counters without duplicate (like number_of_keywords)
+    number_of_keywords = Column(Integer) # sum of all climatique counters without duplicate (like number_of_keywords)
+    country = Column(Text)
   
 def connect_to_db():
     DB_DATABASE = os.environ.get("POSTGRES_DB", "barometre")
@@ -73,7 +75,7 @@ def create_tables(conn=None):
             engine.dispose()
 
 
-def is_there_data_for_this_day_safe_guard(session: Session, date: datetime) -> bool:
+def is_there_data_for_this_day_safe_guard(session: Session, date: datetime, country: str = "france") -> bool:
     logging.info(f"Was the previous mediatree job well executed for {date}")
 
     statement = select(
@@ -83,6 +85,7 @@ def is_there_data_for_this_day_safe_guard(session: Session, date: datetime) -> b
     # filter records where 'start' is within the same day
     start_of_day = date.replace(hour=0, minute=0, second=0, microsecond=0)
     end_of_day = start_of_day + timedelta(days=1)
+    statement = statement.filter(Keywords.country == country)
     statement = statement.filter(
         and_(
             Keywords.start >= start_of_day,
@@ -94,8 +97,8 @@ def is_there_data_for_this_day_safe_guard(session: Session, date: datetime) -> b
     logging.info(f"Previous mediatree job got {output} elements saved")
     return output > 0
 
-def get_keywords_for_a_day_and_channel(session: Session, date: datetime, channel_name: str, limit: int = 10000) -> pd.DataFrame:
-    logging.info(f"Getting keywords table from {date} and channel_name : {channel_name}")
+def get_keywords_for_a_day_and_channel(session: Session, date: datetime, channel_name: str, country: str = "france", limit: int = 10000) -> pd.DataFrame:
+    logging.info(f"Getting keywords table from {date} and channel_name : {channel_name}, for country {country}")
 
     statement = select(
                 Keywords.id,
@@ -108,7 +111,11 @@ def get_keywords_for_a_day_and_channel(session: Session, date: datetime, channel
             ).select_from(Keywords) \
     .limit(limit)     
 
-    statement = statement.filter(Keywords.number_of_keywords_climat > 0)
+    statement = statement.filter(Keywords.country == country)
+    if country in ["france", "belgium"]: # preserve legacy format
+        statement = statement.filter(Keywords.number_of_keywords_climat > 0)
+    else:
+        statement = statement.filter(Keywords.number_of_keywords > 0)
     statement = statement.filter(Keywords.channel_name == channel_name)
 
     # filter records where 'start' is within the same day
