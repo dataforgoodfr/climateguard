@@ -8,16 +8,17 @@ services:
       OPENAI_API_KEY: /run/secrets/openai_key
       MODEL_NAME:  /run/secrets/model_name
       BUCKET_INPUT: mediatree
-      BUCKET_OUTPUT: climateguard
+      BUCKET_OUTPUT: climateguard # change to test-bucket-mediatree for testing 
       BUCKET_OUTPUT_FOLDER: label-misinformation-tmp
       BUCKET_ACCESS: /run/secrets/bucket_access
       BUCKET_SECRET: /run/secrets/bucket_secret
       AWS_DEFAULT_REGION: fr-par
       MIN_MISINFORMATION_SCORE: 10 # the minimum score to have to be kept (10 out of 10)
-      DATE: 2025-03-10 # YYYY-MM-DD
+      DATE: 2025-03-15 # YYYY-MM-DD 
       NUMBER_OF_PREVIOUS_DAYS: 10
       # SENTRY_DSN: prod_only
-      CHANNEL: rmc # mediatree former channel name, not title (cnews)
+      CHANNEL: tvrecord # mediatree former channel name, not title (cnews)
+      COUNTRY: brazil
       MEDIATREE_USER : /run/secrets/username_api
       MEDIATREE_PASSWORD: /run/secrets/pwd_api
       MEDIATREE_AUTH_URL: https://keywords.mediatree.fr/api/auth/token/
@@ -29,7 +30,7 @@ services:
       POSTGRES_PORT: 5432
       LABEL_STUDIO_URL: http://labelstudio:8080
       LABEL_STUDIO_PROJECT_ID: 1
-      API_LABEL_STUDIO_KEY: a606fee81ebf4fbc1c14a615c6561aaac54842e7
+      API_LABEL_STUDIO_KEY: 820ee53b50e14ec0f96c262cf90c04aca4057e1c
     depends_on:
       - postgres_db
       - labelstudio
@@ -44,7 +45,7 @@ services:
       - ./app:/app/
 
   labelstudio:
-    image: heartexlabs/label-studio:latest
+    image: heartexlabs/label-studio:1.16.0
     container_name: labelstudio
     ports:
       - 8080:8080
@@ -86,7 +87,7 @@ services:
       OPENAI_API_KEY: /run/secrets/openai_key
       MODEL_NAME:  /run/secrets/model_name
       BUCKET_INPUT: mediatree
-      BUCKET_OUTPUT: climateguard
+      BUCKET_OUTPUT: climateguard # change to test-bucket-mediatree for testing
       BUCKET_OUTPUT_FOLDER: label-misinformation-tmp
       BUCKET_ACCESS: /run/secrets/bucket_access
       BUCKET_SECRET: /run/secrets/bucket_secret
@@ -95,6 +96,7 @@ services:
       # DATE: 2024-06-01 # YYYY-MM-DD
       # SENTRY_DSN: prod_only
       CHANNEL: itele # mediatree former channel name, not title (cnews)
+      COUNTRY: brazil
       MEDIATREE_USER : /run/secrets/username_api
       MEDIATREE_PASSWORD: /run/secrets/pwd_api
       MEDIATREE_AUTH_URL: https://keywords.mediatree.fr/api/auth/token/
@@ -127,7 +129,7 @@ services:
       OPENAI_API_KEY: /run/secrets/openai_key
       MODEL_NAME:  /run/secrets/model_name
       BUCKET_INPUT: mediatree
-      BUCKET_OUTPUT: climateguard
+      BUCKET_OUTPUT: climateguard # change to test-bucket-mediatree for testing
       BUCKET_OUTPUT_FOLDER: label-misinformation-tmp
       BUCKET_ACCESS: /run/secrets/bucket_access
       BUCKET_SECRET: /run/secrets/bucket_secret
@@ -136,6 +138,7 @@ services:
       # DATE: 2024-06-01 # YYYY-MM-DD
       # SENTRY_DSN: prod_only
       CHANNEL: itele # mediatree former channel name, not title (cnews)
+      COUNTRY: brazil
       MEDIATREE_USER : /run/secrets/username_api
       MEDIATREE_PASSWORD: /run/secrets/pwd_api
       MEDIATREE_AUTH_URL: https://keywords.mediatree.fr/api/auth/token/
