@@ -167,6 +167,7 @@ def get_whispered_transcript(audio_bytes: Optional[bytes]) -> str:
             model="whisper-1",
             file=buffer,
             response_format="text",
+            # TODO: Add language maybe ? 
         )
         logging.info(f"Whisper sample: {transcript[:100]}...")
         return transcript

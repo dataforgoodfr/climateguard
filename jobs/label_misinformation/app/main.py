@@ -107,6 +107,7 @@ def main():
     bucket_input = os.getenv("BUCKET_INPUT", "")
     bucket_output = os.getenv("BUCKET_OUTPUT", "")
     bucket_output_folder = os.getenv("BUCKET_OUTPUT_FOLDER", "")
+    country = os.getenv("COUNTRY", "france")
     min_misinformation_score = int(os.getenv("MIN_MISINFORMATION_SCORE", 10))
     logging.info(
         f"Starting app {app_name} with model {model_name} for date {date_env} with bucketinput {bucket_input} and bucket output {bucket_output}, min_misinformation_score to keep is {min_misinformation_score} out of 10..."
@@ -115,6 +116,8 @@ def main():
 
     mediatree_check_secrets()
 
+    # For the moment the prompt does not change according to the different countries
+    # If this changes we need to parametrize the country here
     pipeline = SinglePromptPipeline(model_name=model_name, api_key=openai_api_key)
     try:
         date_range = get_date_range(date_env, minus_days=number_of_previous_days)
@@ -122,7 +125,7 @@ def main():
         channels = get_channels()
         session = get_db_session()
         for date in date_range:
-            was_the_day_processed_in_keywords = is_there_data_for_this_day_safe_guard(session=session, date=date)
+            was_the_day_processed_in_keywords = is_there_data_for_this_day_safe_guard(session=session, date=date, country=country)
             if was_the_day_processed_in_keywords:
                 for channel in channels:
                     try:
@@ -143,7 +146,7 @@ def main():
                             )
                             continue
 
-                        df_news= get_keywords_for_a_day_and_channel(session=session, date=date, channel_name=channel)
+                        df_news= get_keywords_for_a_day_and_channel(session=session, date=date, country=country, channel_name=channel)
 
                         logging.debug("Schema from API before formatting :\n%s", df_news.dtypes)
                         df_news = df_news[
