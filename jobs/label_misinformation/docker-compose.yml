@@ -45,7 +45,7 @@ services:
       - ./app:/app/
 
   labelstudio:
-    image: heartexlabs/label-studio:1.16.0
+    image: heartexlabs/label-studio:1.17.0
     container_name: labelstudio
     ports:
       - 8080:8080
