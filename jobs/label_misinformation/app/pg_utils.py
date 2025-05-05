@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from sqlalchemy import URL, Column, DateTime, String, Text, Boolean, ARRAY, JSON, Integer, Table, MetaData, ForeignKey, create_engine, select, and_,func
+from sqlalchemy import URL, Column, DateTime, String, Text, Boolean, ARRAY, JSON, Integer, Table, MetaData, ForeignKey, create_engine, select, and_,func, or_
 from sqlalchemy.orm import Session, declarative_base, sessionmaker, Session
 import modin.pandas as pd
 from sqlalchemy import text
@@ -85,7 +85,8 @@ def is_there_data_for_this_day_safe_guard(session: Session, date: datetime, coun
     # filter records where 'start' is within the same day
     start_of_day = date.replace(hour=0, minute=0, second=0, microsecond=0)
     end_of_day = start_of_day + timedelta(days=1)
-    statement = statement.filter(Keywords.country == country)
+    if not country == "all":
+        statement = statement.filter(Keywords.country == country)
     statement = statement.filter(
         and_(
             Keywords.start >= start_of_day,
@@ -110,11 +111,19 @@ def get_keywords_for_a_day_and_channel(session: Session, date: datetime, channel
                 Keywords.plaintext,
             ).select_from(Keywords) \
     .limit(limit)     
+    if country == "all":
+        statement = statement.filter(
+            or_(
+                Keywords.number_of_keywords_climat > 0, 
+                Keywords.number_of_keywords > 0
+            )
+        )
 
-    statement = statement.filter(Keywords.country == country)
-    if country in ["france", "belgium"]: # preserve legacy format
+    elif country in ["france", "belgium"]: # preserve legacy format
+        statement = statement.filter(Keywords.country == country)
         statement = statement.filter(Keywords.number_of_keywords_climat > 0)
     else:
+        statement = statement.filter(Keywords.country == country)
         statement = statement.filter(Keywords.number_of_keywords > 0)
     statement = statement.filter(Keywords.channel_name == channel_name)
 

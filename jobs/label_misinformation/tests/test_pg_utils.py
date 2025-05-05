@@ -55,6 +55,7 @@ def test_get_keywords_for_a_day_and_channel():
         "number_of_keywords_climat": 1,
         "channel_program_type": channel_program_type,
         "channel_program": channel_program,
+        "country": "france",
     },
     {
         "id" : primary_key2,
@@ -65,6 +66,7 @@ def test_get_keywords_for_a_day_and_channel():
         "number_of_keywords_climat": 3,
         "channel_program_type": channel_program_type,
         "channel_program": channel_program,
+        "country": "france",
     },
     { # should be ignored as not the right channel_name
         "id" : "id3",
@@ -75,10 +77,11 @@ def test_get_keywords_for_a_day_and_channel():
         "number_of_keywords_climat": 3,
         "channel_program_type": channel_program_type,
         "channel_program": channel_program,
+        "country": "france",
     }]
     dataframe_to_save = pd.DataFrame(list)
     save_to_pg(dataframe_to_save, table=keywords_table, conn=conn)
-    dataframe_to_save.drop(columns=["number_of_keywords_climat"], inplace=True)
+    dataframe_to_save.drop(columns=["number_of_keywords_climat", "country"], inplace=True)
     dataframe_to_save.drop(dataframe_to_save.index[-1], inplace=True)
     output = get_keywords_for_a_day_and_channel(session, date=start, country="france", channel_name=channel_name)
     output = output._to_pandas()
@@ -103,13 +106,13 @@ def test_pg_insert_data():
 def test_is_there_data_for_this_day_safe_guard():
     date = pd.to_datetime("2024-12-12 10:10:10")
     session = get_db_session()
-    result = is_there_data_for_this_day_safe_guard(session, date)
+    result = is_there_data_for_this_day_safe_guard(session, date, country="all")
 
     assert result == True
 
 def test_is_there_data_for_this_day_safe_guard_future():
     date = pd.to_datetime("2100-12-12 10:10:10")
     session = get_db_session()
-    result = is_there_data_for_this_day_safe_guard(session, date)
+    result = is_there_data_for_this_day_safe_guard(session, date, country="all")
 
     assert result == False
