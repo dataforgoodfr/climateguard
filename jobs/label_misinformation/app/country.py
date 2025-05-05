@@ -34,6 +34,9 @@ class CountryCollection:
     language: str = field(default="all")
     countries: List[Country] = field(default_factory = get_all_countries)
 
+    def __iter__(self):
+            for country in self.countries:
+                yield country
 
     def verify_code(self, code: str):
         return any([code.lower() == country.code for country in self.countries] + [code.lower() == self.code])
