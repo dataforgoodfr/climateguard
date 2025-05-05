@@ -8,7 +8,7 @@ services:
       OPENAI_API_KEY: /run/secrets/openai_key
       MODEL_NAME:  /run/secrets/model_name
       BUCKET_INPUT: mediatree
-      BUCKET_OUTPUT: climateguard # change to test-bucket-mediatree for testing 
+      BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing 
       BUCKET_OUTPUT_FOLDER: label-misinformation-tmp
       BUCKET_ACCESS: /run/secrets/bucket_access
       BUCKET_SECRET: /run/secrets/bucket_secret
@@ -17,8 +17,8 @@ services:
       DATE: 2025-03-15 # YYYY-MM-DD 
       NUMBER_OF_PREVIOUS_DAYS: 10
       # SENTRY_DSN: prod_only
-      CHANNEL: tvrecord # mediatree former channel name, not title (cnews)
-      COUNTRY: brazil
+      CHANNEL: rmc # mediatree former channel name, not title (cnews) ---- rmc or tvrecord for testing
+      COUNTRY: france # brazil, france, belgium, all 
       MEDIATREE_USER : /run/secrets/username_api
       MEDIATREE_PASSWORD: /run/secrets/pwd_api
       MEDIATREE_AUTH_URL: https://keywords.mediatree.fr/api/auth/token/
@@ -51,6 +51,7 @@ services:
       - 8080:8080
     environment:
       LOG_LEVEL: DEBUG
+      LABEL_STUDIO_ENABLE_LEGACY_API_TOKEN: True
       # LABEL_STUDIO_HOST: 0.0.0.0
       # LABEL_STUDIO_ALLOW_ORIGIN: "*"
       # ALLOWED_HOSTS: "*"
@@ -79,7 +80,7 @@ services:
 
   test:
     build: .
-    entrypoint: ["pytest", "-vv"]   # use to debug the container if needed ["pytest", "-vv"] 
+    entrypoint: ["pytest", "-vv", "--capture=tee-sys"]   # use to debug the container if needed ["pytest", "-vv"] 
     environment:
       LOGLEVEL: DEBUG
       ENV: docker
@@ -87,7 +88,7 @@ services:
       OPENAI_API_KEY: /run/secrets/openai_key
       MODEL_NAME:  /run/secrets/model_name
       BUCKET_INPUT: mediatree
-      BUCKET_OUTPUT: climateguard # change to test-bucket-mediatree for testing
+      BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing
       BUCKET_OUTPUT_FOLDER: label-misinformation-tmp
       BUCKET_ACCESS: /run/secrets/bucket_access
       BUCKET_SECRET: /run/secrets/bucket_secret
@@ -129,7 +130,7 @@ services:
       OPENAI_API_KEY: /run/secrets/openai_key
       MODEL_NAME:  /run/secrets/model_name
       BUCKET_INPUT: mediatree
-      BUCKET_OUTPUT: climateguard # change to test-bucket-mediatree for testing
+      BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing
       BUCKET_OUTPUT_FOLDER: label-misinformation-tmp
       BUCKET_ACCESS: /run/secrets/bucket_access
       BUCKET_SECRET: /run/secrets/bucket_secret

@@ -150,6 +150,7 @@ def main():
                             s3_client=s3_client,
                             bucket=bucket_output,
                             root_folder=bucket_output_folder,
+                            country=country,
                         ):
                             logging.info(
                                 f"Skipping as already saved before: {channel} inside bucket {bucket_output} folder {bucket_output_folder}"
@@ -201,6 +202,7 @@ def main():
                                 s3_client=s3_client,
                                 bucket=bucket_output,
                                 folder_inside_bucket=bucket_output_folder,
+                                country=country,
                             )
                         else:
                             logging.info(
@@ -213,6 +215,7 @@ def main():
                                 s3_client=s3_client,
                                 bucket=bucket_output,
                                 folder_inside_bucket=bucket_output_folder,
+                                country=country,
                             )
                     except Exception as err:
                         logging.error(

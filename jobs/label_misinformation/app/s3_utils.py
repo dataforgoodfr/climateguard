@@ -6,6 +6,8 @@ from labelstudio_utils import get_label_studio_format
 from secret_utils import get_secret_docker
 import shutil
 import json
+from country import Country, CountryCollection, LEGACY_COUNTRIES, FRANCE_COUNTRY
+from typing import Union
 
 
 # Configuration for Scaleway Object Storage
@@ -32,12 +34,13 @@ def get_bucket_key(date, channel, filename: str = "*", suffix: str = "parquet") 
     return f"year={year}/month={month:1}/day={day:1}/channel={channel}/{filename}.{suffix}"
 
 
-def get_bucket_key_folder(date, channel, root_folder=None) -> str:
+def get_bucket_key_folder(date, channel, root_folder=None, country:Union[Country, CountryCollection]=FRANCE_COUNTRY) -> str:
     (year, month, day) = (date.year, date.month, date.day)
     key = f"year={year}/month={month:1}/day={day:1}/channel={channel}/"
+    if country not in LEGACY_COUNTRIES:
+        key = f"country={country.name}/" + key
     if root_folder is not None:
         return f"{root_folder}/{key}"
-
     return key
 
 
@@ -59,8 +62,8 @@ def read_folder_from_s3(date, channel: str, bucket: str) -> pd.DataFrame:
     return df
 
 
-def check_if_object_exists_in_s3(day, channel, s3_client, bucket: str, root_folder=None) -> bool:
-    folder_prefix = get_bucket_key_folder(day, channel, root_folder=root_folder)
+def check_if_object_exists_in_s3(day, channel, s3_client, bucket: str, root_folder=None, country:Union[Country, CountryCollection]=FRANCE_COUNTRY) -> bool:
+    folder_prefix = get_bucket_key_folder(day, channel, root_folder=root_folder, country=country)
 
     logging.debug(f"Checking if folder exists: {folder_prefix}")
     try:
@@ -144,12 +147,14 @@ def reformat_and_save(df, output_folder="output_json_files") -> str:
 
 # one json file per json row
 def save_json(
-    df: pd.DataFrame, channel: str, date: pd.Timestamp, s3_path, folder_inside_bucket=None
+    df: pd.DataFrame, channel: str, date: pd.Timestamp, s3_path, folder_inside_bucket=None, country:Union[Country, CountryCollection]=FRANCE_COUNTRY
 ) -> str:
     based_path = "s3"
 
     local_json = "s3/json"
     if folder_inside_bucket is not None:
+        if country not in LEGACY_COUNTRIES:
+            folder_inside_bucket = f"country={country.name}/" + folder_inside_bucket
         local_json = f"{based_path}/{folder_inside_bucket}"
     os.makedirs(os.path.dirname(local_json), exist_ok=True)
 
@@ -185,15 +190,16 @@ def save_to_s3(
     s3_client,
     bucket: str,
     folder_inside_bucket=None,
+    country:Union[Country, CountryCollection]=FRANCE_COUNTRY,
 ) -> None:
-    logging.info(f"Saving DF with {len(df)} elements to S3 for {date} and channel {channel}")
+    logging.info(f"Saving DF with {len(df)} elements to S3 for {date}, country {country.name} and channel {channel}")
 
     # to create partitions
     object_key = get_bucket_key(date, channel)
     logging.debug(f"Uploading partition: {object_key}")
 
     try:
-        s3_path: str = f"{get_bucket_key_folder(date, channel, root_folder=folder_inside_bucket)}"
+        s3_path: str = f"{get_bucket_key_folder(date, channel, root_folder=folder_inside_bucket, country=country)}"
         logging.info(f"S3 path: {s3_path}")
         if len(df) > 0:
             # add partition columns year, month, day to dataframe
