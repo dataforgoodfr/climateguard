@@ -110,7 +110,7 @@ def main():
     country = os.getenv("COUNTRY", "france")
     min_misinformation_score = int(os.getenv("MIN_MISINFORMATION_SCORE", 10))
     logging.info(
-        f"Starting app {app_name} with model {model_name} for date {date_env} with bucketinput {bucket_input} and bucket output {bucket_output}, min_misinformation_score to keep is {min_misinformation_score} out of 10..."
+        f"Starting app {app_name} for country {country} with model {model_name} for date {date_env} with bucketinput {bucket_input} and bucket output {bucket_output}, min_misinformation_score to keep is {min_misinformation_score} out of 10..."
     )
     openai_api_key = get_secret_docker("OPENAI_API_KEY")
 
