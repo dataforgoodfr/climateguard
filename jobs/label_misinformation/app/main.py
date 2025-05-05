@@ -1,20 +1,29 @@
 import logging
 import os
-from pipeline import Pipeline, SinglePromptPipeline, PipelineInput
-import ray
 import sys
+
+import modin.pandas as pd
+import ray
+from country import (
+    ALL_COUNTRIES,
+    BELGIUM_COUNTRY,
+    BRAZIL_COUNTRY,
+    FRANCE_COUNTRY,
+    Country,
+    CountryCollection,
+    get_country_or_collection_from_name,
+)
 from date_utils import *
+from labelstudio_utils import *
+from logging_utils import *
+from mediatree_utils import *
+from pg_utils import *
+from pipeline import Pipeline, PipelineInput, SinglePromptPipeline
 from s3_utils import *
+from secret_utils import *
 from sentry_sdk.crons import monitor
 from sentry_utils import *
 from whisper_utils import *
-from pg_utils import *
-from labelstudio_utils import *
-from mediatree_utils import *
-from secret_utils import *
-from logging_utils import *
-import modin.pandas as pd
-
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -107,10 +116,11 @@ def main():
     bucket_input = os.getenv("BUCKET_INPUT", "")
     bucket_output = os.getenv("BUCKET_OUTPUT", "")
     bucket_output_folder = os.getenv("BUCKET_OUTPUT_FOLDER", "")
-    country = os.getenv("COUNTRY", "france")
+    country = get_country_or_collection_from_name(os.getenv("COUNTRY", "france"))
     min_misinformation_score = int(os.getenv("MIN_MISINFORMATION_SCORE", 10))
+
     logging.info(
-        f"Starting app {app_name} for country {country} with model {model_name} for date {date_env} with bucketinput {bucket_input} and bucket output {bucket_output}, min_misinformation_score to keep is {min_misinformation_score} out of 10..."
+        f"Starting app {app_name} for country {country.name} with model {model_name} for date {date_env} with bucketinput {bucket_input} and bucket output {bucket_output}, min_misinformation_score to keep is {min_misinformation_score} out of 10..."
     )
     openai_api_key = get_secret_docker("OPENAI_API_KEY")
 

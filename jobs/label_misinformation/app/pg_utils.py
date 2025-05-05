@@ -1,13 +1,41 @@
-import logging
-from datetime import datetime
-
-from sqlalchemy import URL, Column, DateTime, String, Text, Boolean, ARRAY, JSON, Integer, Table, MetaData, ForeignKey, create_engine, select, and_,func, or_
-from sqlalchemy.orm import Session, declarative_base, sessionmaker, Session
-import modin.pandas as pd
-from sqlalchemy import text
-import os
 import json
+import logging
+import os
+from typing import Union
 from datetime import datetime, timedelta
+
+import modin.pandas as pd
+from country import (
+    ALL_COUNTRIES,
+    BRAZIL_COUNTRY,
+    BELGIUM_COUNTRY,
+    FRANCE_COUNTRY,
+    LEGACY_COUNTRIES,
+    Country,
+    CountryCollection,
+    get_country_or_collection_from_name,
+)
+from sqlalchemy import (
+    ARRAY,
+    JSON,
+    URL,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    MetaData,
+    String,
+    Table,
+    Text,
+    and_,
+    create_engine,
+    func,
+    or_,
+    select,
+    text,
+)
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 Base = declarative_base()
 
@@ -75,7 +103,7 @@ def create_tables(conn=None):
             engine.dispose()
 
 
-def is_there_data_for_this_day_safe_guard(session: Session, date: datetime, country: str = "france") -> bool:
+def is_there_data_for_this_day_safe_guard(session: Session, date: datetime, country: Union[Country, CountryCollection] = FRANCE_COUNTRY) -> bool:
     logging.info(f"Was the previous mediatree job well executed for {date}")
 
     statement = select(
@@ -85,8 +113,8 @@ def is_there_data_for_this_day_safe_guard(session: Session, date: datetime, coun
     # filter records where 'start' is within the same day
     start_of_day = date.replace(hour=0, minute=0, second=0, microsecond=0)
     end_of_day = start_of_day + timedelta(days=1)
-    if not country == "all":
-        statement = statement.filter(Keywords.country == country)
+    if not country == ALL_COUNTRIES:
+        statement = statement.filter(Keywords.country == country.name)
     statement = statement.filter(
         and_(
             Keywords.start >= start_of_day,
@@ -98,8 +126,8 @@ def is_there_data_for_this_day_safe_guard(session: Session, date: datetime, coun
     logging.info(f"Previous mediatree job got {output} elements saved")
     return output > 0
 
-def get_keywords_for_a_day_and_channel(session: Session, date: datetime, channel_name: str, country: str = "france", limit: int = 10000) -> pd.DataFrame:
-    logging.info(f"Getting keywords table from {date} and channel_name : {channel_name}, for country {country}")
+def get_keywords_for_a_day_and_channel(session: Session, date: datetime, channel_name: str, country: Union[Country, CountryCollection] = FRANCE_COUNTRY, limit: int = 10000) -> pd.DataFrame:
+    logging.info(f"Getting keywords table from {date} and channel_name : {channel_name}, for country {country.name}")
 
     statement = select(
                 Keywords.id,
@@ -111,7 +139,7 @@ def get_keywords_for_a_day_and_channel(session: Session, date: datetime, channel
                 Keywords.plaintext,
             ).select_from(Keywords) \
     .limit(limit)     
-    if country == "all":
+    if country == ALL_COUNTRIES:
         statement = statement.filter(
             or_(
                 Keywords.number_of_keywords_climat > 0, 
@@ -119,11 +147,11 @@ def get_keywords_for_a_day_and_channel(session: Session, date: datetime, channel
             )
         )
 
-    elif country in ["france", "belgium"]: # preserve legacy format
-        statement = statement.filter(Keywords.country == country)
+    elif country in LEGACY_COUNTRIES: # preserve legacy format
+        statement = statement.filter(Keywords.country == country.name)
         statement = statement.filter(Keywords.number_of_keywords_climat > 0)
     else:
-        statement = statement.filter(Keywords.country == country)
+        statement = statement.filter(Keywords.country == country.name)
         statement = statement.filter(Keywords.number_of_keywords > 0)
     statement = statement.filter(Keywords.channel_name == channel_name)
 

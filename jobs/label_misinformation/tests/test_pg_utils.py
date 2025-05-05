@@ -1,10 +1,25 @@
+import json
+import os
+import sys
+
 import pytest
-import sys, os
-import json 
+
 sys.path.append(os.path.abspath('/app'))
-from app.pg_utils import *
-from datetime import datetime
 import logging
+from datetime import datetime
+
+from app.country import (
+    ALL_COUNTRIES,
+    BELGIUM_COUNTRY,
+    BRAZIL_COUNTRY,
+    FRANCE_COUNTRY,
+    Country,
+    CountryCollection,
+    get_country_or_collection_from_name,
+)
+
+from app.pg_utils import *
+
 
 def save_to_pg(df, table, conn):
     number_of_elements = len(df)
@@ -83,7 +98,7 @@ def test_get_keywords_for_a_day_and_channel():
     save_to_pg(dataframe_to_save, table=keywords_table, conn=conn)
     dataframe_to_save.drop(columns=["number_of_keywords_climat", "country"], inplace=True)
     dataframe_to_save.drop(dataframe_to_save.index[-1], inplace=True)
-    output = get_keywords_for_a_day_and_channel(session, date=start, country="france", channel_name=channel_name)
+    output = get_keywords_for_a_day_and_channel(session, date=start, country=FRANCE_COUNTRY, channel_name=channel_name)
     output = output._to_pandas()
     dataframe_to_save = dataframe_to_save._to_pandas()
     pd.testing.assert_frame_equal(dataframe_to_save, output,check_like=True)
@@ -92,27 +107,27 @@ def test_pg_insert_data():
     create_tables()
     session = get_db_session()
     conn = connect_to_db()
-    data_country = os.getenv("COUNTRY", "france")
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    try:
-        with open(os.path.join(script_dir, f"test_data/{data_country}.json")) as jsonfile:
-            data_sample = json.load(jsonfile)
-    except FileNotFoundError:
-        raise FileNotFoundError("Cannot find " + os.path.join(script_dir, f"test_data/{data_country}.json"))
-    dataframe_to_save = pd.DataFrame(data_sample)
-    save_to_pg(dataframe_to_save, table=keywords_table, conn=conn)
+    data_files = os.listdir(os.path.join(script_dir, "test_data"))
+    for file in data_files:
+        try:
+            with open(os.path.join(script_dir, f"test_data/{file}")) as jsonfile:
+                data_sample = json.load(jsonfile)
+        except FileNotFoundError:
+            raise FileNotFoundError("Cannot find " + os.path.join(script_dir, f"test_data/{file}"))
+        dataframe_to_save = pd.DataFrame(data_sample)
+        save_to_pg(dataframe_to_save, table=keywords_table, conn=conn)
     assert True == True
 
 def test_is_there_data_for_this_day_safe_guard():
     date = pd.to_datetime("2024-12-12 10:10:10")
     session = get_db_session()
-    result = is_there_data_for_this_day_safe_guard(session, date, country="all")
-
+    result = is_there_data_for_this_day_safe_guard(session, date, country=ALL_COUNTRIES)
     assert result == True
+
 
 def test_is_there_data_for_this_day_safe_guard_future():
     date = pd.to_datetime("2100-12-12 10:10:10")
     session = get_db_session()
-    result = is_there_data_for_this_day_safe_guard(session, date, country="all")
-
+    result = is_there_data_for_this_day_safe_guard(session, date, country=ALL_COUNTRIES)
     assert result == False
