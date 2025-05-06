@@ -29,8 +29,8 @@ FRANCE_COUNTRY = Country(
     name="france",
     language="french",
     bucket=os.getenv("BUCKET_OUTPUT", "climateguard"),
-    model="ft:gpt-4o-mini-2024-07-18:personal::B1xWiJRm",
-    label_studio_id=6,
+    model=os.getenv("MODEL_NAME", "gpt-4o-mini"),
+    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID", 4),
     channels = [
         "tf1",
         "france2",
@@ -57,8 +57,8 @@ BELGIUM_COUNTRY = Country(
     name="belgium",
     language="french",
     bucket=os.getenv("BUCKET_OUTPUT", "climateguard"),
-    model="ft:gpt-4o-mini-2024-07-18:personal::B1xWiJRm",
-    label_studio_id=6,
+    model=os.getenv("MODEL_NAME", "gpt-4o-mini"),
+    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID", 4),
     channels=[]
 )
 BRAZIL_COUNTRY = Country(
@@ -66,8 +66,8 @@ BRAZIL_COUNTRY = Country(
     name="brazil",
     language="portuguese",
     bucket=os.getenv("BUCKET_OUTPUT_BRAZIL", "climateguard-brazil"),
-    model="ft:gpt-4o-mini-2024-07-18:personal::BJfrFQR1",
-    label_studio_id=7,
+    model=os.getenv("MODEL_NAME_BRAZIL", "gpt-4o-mini"), # add as get env 
+    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID_BRAZIL", 5), # pass as getenv
     channels=[
         "tvglobo",
         "tvrecord",
