@@ -7,6 +7,7 @@ services:
       APP_NAME: label-misinformation 
       OPENAI_API_KEY: /run/secrets/openai_key
       MODEL_NAME:  /run/secrets/model_name
+      MODEL_NAME_BRAZIL:  /run/secrets/model_name_brazil
       BUCKET_INPUT: mediatree
       BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing 
       BUCKET_OUTPUT_BRAZIL: climateguard-brazil # change to test-bucket-mediatree for testing 
@@ -19,7 +20,7 @@ services:
       NUMBER_OF_PREVIOUS_DAYS: 10
       # SENTRY_DSN: prod_only
       # CHANNEL: tvrecord # mediatree former channel name, not title (cnews) ---- rmc or tvrecord for testing
-      COUNTRY: prod # brazil, france, belgium, all 
+      COUNTRY: prod # brazil, france, belgium, all, prod
       MEDIATREE_USER : /run/secrets/username_api
       MEDIATREE_PASSWORD: /run/secrets/pwd_api
       MEDIATREE_AUTH_URL: https://keywords.mediatree.fr/api/auth/token/
@@ -31,6 +32,7 @@ services:
       POSTGRES_PORT: 5432
       LABEL_STUDIO_URL: http://labelstudio:8080
       LABEL_STUDIO_PROJECT_ID: 1
+      LABEL_STUDIO_PROJECT_ID_BRAZIL: 2
       API_LABEL_STUDIO_KEY: 820ee53b50e14ec0f96c262cf90c04aca4057e1c
     depends_on:
       - postgres_db
@@ -170,6 +172,8 @@ secrets: # https://docs.docker.com/compose/use-secrets/
     file: secrets/openai_key
   model_name:
     file: secrets/model_name
+  model_name_brazil:
+    file: secrets/model_name_brazil
   bucket_access:
     file: secrets/bucket_access
   bucket_secret:
