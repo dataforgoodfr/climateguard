@@ -146,7 +146,6 @@ def get_keywords_for_a_day_and_channel(session: Session, date: datetime, channel
                 Keywords.number_of_keywords > 0
             )
         )
-
     elif country in LEGACY_COUNTRIES: # preserve legacy format
         statement = statement.filter(Keywords.country == country.name)
         statement = statement.filter(Keywords.number_of_keywords_climat > 0)

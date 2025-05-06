@@ -34,7 +34,7 @@ def get_bucket_key(date, channel, filename: str = "*", suffix: str = "parquet") 
     return f"year={year}/month={month:1}/day={day:1}/channel={channel}/{filename}.{suffix}"
 
 
-def get_bucket_key_folder(date, channel, root_folder=None, country:Union[Country, CountryCollection]=FRANCE_COUNTRY) -> str:
+def get_bucket_key_folder(date, channel, root_folder=None, country: Country=FRANCE_COUNTRY) -> str:
     (year, month, day) = (date.year, date.month, date.day)
     key = f"year={year}/month={month:1}/day={day:1}/channel={channel}/"
     if country not in LEGACY_COUNTRIES:
@@ -45,6 +45,7 @@ def get_bucket_key_folder(date, channel, root_folder=None, country:Union[Country
 
 
 def read_folder_from_s3(date, channel: str, bucket: str) -> pd.DataFrame:
+    # THIS FUNCTION IS NEVER CALLED, DO WE NEED IT ? 
     s3_path: str = get_bucket_key_folder(date=date, channel=channel)
     s3_key: tuple[str] = f"s3://{bucket}/{s3_path}"
     logging.info(f"Reading S3 folder {s3_key}")
@@ -62,7 +63,7 @@ def read_folder_from_s3(date, channel: str, bucket: str) -> pd.DataFrame:
     return df
 
 
-def check_if_object_exists_in_s3(day, channel, s3_client, bucket: str, root_folder=None, country:Union[Country, CountryCollection]=FRANCE_COUNTRY) -> bool:
+def check_if_object_exists_in_s3(day, channel, s3_client, bucket: str, root_folder=None, country:Country=FRANCE_COUNTRY) -> bool:
     folder_prefix = get_bucket_key_folder(day, channel, root_folder=root_folder, country=country)
 
     logging.debug(f"Checking if folder exists: {folder_prefix}")
@@ -147,7 +148,7 @@ def reformat_and_save(df, output_folder="output_json_files") -> str:
 
 # one json file per json row
 def save_json(
-    df: pd.DataFrame, channel: str, date: pd.Timestamp, s3_path, folder_inside_bucket=None, country:Union[Country, CountryCollection]=FRANCE_COUNTRY
+    df: pd.DataFrame, channel: str, date: pd.Timestamp, s3_path, folder_inside_bucket=None, country:Country=FRANCE_COUNTRY
 ) -> str:
     based_path = "s3"
 
@@ -190,7 +191,7 @@ def save_to_s3(
     s3_client,
     bucket: str,
     folder_inside_bucket=None,
-    country:Union[Country, CountryCollection]=FRANCE_COUNTRY,
+    country:Country=FRANCE_COUNTRY,
 ) -> None:
     logging.info(f"Saving DF with {len(df)} elements to S3 for {date}, country {country.name} and channel {channel}")
 
