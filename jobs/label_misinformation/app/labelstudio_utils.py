@@ -16,6 +16,9 @@ LABEL_STUDIO_PROJECT_ID = os.getenv("LABEL_STUDIO_PROJECT_ID", "")
 SYNC_ENDPOINT = f"{LABEL_STUDIO_URL}/api/storages/s3/{LABEL_STUDIO_PROJECT_ID}/sync"
 API_LABEL_STUDIO_KEY = os.getenv("API_LABEL_STUDIO_KEY", "")  # Replace with your actual API key
 
+def get_sync_endopoint(label_studio_project_id: int):
+    return f"{LABEL_STUDIO_URL}/api/storages/s3/{label_studio_project_id}/sync"
+
 # @see https://github.com/HumanSignal/label-studio/issues/1492#issuecomment-924522609   
 def encode_audio_base64(audio_bytes):
     return f"data:audio/mp3;base64,{base64.b64encode(audio_bytes).decode('utf-8')}"
@@ -88,14 +91,14 @@ def wait_for_health(url, timeout=240, interval=5):
     return False
 
 # https://api.labelstud.io/api-reference/api-reference/import-storage/s-3/sync
-def sync_s3_storage(api_key):
+def sync_s3_storage(api_key, label_studio_project_id: int):
     """Triggers the S3 sync in Label Studio."""
     headers = {"Authorization": f"Token {api_key}"}
-   
+    sync_endpoint = get_sync_endopoint(label_studio_project_id)
     try:
         timeout = 60 * 5
-        logging.info(f"POST to {SYNC_ENDPOINT} and waiting a maximum of {timeout} seconds for the sync...")
-        response = requests.post(SYNC_ENDPOINT, headers=headers, timeout=timeout)
+        logging.info(f"POST to {sync_endpoint} and waiting a maximum of {timeout} seconds for the sync...")
+        response = requests.post(sync_endpoint, headers=headers, timeout=timeout)
         if response.status_code == 200:
             logging.info("Label Studio - S3 sync successful!")
             return True
@@ -105,10 +108,10 @@ def sync_s3_storage(api_key):
     except requests.RequestException as e:
         logging.warning(f"Error syncing S3 storage: {e}")
 
-def wait_and_sync_label_studio():
-    if LABEL_STUDIO_PROJECT_ID != "":
+def wait_and_sync_label_studio(label_studio_project_id: int):
+    if label_studio_project_id != "" and label_studio_project_id is not None:
         logging.info("Syncronize S3 data to Label Studio API...")
         if wait_for_health(HEALTH_ENDPOINT):
-            return sync_s3_storage(API_LABEL_STUDIO_KEY)
+            return sync_s3_storage(API_LABEL_STUDIO_KEY, label_studio_project_id)
     else:
         logging.warning(f"To activate label studio import, set LABEL_STUDIO_PROJECT_ID")
