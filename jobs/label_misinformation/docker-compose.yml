@@ -9,16 +9,17 @@ services:
       MODEL_NAME:  /run/secrets/model_name
       BUCKET_INPUT: mediatree
       BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing 
+      BUCKET_OUTPUT_BRAZIL: climateguard-brazil # change to test-bucket-mediatree for testing 
       BUCKET_OUTPUT_FOLDER: label-misinformation-tmp
       BUCKET_ACCESS: /run/secrets/bucket_access
       BUCKET_SECRET: /run/secrets/bucket_secret
       AWS_DEFAULT_REGION: fr-par
       MIN_MISINFORMATION_SCORE: 10 # the minimum score to have to be kept (10 out of 10)
-      DATE: 2025-03-15 # YYYY-MM-DD 
+      DATE: 2025-03-20 # YYYY-MM-DD 
       NUMBER_OF_PREVIOUS_DAYS: 10
       # SENTRY_DSN: prod_only
-      CHANNEL: rmc # mediatree former channel name, not title (cnews) ---- rmc or tvrecord for testing
-      COUNTRY: france # brazil, france, belgium, all 
+      # CHANNEL: tvrecord # mediatree former channel name, not title (cnews) ---- rmc or tvrecord for testing
+      COUNTRY: prod # brazil, france, belgium, all 
       MEDIATREE_USER : /run/secrets/username_api
       MEDIATREE_PASSWORD: /run/secrets/pwd_api
       MEDIATREE_AUTH_URL: https://keywords.mediatree.fr/api/auth/token/
@@ -89,6 +90,7 @@ services:
       MODEL_NAME:  /run/secrets/model_name
       BUCKET_INPUT: mediatree
       BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing
+      BUCKET_OUTPUT_BRAZIL: test-bucket-mediatree # change to test-bucket-mediatree for testing 
       BUCKET_OUTPUT_FOLDER: label-misinformation-tmp
       BUCKET_ACCESS: /run/secrets/bucket_access
       BUCKET_SECRET: /run/secrets/bucket_secret
@@ -131,6 +133,7 @@ services:
       MODEL_NAME:  /run/secrets/model_name
       BUCKET_INPUT: mediatree
       BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing
+      BUCKET_OUTPUT_BRAZIL: test-bucket-mediatree # change to test-bucket-mediatree for testing 
       BUCKET_OUTPUT_FOLDER: label-misinformation-tmp
       BUCKET_ACCESS: /run/secrets/bucket_access
       BUCKET_SECRET: /run/secrets/bucket_secret
