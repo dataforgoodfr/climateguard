@@ -4,7 +4,7 @@ import sys
 
 import modin.pandas as pd
 import ray
-from country import get_country_or_collection_from_name
+from country import Country, CountryCollection, get_countries
 from date_utils import get_date_range
 from labelstudio_utils import wait_and_sync_label_studio
 from logging_utils import getLogger
@@ -21,10 +21,12 @@ from sentry_sdk.crons import monitor
 from sentry_utils import sentry_close, sentry_init
 from whisper_utils import get_videofile_mp4_buffer, transform_mp4_to_mp3
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
-def get_channels():
+def get_channels(country):
     if os.environ.get("ENV") == "docker" or os.environ.get("CHANNEL") is not None:
         default_channel = os.environ.get("CHANNEL") or "france2"
         logging.warning(
@@ -34,26 +36,7 @@ def get_channels():
         channels = [default_channel]
     else:  # prod  - all channels
         logging.warning("All channels are used")
-        return [
-            "tf1",
-            "france2",
-            "fr3-idf",
-            "m6",
-            "arte",
-            "bfmtv",
-            "lci",
-            "franceinfotv",
-            "itele",
-            "europe1",
-            "france-culture",
-            "france-inter",
-            "sud-radio",
-            "rmc",
-            "rtl",
-            "france24",
-            "france-info",
-            "rfi",
-        ]
+        return country.channels
 
     return channels
 
@@ -78,8 +61,12 @@ def detect_misinformation(
         df_news["model_result"] = df_news["plaintext"].apply(
             lambda transcript: extract_model_result(transcript, pipeline)
         )
-        df_news["model_reason"] = df_news["model_result"].apply(lambda x: x["model_reason"])
-        df_news["model_result"] = df_news["model_result"].apply(lambda x: x["model_result"])
+        df_news["model_reason"] = df_news["model_result"].apply(
+            lambda x: x["model_reason"]
+        )
+        df_news["model_result"] = df_news["model_result"].apply(
+            lambda x: x["model_result"]
+        )
         df_news["model_name"] = model_name
     except Exception as e:
         logging.error(f"Error during apply: {e}")
@@ -89,19 +76,18 @@ def detect_misinformation(
     misinformation_only_news = df_news[
         df_news["model_result"] >= min_misinformation_score
     ].reset_index(drop=True)
-    logging.info("Schema misinformation_only_news :\n%s", misinformation_only_news.dtypes)
+    logging.info(
+        "Schema misinformation_only_news :\n%s", misinformation_only_news.dtypes
+    )
     return misinformation_only_news
 
 
 @monitor(monitor_slug="label-misinformation")
-def main():
-    ray.init(log_to_driver=True)
-    logger = getLogger()
-    
+def main(country: Country):
     pd.set_option("display.max_columns", None)
     sentry_init()
 
-    model_name = get_secret_docker("MODEL_NAME")
+    # model_name = get_secret_docker("MODEL_NAME")
     app_name = os.getenv("APP_NAME", "")
     # a security nets in case scaleway servers are done to replay data
     number_of_previous_days = int(os.environ.get("NUMBER_OF_PREVIOUS_DAYS", 7))
@@ -110,28 +96,42 @@ def main():
     )
     date_env: str = os.getenv("DATE", "")
     bucket_input = os.getenv("BUCKET_INPUT", "")
-    bucket_output = os.getenv("BUCKET_OUTPUT", "")
+    # bucket_output = os.getenv("BUCKET_OUTPUT", "")
     bucket_output_folder = os.getenv("BUCKET_OUTPUT_FOLDER", "")
-    country = get_country_or_collection_from_name(os.getenv("COUNTRY", "france"))
+    # country = get_country_or_collection_from_name(os.getenv("COUNTRY", "france"))
     min_misinformation_score = int(os.getenv("MIN_MISINFORMATION_SCORE", 10))
 
-    logging.info(
-        f"Starting app {app_name} for country {country.name} with model {model_name} for date {date_env} with bucketinput {bucket_input} and bucket output {bucket_output}, min_misinformation_score to keep is {min_misinformation_score} out of 10..."
-    )
     openai_api_key = get_secret_docker("OPENAI_API_KEY")
 
     mediatree_check_secrets()
 
-    # For the moment the prompt does not change according to the different countries
-    # If this changes we need to parametrize the country here
-    pipeline = SinglePromptPipeline(model_name=model_name, api_key=openai_api_key)
     try:
+        bucket_output = country.bucket
+        model_name = country.model
+        logging.info(
+            (f"Starting app {app_name} for country {country.name} "
+                f"with model {model_name} for date {date_env} "
+                f"with bucketinput {bucket_input} and bucket output {bucket_output}, "
+                f"min_misinformation_score to keep is {min_misinformation_score} out of 10...")
+        )
+        # For the moment the prompt does not change according to the different countries
+        # If this changes we need to parametrize the country here
+        pipeline = SinglePromptPipeline(
+            model_name=model_name, api_key=openai_api_key
+        )
+
         date_range = get_date_range(date_env, minus_days=number_of_previous_days)
-        logging.info(f"Number of days to query : {len(date_range)} - day_range : {date_range}")
-        channels = get_channels()
+        logging.info(
+            f"Number of days to query : {len(date_range)} - day_range : {date_range}"
+        )
+        channels = get_channels(country)
         session = get_db_session()
         for date in date_range:
-            was_the_day_processed_in_keywords = is_there_data_for_this_day_safe_guard(session=session, date=date, country=country)
+            was_the_day_processed_in_keywords = (
+                is_there_data_for_this_day_safe_guard(
+                    session=session, date=date, country=country
+                )
+            )
             if was_the_day_processed_in_keywords:
                 for channel in channels:
                     try:
@@ -153,9 +153,17 @@ def main():
                             )
                             continue
 
-                        df_news= get_keywords_for_a_day_and_channel(session=session, date=date, country=country, channel_name=channel)
+                        df_news = get_keywords_for_a_day_and_channel(
+                            session=session,
+                            date=date,
+                            country=country,
+                            channel_name=channel,
+                        )
 
-                        logging.debug("Schema from API before formatting :\n%s", df_news.dtypes)
+                        logging.debug(
+                            "Schema from API before formatting :\n%s",
+                            df_news.dtypes,
+                        )
                         df_news = df_news[
                             [
                                 "id",
@@ -186,9 +194,13 @@ def main():
                             )
 
                             # ray has problem with tiny dataframes
-                            misinformation_only_news = misinformation_only_news._to_pandas()
+                            misinformation_only_news = (
+                                misinformation_only_news._to_pandas()
+                            )
 
-                            df_whispered = get_new_plaintext_from_whisper(misinformation_only_news)
+                            df_whispered = get_new_plaintext_from_whisper(
+                                misinformation_only_news
+                            )
 
                             # save JSON LabelStudio format
                             save_to_s3(
@@ -219,7 +231,9 @@ def main():
                         )
                         continue
             else:
-                logging.error(f"This day {date} was not processed by job-mediatree, skipping as it will be tomorrow")
+                logging.error(
+                    f"This day {date} was not processed by job-mediatree, skipping as it will be tomorrow"
+                )
                 continue
 
         logging.info("Exiting with success")
@@ -230,10 +244,12 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
-
-    # sync label studio only if there are new data
-    wait_and_sync_label_studio()
-
-    sentry_close()
+    ray.init(log_to_driver=True)
+    logger = getLogger()
+    countries: CountryCollection = get_countries(os.getenv("COUNTRY", "france"))
+    for country in countries:
+        main(country)
+        # sync label studio only if there are new data
+        wait_and_sync_label_studio(country.label_studio_id)
+        sentry_close()
     sys.exit(0)
