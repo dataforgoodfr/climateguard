@@ -110,13 +110,14 @@ def test_pg_insert_data():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     data_files = os.listdir(os.path.join(script_dir, "test_data"))
     for file in data_files:
-        try:
-            with open(os.path.join(script_dir, f"test_data/{file}")) as jsonfile:
-                data_sample = json.load(jsonfile)
-        except FileNotFoundError:
-            raise FileNotFoundError("Cannot find " + os.path.join(script_dir, f"test_data/{file}"))
-        dataframe_to_save = pd.DataFrame(data_sample)
-        save_to_pg(dataframe_to_save, table=keywords_table, conn=conn)
+        if not file.startswith("."):
+            try:
+                with open(os.path.join(script_dir, f"test_data/{file}")) as jsonfile:
+                    data_sample = json.load(jsonfile)
+            except FileNotFoundError:
+                raise FileNotFoundError("Cannot find " + os.path.join(script_dir, f"test_data/{file}"))
+            dataframe_to_save = pd.DataFrame(data_sample)
+            save_to_pg(dataframe_to_save, table=keywords_table, conn=conn)
     assert True == True
 
 def test_is_there_data_for_this_day_safe_guard():
