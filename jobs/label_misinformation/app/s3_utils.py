@@ -154,8 +154,7 @@ def save_json(
 
     local_json = "s3/json"
     if folder_inside_bucket is not None:
-        if country not in LEGACY_COUNTRIES:
-            folder_inside_bucket = f"country={country.name}/" + folder_inside_bucket
+        folder_inside_bucket = get_bucket_key_folder(date, channel, root_folder=folder_inside_bucket, country=country)
         local_json = f"{based_path}/{folder_inside_bucket}"
     os.makedirs(os.path.dirname(local_json), exist_ok=True)
 
