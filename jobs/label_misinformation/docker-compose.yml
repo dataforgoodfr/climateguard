@@ -6,18 +6,21 @@ services:
       ENV: prod
       APP_NAME: label-misinformation 
       OPENAI_API_KEY: /run/secrets/openai_key
-      MODEL_NAME:  /run/secrets/model_name
+      MODEL_NAME:  ft:gpt-4o-mini-2024-07-18:personal::B1xWiJRm
+      MODEL_NAME_BRAZIL:  ft:gpt-4o-mini-2024-07-18:personal::BJfrFQR1
       BUCKET_INPUT: mediatree
-      BUCKET_OUTPUT: climateguard
+      BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing 
+      BUCKET_OUTPUT_BRAZIL: climateguard-brazil # change to test-bucket-mediatree for testing 
       BUCKET_OUTPUT_FOLDER: label-misinformation-tmp
       BUCKET_ACCESS: /run/secrets/bucket_access
       BUCKET_SECRET: /run/secrets/bucket_secret
       AWS_DEFAULT_REGION: fr-par
       MIN_MISINFORMATION_SCORE: 10 # the minimum score to have to be kept (10 out of 10)
-      DATE: 2025-03-10 # YYYY-MM-DD
+      DATE: 2025-03-20 # YYYY-MM-DD 
       NUMBER_OF_PREVIOUS_DAYS: 10
       # SENTRY_DSN: prod_only
-      CHANNEL: rmc # mediatree former channel name, not title (cnews)
+      # CHANNEL: tvrecord # mediatree former channel name, not title (cnews) ---- rmc or tvrecord for testing
+      COUNTRY: prod # brazil, france, belgium, all, prod
       MEDIATREE_USER : /run/secrets/username_api
       MEDIATREE_PASSWORD: /run/secrets/pwd_api
       MEDIATREE_AUTH_URL: https://keywords.mediatree.fr/api/auth/token/
@@ -29,7 +32,8 @@ services:
       POSTGRES_PORT: 5432
       LABEL_STUDIO_URL: http://labelstudio:8080
       LABEL_STUDIO_PROJECT_ID: 1
-      API_LABEL_STUDIO_KEY: a606fee81ebf4fbc1c14a615c6561aaac54842e7
+      LABEL_STUDIO_PROJECT_ID_BRAZIL: 2
+      API_LABEL_STUDIO_KEY: 820ee53b50e14ec0f96c262cf90c04aca4057e1c
     depends_on:
       - postgres_db
       - labelstudio
@@ -44,12 +48,13 @@ services:
       - ./app:/app/
 
   labelstudio:
-    image: heartexlabs/label-studio:latest
+    image: heartexlabs/label-studio:1.17.0
     container_name: labelstudio
     ports:
       - 8080:8080
     environment:
       LOG_LEVEL: DEBUG
+      LABEL_STUDIO_ENABLE_LEGACY_API_TOKEN: True
       # LABEL_STUDIO_HOST: 0.0.0.0
       # LABEL_STUDIO_ALLOW_ORIGIN: "*"
       # ALLOWED_HOSTS: "*"
@@ -78,7 +83,7 @@ services:
 
   test:
     build: .
-    entrypoint: ["pytest", "-vv"]   # use to debug the container if needed ["pytest", "-vv"] 
+    entrypoint: ["pytest", "-vv", "--capture=tee-sys"]   # use to debug the container if needed ["pytest", "-vv"] 
     environment:
       LOGLEVEL: DEBUG
       ENV: docker
@@ -86,7 +91,8 @@ services:
       OPENAI_API_KEY: /run/secrets/openai_key
       MODEL_NAME:  /run/secrets/model_name
       BUCKET_INPUT: mediatree
-      BUCKET_OUTPUT: climateguard
+      BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing
+      BUCKET_OUTPUT_BRAZIL: test-bucket-mediatree # change to test-bucket-mediatree for testing 
       BUCKET_OUTPUT_FOLDER: label-misinformation-tmp
       BUCKET_ACCESS: /run/secrets/bucket_access
       BUCKET_SECRET: /run/secrets/bucket_secret
@@ -95,6 +101,7 @@ services:
       # DATE: 2024-06-01 # YYYY-MM-DD
       # SENTRY_DSN: prod_only
       CHANNEL: itele # mediatree former channel name, not title (cnews)
+      COUNTRY: brazil
       MEDIATREE_USER : /run/secrets/username_api
       MEDIATREE_PASSWORD: /run/secrets/pwd_api
       MEDIATREE_AUTH_URL: https://keywords.mediatree.fr/api/auth/token/
@@ -127,7 +134,8 @@ services:
       OPENAI_API_KEY: /run/secrets/openai_key
       MODEL_NAME:  /run/secrets/model_name
       BUCKET_INPUT: mediatree
-      BUCKET_OUTPUT: climateguard
+      BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing
+      BUCKET_OUTPUT_BRAZIL: test-bucket-mediatree # change to test-bucket-mediatree for testing 
       BUCKET_OUTPUT_FOLDER: label-misinformation-tmp
       BUCKET_ACCESS: /run/secrets/bucket_access
       BUCKET_SECRET: /run/secrets/bucket_secret
@@ -136,6 +144,7 @@ services:
       # DATE: 2024-06-01 # YYYY-MM-DD
       # SENTRY_DSN: prod_only
       CHANNEL: itele # mediatree former channel name, not title (cnews)
+      COUNTRY: brazil
       MEDIATREE_USER : /run/secrets/username_api
       MEDIATREE_PASSWORD: /run/secrets/pwd_api
       MEDIATREE_AUTH_URL: https://keywords.mediatree.fr/api/auth/token/
@@ -163,6 +172,8 @@ secrets: # https://docs.docker.com/compose/use-secrets/
     file: secrets/openai_key
   model_name:
     file: secrets/model_name
+  model_name_brazil:
+    file: secrets/model_name_brazil
   bucket_access:
     file: secrets/bucket_access
   bucket_secret:

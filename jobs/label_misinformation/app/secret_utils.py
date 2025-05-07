@@ -1,8 +1,10 @@
 import logging
 import os
 
-def get_secret_docker(secret_name):
-    secret_value: str = os.environ.get(secret_name, None)
+from typing import Optional
+
+def get_secret_docker(secret_name: str, default: Optional[str]=None):
+    secret_value: str = os.environ.get(secret_name, default)
 
     if secret_value and os.path.exists(secret_value):
         with open(secret_value, "r") as file:
