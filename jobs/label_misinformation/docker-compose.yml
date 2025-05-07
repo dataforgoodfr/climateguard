@@ -6,8 +6,8 @@ services:
       ENV: prod
       APP_NAME: label-misinformation 
       OPENAI_API_KEY: /run/secrets/openai_key
-      MODEL_NAME:  /run/secrets/model_name
-      MODEL_NAME_BRAZIL:  /run/secrets/model_name_brazil
+      MODEL_NAME:  ft:gpt-4o-mini-2024-07-18:personal::B1xWiJRm
+      MODEL_NAME_BRAZIL:  ft:gpt-4o-mini-2024-07-18:personal::BJfrFQR1
       BUCKET_INPUT: mediatree
       BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing 
       BUCKET_OUTPUT_BRAZIL: climateguard-brazil # change to test-bucket-mediatree for testing 
