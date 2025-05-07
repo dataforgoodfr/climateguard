@@ -57,6 +57,7 @@ def get_label_studio_format(row) -> str:
                 "month": row["month"],
                 "day": row["day"],
                 "channel": row["channel"],
+                "country": row["country"],
                 "url_mediatree": url_mediatree,
             }
         },
@@ -114,4 +115,4 @@ def wait_and_sync_label_studio(label_studio_project_id: int):
         if wait_for_health(HEALTH_ENDPOINT):
             return sync_s3_storage(API_LABEL_STUDIO_KEY, label_studio_project_id)
     else:
-        logging.warning(f"To activate label studio import, set LABEL_STUDIO_PROJECT_ID")
+        logging.warning("To activate label studio import, set LABEL_STUDIO_PROJECT_ID")

@@ -96,7 +96,7 @@ def test_get_keywords_for_a_day_and_channel():
     }]
     dataframe_to_save = pd.DataFrame(list)
     save_to_pg(dataframe_to_save, table=keywords_table, conn=conn)
-    dataframe_to_save.drop(columns=["number_of_keywords_climat", "country"], inplace=True)
+    dataframe_to_save.drop(columns=["number_of_keywords_climat"], inplace=True)
     dataframe_to_save.drop(dataframe_to_save.index[-1], inplace=True)
     output = get_keywords_for_a_day_and_channel(session, date=start, country=FRANCE_COUNTRY, channel_name=channel_name)
     output = output._to_pandas()
@@ -117,6 +117,7 @@ def test_pg_insert_data():
             except FileNotFoundError:
                 raise FileNotFoundError("Cannot find " + os.path.join(script_dir, f"test_data/{file}"))
             dataframe_to_save = pd.DataFrame(data_sample)
+            dataframe_to_save['start'] = pd.to_datetime(dataframe_to_save['start'], utc=True)
             save_to_pg(dataframe_to_save, table=keywords_table, conn=conn)
     assert True == True
 

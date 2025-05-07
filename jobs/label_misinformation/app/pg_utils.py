@@ -137,6 +137,7 @@ def get_keywords_for_a_day_and_channel(session: Session, date: datetime, channel
                 Keywords.channel_title,
                 Keywords.channel_name,
                 Keywords.plaintext,
+                Keywords.country,
             ).select_from(Keywords) \
     .limit(limit)     
     if country == ALL_COUNTRIES:
@@ -166,8 +167,8 @@ def get_keywords_for_a_day_and_channel(session: Session, date: datetime, channel
 
     output = session.execute(statement).fetchall()
 
-    columns = ["id", "start", "channel_program", "channel_program_type", "channel_title", "channel_name", "plaintext"]
+    columns = ["id", "start", "channel_program", "channel_program_type", "channel_title", "channel_name", "plaintext", "country"]
     dataframe = pd.DataFrame(output, columns=columns)
-
+    
     logging.info(f"Got {len(dataframe)} keywords from SQL Table Keywords")
     return dataframe
