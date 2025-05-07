@@ -3,6 +3,8 @@ import os
 from typing import Optional, Literal, Union, List
 from dataclasses import dataclass, field
 
+from secret_utils import get_secret_docker
+
 
 @dataclass
 class Country:
@@ -29,7 +31,7 @@ FRANCE_COUNTRY = Country(
     name="france",
     language="french",
     bucket=os.getenv("BUCKET_OUTPUT", "climateguard"),
-    model=os.getenv("MODEL_NAME", "gpt-4o-mini"),
+    model=get_secret_docker("MODEL_NAME", "gpt-4o-mini"),
     label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID", 4),
     channels = [
         "tf1",
@@ -57,7 +59,7 @@ BELGIUM_COUNTRY = Country(
     name="belgium",
     language="french",
     bucket=os.getenv("BUCKET_OUTPUT", "climateguard"),
-    model=os.getenv("MODEL_NAME", "gpt-4o-mini"),
+    model=get_secret_docker("MODEL_NAME", "gpt-4o-mini"),
     label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID", 4),
     channels=[]
 )
@@ -66,7 +68,7 @@ BRAZIL_COUNTRY = Country(
     name="brazil",
     language="portuguese",
     bucket=os.getenv("BUCKET_OUTPUT_BRAZIL", "climateguard-brazil"),
-    model=os.getenv("MODEL_NAME_BRAZIL", "gpt-4o-mini"), # add as get env 
+    model=get_secret_docker("MODEL_NAME_BRAZIL", "gpt-4o-mini"), # add as get env 
     label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID_BRAZIL", 5), # pass as getenv
     channels=[
         "tvglobo",

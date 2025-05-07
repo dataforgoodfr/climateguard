@@ -17,17 +17,17 @@ API_BASE_URL = os.environ.get("KEYWORDS_URL")
 
 def mediatree_check_secrets():
      if mediatree_user is None or mediatree_password is None or AUTH_URL is None or API_BASE_URL is None:
-        logging.error(f"Config missing: MEDIATREE_USER/MEDIATREE_PASSWORD/MEDIATREE_AUTH_URL/KEYWORDS_URL missing")
+        logging.error("Config missing: MEDIATREE_USER/MEDIATREE_PASSWORD/MEDIATREE_AUTH_URL/KEYWORDS_URL missing")
         raise Exception("Config missing: user/password/auth url missing")
 
 def get_auth_token(user=mediatree_user, password=mediatree_password):
-    logging.debug(f"Getting a token")
+    logging.debug("Getting a token")
     try:
         post_arguments = {"grant_type": "password", "username": user, "password": password}
         response = requests.post(AUTH_URL, data=post_arguments)
         output = response.json()
         token = output["data"]["access_token"]
-        logging.debug(f"got a token")
+        logging.debug("got a token")
         return token
     except Exception as err:
         raise Exception(f"Could not get token {err}")
@@ -157,7 +157,7 @@ From a dataframe with the mp3 information
 """
 def get_whispered_transcript(audio_bytes: Optional[bytes]) -> str:
     if audio_bytes is None:
-        logging.warning(f"get_whispered_transcript - audio bytes is None")
+        logging.warning("get_whispered_transcript - audio bytes is None")
         return ""
     try:
         buffer = BytesIO(audio_bytes)
@@ -167,8 +167,12 @@ def get_whispered_transcript(audio_bytes: Optional[bytes]) -> str:
             model="whisper-1",
             file=buffer,
             response_format="text",
-            # TODO: Add language maybe ? 
         )
+        # It looks weird but this is the whisper response to an empty audio track
+        # Probably better ways to detect the empty audio and avoid the api call TODO
+        if transcript == "you you you you you\n":
+            logging.warning("get_whispered_transcript - audio track empty, removing example")
+            return None
         logging.info(f"Whisper sample: {transcript[:100]}...")
         return transcript
     except Exception as e:

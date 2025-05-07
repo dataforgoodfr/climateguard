@@ -173,6 +173,7 @@ def main(country: Country):
                                 "channel_name",
                                 "channel_program",
                                 "channel_program_type",
+                                "country"
                             ]
                         ]
 
@@ -202,7 +203,12 @@ def main(country: Country):
                                 misinformation_only_news
                             )
 
+                            # remove the records with empty transcripts
+                            df_whispered = df_whispered.dropna()
+
                             # save JSON LabelStudio format
+                            # If the dataframe is empty after the dropna, the function will still 
+                            # Save an empty.txt file
                             save_to_s3(
                                 df_whispered,
                                 channel=channel,
