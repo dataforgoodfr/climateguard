@@ -41,10 +41,10 @@ def save_to_pg(df, table, conn):
         logging.error("Could not save : \n %s" % (err))
         return 0
 
-def empty_tables(session = None):
+def empty_tables(session = None, table = Keywords):
     if(os.environ.get("POSTGRES_HOST") == "postgres_db" or os.environ.get("POSTGRES_HOST") == "localhost"):
         logging.warning("""Doing: Empty table Keywords""")
-        session.query(Keywords).delete()
+        session.query(table).delete()
         session.commit()
         logging.warning("""Done: Empty table Keywords""")
 
@@ -102,6 +102,137 @@ def test_get_keywords_for_a_day_and_channel():
     output = output._to_pandas()
     dataframe_to_save = dataframe_to_save._to_pandas()
     pd.testing.assert_frame_equal(dataframe_to_save, output,check_like=True)
+
+
+def test_get_keywords_for_a_day_and_channel_ignore_id():
+    create_tables()
+    session = get_db_session()
+    empty_tables(session)
+    conn = connect_to_db()
+    start = pd.to_datetime("2024-12-12 10:10:10")
+    channel_name= "itele"
+    channel_title= "Cnews"
+    primary_key1 = "id1"
+    primary_key2 = "id2"
+    channel_program= "program"
+    channel_program_type= "program_type"
+
+    list = [{
+        "id" : primary_key1,
+        "start": start,
+        "plaintext": "cheese pizza habitabilité de la planète conditions de vie sur terre animal",
+        "channel_name": channel_name,
+        "channel_title": channel_title,
+        "number_of_keywords_climat": 1,
+        "channel_program_type": channel_program_type,
+        "channel_program": channel_program,
+        "country": "france",
+    },
+    {
+        "id" : primary_key2,
+        "start": start,
+        "plaintext": "hello world",
+        "channel_name": channel_name,
+        "channel_title": channel_title,
+        "number_of_keywords_climat": 3,
+        "channel_program_type": channel_program_type,
+        "channel_program": channel_program,
+        "country": "france",
+    },
+    { # should be ignored as id3 needs to be avoided
+        "id" : "id3",
+        "start": start,
+        "plaintext": "hello world",
+        "channel_name": channel_name,
+        "channel_title": channel_title,
+        "number_of_keywords_climat": 3,
+        "channel_program_type": channel_program_type,
+        "channel_program": channel_program,
+        "country": "france",
+    }]
+    dataframe_to_save = pd.DataFrame(list)
+    save_to_pg(dataframe_to_save, table=keywords_table, conn=conn)
+    dataframe_to_save.drop(columns=["number_of_keywords_climat"], inplace=True)
+    dataframe_to_save.drop(dataframe_to_save.index[-1], inplace=True)
+    output = get_keywords_for_a_day_and_channel(session, date=start, country=FRANCE_COUNTRY, channel_name=channel_name, ids_to_avoid=["id3"])
+    output = output._to_pandas()
+    dataframe_to_save = dataframe_to_save._to_pandas()
+    pd.testing.assert_frame_equal(dataframe_to_save, output,check_like=True)
+
+
+def test_get_labelstudio_ids():
+    create_tables(conn=connect_to_labelstudio_db(), label_studio=True)
+    session = get_db_session(engine=connect_to_labelstudio_db())
+    empty_tables(session, table=LabelStudioTask)
+    conn = connect_to_labelstudio_db()
+    start = pd.to_datetime("2024-12-12 10:10:10")
+    channel_name= "itele"
+    channel_title= "Cnews"
+    primary_key1 = "id1"
+    primary_key2 = "id2"
+    channel_program= "program"
+    channel_program_type= "program_type"
+    test_country = Country(
+        code="fra",
+        name="france",
+        language="french",
+        bucket="test",
+        model="gpt-4o-mini",
+        label_studio_id=0,
+        label_studio_project=1,
+        channels = [
+            "itele",
+        ]
+    )
+
+    list = [
+        dict(
+            id = 1,#(Integer, nullable=False, primary_key=True)
+            data = dict(
+                item=dict(
+                    start=start,
+                    id="id1",
+                    channel_name=channel_name
+                )
+            ),#(JSON, nullable=False)
+            created_at = pd.to_datetime("2024-11-12 10:10:10"),#(DateTime, nullable=False)
+            updated_at = pd.to_datetime("2024-11-12 10:10:10"),#(DateTime, nullable=False)
+            is_labeled = False,#(Boolean, nullable=False)
+            project_id = 1,#(Integer, nullable=True)
+            overlap = 1,#(Integer, nullable=False)
+            updated_by_id = 1,#(Integer, nullable=True)
+            total_annotations = 0,#(Integer, nullable=False)
+            cancelled_annotations = 0,#(Integer, nullable=False)
+            total_predictions = 0,#(Integer, nullable=False)
+            comment_count = 0,#(Integer, nullable=False)
+            unresolved_comment_count = 0,#(Integer, nullable=False)
+        ),
+        dict(
+            id = 1,#(Integer, nullable=False, primary_key=True)
+            data = dict(
+                item=dict(
+                    start=start,
+                    id="id1",
+                    channel_name=channel_name
+                )
+            ),#(JSON, nullable=False)
+            created_at = pd.to_datetime("2024-11-12 10:10:10"),#(DateTime, nullable=False)
+            updated_at = pd.to_datetime("2024-11-12 10:10:10"),#(DateTime, nullable=False)
+            is_labeled = False,#(Boolean, nullable=False)
+            project_id = 2,#(Integer, nullable=True)
+            overlap = 1,#(Integer, nullable=False)
+            updated_by_id = 1,#(Integer, nullable=True)
+            total_annotations = 0,#(Integer, nullable=False)
+            cancelled_annotations = 0,#(Integer, nullable=False)
+            total_predictions = 0,#(Integer, nullable=False)
+            comment_count = 0,#(Integer, nullable=False)
+            unresolved_comment_count = 0,#(Integer, nullable=False)
+        ),
+    ]
+    dataframe_to_save = pd.DataFrame(list)
+    save_to_pg(dataframe_to_save, table=labelstudio_task_table, conn=conn)
+    output = get_labelstudio_ids(session, date=start, country=test_country, channel_name=channel_name)
+    assert len(output) == 1
 
 def test_pg_insert_data():
     create_tables()
