@@ -43,10 +43,10 @@ def save_to_pg(df, table, conn):
 
 def empty_tables(session = None, table = Keywords):
     if(os.environ.get("POSTGRES_HOST") == "postgres_db" or os.environ.get("POSTGRES_HOST") == "localhost"):
-        logging.warning("""Doing: Empty table Keywords""")
+        logging.warning("""Doing: Empty table """)
         session.query(table).delete()
         session.commit()
-        logging.warning("""Done: Empty table Keywords""")
+        logging.warning("""Done: Empty table """)
 
 def test_get_keywords_for_a_day_and_channel():
     create_tables()
@@ -187,16 +187,16 @@ def test_get_labelstudio_ids():
 
     list = [
         dict(
-            id = 1,#(Integer, nullable=False, primary_key=True)
-            data = dict(
+            id = 1142,#(Integer, nullable=False, primary_key=True)
+            data = json.dumps(dict(
                 item=dict(
-                    start=start,
+                    start="2024-12-12 10:10:10",
                     id="id1",
                     channel_name=channel_name
                 )
-            ),#(JSON, nullable=False)
-            created_at = pd.to_datetime("2024-11-12 10:10:10"),#(DateTime, nullable=False)
-            updated_at = pd.to_datetime("2024-11-12 10:10:10"),#(DateTime, nullable=False)
+            )),#(JSON, nullable=False)
+            created_at = "2024-11-12 10:10:10",#(DateTime, nullable=False)
+            updated_at = "2024-11-12 10:10:10",#(DateTime, nullable=False)
             is_labeled = False,#(Boolean, nullable=False)
             project_id = 1,#(Integer, nullable=True)
             overlap = 1,#(Integer, nullable=False)
@@ -208,16 +208,16 @@ def test_get_labelstudio_ids():
             unresolved_comment_count = 0,#(Integer, nullable=False)
         ),
         dict(
-            id = 1,#(Integer, nullable=False, primary_key=True)
-            data = dict(
+            id = 1143,#(Integer, nullable=False, primary_key=True)
+            data = json.dumps(dict(
                 item=dict(
-                    start=start,
+                    start="2024-12-12 10:10:10",
                     id="id1",
                     channel_name=channel_name
                 )
-            ),#(JSON, nullable=False)
-            created_at = pd.to_datetime("2024-11-12 10:10:10"),#(DateTime, nullable=False)
-            updated_at = pd.to_datetime("2024-11-12 10:10:10"),#(DateTime, nullable=False)
+            )),#(JSON, nullable=False)
+            created_at = "2024-11-12 10:10:10",#(DateTime, nullable=False)
+            updated_at = "2024-11-12 10:10:10",#(DateTime, nullable=False)
             is_labeled = False,#(Boolean, nullable=False)
             project_id = 2,#(Integer, nullable=True)
             overlap = 1,#(Integer, nullable=False)

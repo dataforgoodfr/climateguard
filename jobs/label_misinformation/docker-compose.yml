@@ -27,6 +27,7 @@ services:
       KEYWORDS_URL: https://keywords.mediatree.fr/api/export/single # https://keywords.mediatree.fr/api/docs/#/paths/~1api~1export~1single/get
       POSTGRES_USER: user
       POSTGRES_DB: barometre
+      POSTGRES_DB_LS: barometre
       POSTGRES_PASSWORD: password
       POSTGRES_HOST: postgres_db
       POSTGRES_PORT: 5432
@@ -110,6 +111,7 @@ services:
       KEYWORDS_URL: https://keywords.mediatree.fr/api/export/single 
       POSTGRES_USER: user
       POSTGRES_DB: barometre
+      POSTGRES_DB_LS: barometre
       POSTGRES_PASSWORD: password
       POSTGRES_HOST: postgres_db
       POSTGRES_PORT: 5432
