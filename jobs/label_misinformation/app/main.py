@@ -10,8 +10,10 @@ from labelstudio_utils import wait_and_sync_label_studio
 from logging_utils import getLogger
 from mediatree_utils import get_new_plaintext_from_whisper, mediatree_check_secrets
 from pg_utils import (
+    connect_to_labelstudio_db,
     get_db_session,
     get_keywords_for_a_day_and_channel,
+    get_labelstudio_ids,
     is_there_data_for_this_day_safe_guard,
 )
 from pipeline import Pipeline, PipelineInput, SinglePromptPipeline
@@ -109,16 +111,16 @@ def main(country: Country):
         bucket_output = country.bucket
         model_name = country.model
         logging.info(
-            (f"Starting app {app_name} for country {country.name} "
+            (
+                f"Starting app {app_name} for country {country.name} "
                 f"with model {model_name} for date {date_env} "
                 f"with bucketinput {bucket_input} and bucket output {bucket_output}, "
-                f"min_misinformation_score to keep is {min_misinformation_score} out of 10...")
+                f"min_misinformation_score to keep is {min_misinformation_score} out of 10..."
+            )
         )
         # For the moment the prompt does not change according to the different countries
         # If this changes we need to parametrize the country here
-        pipeline = SinglePromptPipeline(
-            model_name=model_name, api_key=openai_api_key
-        )
+        pipeline = SinglePromptPipeline(model_name=model_name, api_key=openai_api_key)
 
         date_range = get_date_range(date_env, minus_days=number_of_previous_days)
         logging.info(
@@ -126,11 +128,10 @@ def main(country: Country):
         )
         channels = get_channels(country)
         session = get_db_session()
+        labelstudio_db_session = get_db_session(engine=connect_to_labelstudio_db())
         for date in date_range:
-            was_the_day_processed_in_keywords = (
-                is_there_data_for_this_day_safe_guard(
-                    session=session, date=date, country=country
-                )
+            was_the_day_processed_in_keywords = is_there_data_for_this_day_safe_guard(
+                session=session, date=date, country=country
             )
             if was_the_day_processed_in_keywords:
                 for channel in channels:
@@ -153,12 +154,38 @@ def main(country: Country):
                             )
                             continue
 
+                        # check xhat ids are already present in labelstudio
+                        ids_in_labelstudio = get_labelstudio_ids(
+                            labelstudio_db_session,
+                            date=date,
+                            channel_name=channel,
+                            country=country,
+                        )
+
                         df_news = get_keywords_for_a_day_and_channel(
                             session=session,
                             date=date,
                             country=country,
                             channel_name=channel,
+                            ids_to_avoid=ids_in_labelstudio,
                         )
+
+                        if df_news.empty:
+                            # If no data in df_news that is not already present in labelstudio,
+                            # Save an empty file to signal to not look at the date again and finish loop.
+                            logging.info(
+                                f"Skipping as all data is already present in labelstudio for channel {channel} on {date}"
+                            )
+                            save_to_s3(
+                                df_news,
+                                channel=channel,
+                                date=date,
+                                s3_client=s3_client,
+                                bucket=bucket_output,
+                                folder_inside_bucket=bucket_output_folder,
+                                country=country,
+                            )
+                            continue
 
                         logging.debug(
                             "Schema from API before formatting :\n%s",
@@ -173,7 +200,7 @@ def main(country: Country):
                                 "channel_name",
                                 "channel_program",
                                 "channel_program_type",
-                                "country"
+                                "country",
                             ]
                         ]
 
@@ -207,7 +234,7 @@ def main(country: Country):
                             df_whispered = df_whispered.dropna()
 
                             # save JSON LabelStudio format
-                            # If the dataframe is empty after the dropna, the function will still 
+                            # If the dataframe is empty after the dropna, the function will still
                             # Save an empty.txt file
                             save_to_s3(
                                 df_whispered,
