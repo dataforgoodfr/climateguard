@@ -66,7 +66,9 @@ docker compose exec testconsole bash
 This can be done manually by clicking on UI, but if you set this it will be done after each cron job if LABEL_STUDIO_PROJECT_ID is set :
 * env variable : LABEL_STUDIO_URL = container url
 * env variable : LABEL_STUDIO_PROJECT_ID = Storage ID (not project id) inside label studio --> new to see labelstudio logs when cliking on "sync" it can be different from the one inside the label interface. @see https://api.labelstud.io/api-reference/api-reference/import-storage/s-3/sync ( [2025-05-06 12:41:25,789] [django.server::log_message::213] [INFO] "POST /api/storages/s3/5/sync HTTP/1.1" 200 799 )
-* env varuable : LABEL_STUDIO_PROJECT_ID = Storage ID for the brazil project
+* env variable : LABEL_STUDIO_PROJECT = The actual project ID
+* env varuable : LABEL_STUDIO_PROJECT_ID_BRAZIL = Storage ID for the brazil project
+* env varuable : LABEL_STUDIO_PROJECT_BRAZIL = Project ID for the brazil project
 * env variable : API_LABEL_STUDIO_KEY = label studio API key
 
 ## Deployment
