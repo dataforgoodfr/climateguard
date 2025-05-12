@@ -171,7 +171,7 @@ def get_whispered_transcript(audio_bytes: Optional[bytes]) -> str:
         # It looks weird but this is the whisper response to an empty audio track
         # Probably better ways to detect the empty audio and avoid the api call TODO
         if transcript == "you you you you you\n":
-            logging.warning("get_whispered_transcript - audio track empty, removing example")
+            logging.warning("get_whispered_transcript - No video URL found")
             return None
         logging.info(f"Whisper sample: {transcript[:100]}...")
         return transcript
