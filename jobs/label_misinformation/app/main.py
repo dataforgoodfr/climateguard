@@ -89,7 +89,6 @@ def main(country: Country):
     pd.set_option("display.max_columns", None)
     sentry_init()
 
-    # model_name = get_secret_docker("MODEL_NAME")
     app_name = os.getenv("APP_NAME", "")
     # a security nets in case scaleway servers are done to replay data
     number_of_previous_days = int(os.environ.get("NUMBER_OF_PREVIOUS_DAYS", 7))
