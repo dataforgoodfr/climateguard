@@ -13,8 +13,8 @@ class Country:
     language: str = field()  # Language of the country
     bucket: str = field()  # Bucket for country data
     model: str = field()  # Model name for analyzing the country data
-    label_studio_id: int = field()
-    label_studio_project: int = field()
+    label_studio_id: int = field() # ID for Cloud Storage ID (@see README)
+    label_studio_project: int = field() # ID for Label Studio project (visible on the web UI url)
     channels: List[str] = field()
 
     def verify_code(self, code: str):
@@ -60,7 +60,7 @@ BELGIUM_COUNTRY = Country(
     code="bel",
     name="belgium",
     language="french",
-    bucket=os.getenv("BUCKET_OUTPUT", "climateguard"),
+    bucket=os.getenv("BUCKET_OUTPUT_BELGIUM", "climateguard-belgium"),
     model=get_secret_docker("MODEL_NAME", "gpt-4o-mini"),
     label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID_BELGIUM", 99),
     label_studio_project=os.getenv("LABEL_STUDIO_PROJECT_BELGIUM", 99),

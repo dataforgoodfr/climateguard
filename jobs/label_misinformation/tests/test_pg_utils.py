@@ -235,11 +235,12 @@ def test_get_labelstudio_ids():
     assert len(output) == 1
 
 def test_pg_insert_data():
-    create_tables()
     session = get_db_session()
     conn = connect_to_db()
+    create_tables(conn=conn)
     script_dir = os.path.dirname(os.path.abspath(__file__))
     data_files = os.listdir(os.path.join(script_dir, "test_data"))
+    result = 0
     for file in data_files:
         if not file.startswith("."):
             try:
@@ -250,7 +251,8 @@ def test_pg_insert_data():
             dataframe_to_save = pd.DataFrame(data_sample)
             dataframe_to_save['start'] = pd.to_datetime(dataframe_to_save['start'], utc=True)
             save_to_pg(dataframe_to_save, table=keywords_table, conn=conn)
-    assert True == True
+    logging.info("Data inserted into PG")
+    assert result != 0
 
 def test_is_there_data_for_this_day_safe_guard():
     date = pd.to_datetime("2024-12-12 10:10:10")

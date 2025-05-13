@@ -96,10 +96,7 @@ def main(country: Country):
         f"Number of previous days to check for missing date (NUMBER_OF_PREVIOUS_DAYS): {number_of_previous_days}"
     )
     date_env: str = os.getenv("DATE", "")
-    bucket_input = os.getenv("BUCKET_INPUT", "")
-    # bucket_output = os.getenv("BUCKET_OUTPUT", "")
     bucket_output_folder = os.getenv("BUCKET_OUTPUT_FOLDER", "")
-    # country = get_country_or_collection_from_name(os.getenv("COUNTRY", "france"))
     min_misinformation_score = int(os.getenv("MIN_MISINFORMATION_SCORE", 10))
 
     openai_api_key = get_secret_docker("OPENAI_API_KEY")
@@ -112,8 +109,8 @@ def main(country: Country):
         logging.info(
             (
                 f"Starting app {app_name} for country {country.name} "
-                f"with model {model_name} for date {date_env} "
-                f"with bucketinput {bucket_input} and bucket output {bucket_output}, "
+                f"with model {model_name} for date {date_env} and NUMBER_OF_PREVIOUS_DAYS {number_of_previous_days}"
+                f"bucket output {bucket_output}, "
                 f"min_misinformation_score to keep is {min_misinformation_score} out of 10..."
             )
         )
@@ -153,7 +150,7 @@ def main(country: Country):
                             )
                             continue
 
-                        # check xhat ids are already present in labelstudio
+                        # check what ids are already present in labelstudio
                         ids_in_labelstudio = get_labelstudio_ids(
                             labelstudio_db_session,
                             date=date,
@@ -283,5 +280,6 @@ if __name__ == "__main__":
         main(country)
         # sync label studio only if there are new data
         wait_and_sync_label_studio(country.label_studio_id)
-        sentry_close()
+    
+    sentry_close() # monitoring
     sys.exit(0)

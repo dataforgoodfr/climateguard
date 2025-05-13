@@ -29,6 +29,7 @@ Install [Docker](https://www.docker.com/get-started/) in a few minutes on the of
 docker compose up testconsole -d
 docker compose exec testconsole bash
 > pytest -vv -k test_pg_insert_data # will insert misinformation data linked to rmc on 2025 march 10
+> exit
 docker compose up app
 ```
 
@@ -57,6 +58,7 @@ docker compose exec testconsole bash
 * env variable  "DATE" : to query a date with format YYYY-MM-DD, if none the date is yesterday
 * env variable  "BUCKET_OUTPUT" - bucket name with partitions : year,month,day,channel
 * env variable  "BUCKET_OUTPUT_BRAZIL" - bucket name with partitions : country,year,month,day,channel
+* env variable  "BUCKET_OUTPUT_BELGIUM" - bucket name with partitions : country,year,month,day,channel
 * env variable "MIN_MISINFORMATION_SCORE": 10 # the minimum score to have to be kept (10 out of 10)
 * env variable : "CHANNEL" : mediatree former channel name (tf1 for TF1, itele for cnews, bfmtv for BFMTv ...)
 * env variable : NUMBER_OF_PREVIOUS_DAYS (integer): default 7 days to check if something missing - in case production servers had an issue

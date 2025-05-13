@@ -8,7 +8,6 @@ services:
       OPENAI_API_KEY: /run/secrets/openai_key
       MODEL_NAME:  gpt-4o-mini
       MODEL_NAME_BRAZIL:  gpt-4o-mini
-      BUCKET_INPUT: mediatree
       BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing 
       BUCKET_OUTPUT_BRAZIL: test-bucket-mediatree # change to test-bucket-mediatree for testing 
       BUCKET_OUTPUT_FOLDER: labelstudio_sandbox/test_oneshot
@@ -93,7 +92,6 @@ services:
       APP_NAME: label-misinformation 
       OPENAI_API_KEY: /run/secrets/openai_key
       MODEL_NAME:  /run/secrets/model_name
-      BUCKET_INPUT: mediatree
       BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing
       BUCKET_OUTPUT_BRAZIL: test-bucket-mediatree # change to test-bucket-mediatree for testing 
       BUCKET_OUTPUT_FOLDER: label-misinformation-tmp
@@ -137,7 +135,6 @@ services:
       APP_NAME: label-misinformation 
       OPENAI_API_KEY: /run/secrets/openai_key
       MODEL_NAME:  /run/secrets/model_name
-      BUCKET_INPUT: mediatree
       BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing
       BUCKET_OUTPUT_BRAZIL: test-bucket-mediatree # change to test-bucket-mediatree for testing 
       BUCKET_OUTPUT_FOLDER: label-misinformation-tmp
