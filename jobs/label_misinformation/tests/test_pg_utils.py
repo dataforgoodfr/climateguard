@@ -250,7 +250,7 @@ def test_pg_insert_data():
                 raise FileNotFoundError("Cannot find " + os.path.join(script_dir, f"test_data/{file}"))
             dataframe_to_save = pd.DataFrame(data_sample)
             dataframe_to_save['start'] = pd.to_datetime(dataframe_to_save['start'], utc=True)
-            save_to_pg(dataframe_to_save, table=keywords_table, conn=conn)
+            result = save_to_pg(dataframe_to_save, table=keywords_table, conn=conn)
     logging.info("Data inserted into PG")
     assert result != 0
 
