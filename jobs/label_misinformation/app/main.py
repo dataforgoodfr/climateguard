@@ -10,7 +10,7 @@ from labelstudio_utils import wait_and_sync_label_studio
 from logging_utils import getLogger
 from mediatree_utils import get_new_plaintext_from_whisper, mediatree_check_secrets
 from pg_utils import (
-    connect_to_labelstudio_db,
+    connect_to_db,
     get_db_session,
     get_keywords_for_a_day_and_channel,
     get_labelstudio_ids,
@@ -109,8 +109,8 @@ def main(country: Country):
         logging.info(
             (
                 f"Starting app {app_name} for country {country.name} "
-                f"with model {model_name} for date {date_env} and NUMBER_OF_PREVIOUS_DAYS {number_of_previous_days}"
-                f"bucket output {bucket_output}, "
+                f"with model {model_name} for date {date_env} "
+                f"with bucket output {bucket_output}, "
                 f"min_misinformation_score to keep is {min_misinformation_score} out of 10..."
             )
         )
@@ -124,7 +124,7 @@ def main(country: Country):
         )
         channels = get_channels(country)
         session = get_db_session()
-        labelstudio_db_session = get_db_session(engine=connect_to_labelstudio_db())
+        labelstudio_db_session = get_db_session(engine=connect_to_db(db_database=os.environ.get("POSTGRES_DB_LS", "labelstudio")))
         for date in date_range:
             was_the_day_processed_in_keywords = is_there_data_for_this_day_safe_guard(
                 session=session, date=date, country=country

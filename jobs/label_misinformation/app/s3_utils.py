@@ -44,25 +44,6 @@ def get_bucket_key_folder(date, channel, root_folder=None, country: Country=FRAN
     return key
 
 
-def read_folder_from_s3(date, channel: str, bucket: str) -> pd.DataFrame:
-    # THIS FUNCTION IS NEVER CALLED, DO WE NEED IT ? 
-    s3_path: str = get_bucket_key_folder(date=date, channel=channel)
-    s3_key: tuple[str] = f"s3://{bucket}/{s3_path}"
-    logging.info(f"Reading S3 folder {s3_key}")
-
-    df = pd.read_parquet(
-        path=s3_key,
-        storage_options={
-            "key": ACCESS_KEY,
-            "secret": SECRET_KEY,
-            "endpoint_url": ENDPOINT_URL,
-        },
-    )
-
-    logging.info(f"read {len(df)} rows from S3")
-    return df
-
-
 def check_if_object_exists_in_s3(day, channel, s3_client, bucket: str, root_folder=None, country:Country=FRANCE_COUNTRY) -> bool:
     folder_prefix = get_bucket_key_folder(day, channel, root_folder=root_folder, country=country)
 

@@ -106,43 +106,21 @@ class LabelStudioTask(BaseLS):
     unresolved_comment_count = Column(Integer, nullable=False)
 
 
-def connect_to_db():
-    DB_DATABASE = os.environ.get("POSTGRES_DB", "barometre")
+def connect_to_db(db_database:str = None):
+    if db_database is None:
+        db_database = os.environ.get("POSTGRES_DB", "barometre")
     DB_USER = os.environ.get("POSTGRES_USER", "user")
     DB_HOST = os.environ.get("POSTGRES_HOST", "localhost")
     DB_PORT = os.environ.get("POSTGRES_PORT", 5432)
     DB_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "password")
 
-    logging.info("Connect to the host %s for DB %s" % (DB_HOST, DB_DATABASE))
+    logging.info("Connect to the host %s for DB %s" % (DB_HOST, db_database))
 
     url = URL.create(
         drivername="postgresql",
         username=DB_USER,
         host=DB_HOST,
-        database=DB_DATABASE,
-        port=DB_PORT,
-        password=DB_PASSWORD,
-    )
-
-    engine = create_engine(url)
-
-    return engine
-
-
-def connect_to_labelstudio_db():
-    DB_DATABASE = os.environ.get("POSTGRES_DB_LS", "labelstudio")
-    DB_USER = os.environ.get("POSTGRES_USER", "user")
-    DB_HOST = os.environ.get("POSTGRES_HOST", "localhost")
-    DB_PORT = os.environ.get("POSTGRES_PORT", 5432)
-    DB_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "password")
-
-    logging.info("Connect to the host %s for DB %s" % (DB_HOST, DB_DATABASE))
-
-    url = URL.create(
-        drivername="postgresql",
-        username=DB_USER,
-        host=DB_HOST,
-        database=DB_DATABASE,
+        database=db_database,
         port=DB_PORT,
         password=DB_PASSWORD,
     )
