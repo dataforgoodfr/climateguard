@@ -5,6 +5,7 @@ import os
 sys.path.append(os.path.abspath('/app'))
 import modin.pandas as pd
 from app.s3_utils import save_to_s3, save_csv, save_parquet, get_s3_client, get_bucket_key_folder, save_json
+from app.country import FRANCE_COUNTRY
 from datetime import datetime, timedelta
 import logging
 
@@ -18,6 +19,7 @@ def test_save_csv():
     assert output == "s3/misinformation.tsv"
 
 def test_save_json():
+    country = FRANCE_COUNTRY
     df: pd.DataFrame = pd.read_parquet("tests/label_misinformation/data/misinformation.parquet")
     date: datetime = datetime.now()
     channel="itele"
@@ -28,7 +30,8 @@ def test_save_json():
     df['model_reason'] = "test" 
     df['plaintext_whisper'] = "mytest" 
     df['id'] = "keyword_id" 
-    output = save_json(df, channel=channel, date=date, s3_path="test")
+    df["country"] = country.name
+    output = save_json(df, channel=channel, date=date, s3_path="test", country=FRANCE_COUNTRY)
     assert output == "s3/json"
 
 def test_save_parquet():

@@ -76,3 +76,6 @@ notebooks/**/.ipynb_checkpoints/
 
 # Large dataset files
 data/raw/
+data
+deployments
+notebooks

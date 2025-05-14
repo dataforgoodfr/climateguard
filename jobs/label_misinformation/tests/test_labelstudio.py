@@ -23,6 +23,7 @@ def test_get_label_studio_format():
         "month": 3,
         "day": 3,
         "channel": "news",
+        "country": "country"
     }])
 
     row = df.iloc[0]
