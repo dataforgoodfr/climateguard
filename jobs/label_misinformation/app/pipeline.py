@@ -6,7 +6,7 @@ from secret_utils import get_secret_docker
 import os
 import openai
 import re
-from secret_utils import *
+from prompts import DisinformationPrompt
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -74,23 +74,16 @@ def parse_response(response: str) -> PipelineOutput:
 
 
 class SinglePromptPipeline(Pipeline):
-    def __init__(self, model_name: str, api_key: str) -> None:
+    def __init__(self, model_name: str, api_key: str, prompt: DisinformationPrompt) -> None:
         openai_key = get_secret_docker("OPENAI_API_KEY")
         openai.api_key = openai_key
         os.environ["OPENAI_API_KEY"] = openai_key
         self._model = model_name
 
-        self._system_prompt = """
-    You are an assistant helping editors to moderate TV and radio content.
-    You will be provided with a transcript delimited by triple backticks.
-    Bear in mind that the transcript may be missing punctuation and may be of very low quality, with incorrect vocabulary, cuts in the wrong places, or may include some phonetic transcription.
-
-    Does the text promote climate change misinformation that undermines well-established scientific consensus, such as denying the existence of climate change or the factors that contribute to it ?
-    
-    Answer just a number on a scale of 0 - does not promote - to 10 - certainly promotes.
-
-    text:"""
-        self._steps = [f"Single Open AI prompt with {self._model} - prompt: {self._system_prompt}"]
+        self._system_prompt = prompt.prompt
+        self.prompt_verison = prompt.version
+        self.version = f"{model_name}/{prompt.version}"
+        self._steps = [f"Single Open AI prompt with {self._model} - prompt version: {prompt.version} - prompt text: {self._system_prompt}"]
 
     def process(self, input_data: PipelineInput) -> int:
         prompt = self._system_prompt + f" '''{input_data.transcript}'''"

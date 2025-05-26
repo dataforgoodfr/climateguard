@@ -17,6 +17,8 @@ def test_get_label_studio_format():
         "channel_program": "Morning News",
         "channel_program_type": "Live",
         "model_name": "TestModel",
+        "prompt_version": "0.0.1",
+        "pipeline_version": "TestModel/0.0.1",
         "model_result": "10",
         "model_reason": "a reason",
         "year": 2024,
@@ -37,4 +39,6 @@ def test_get_label_studio_format():
     assert output["data"]["item"]["plaintext"] == plaintext
     assert output["data"]["item"]["channel_title"] == channel_title
     assert output["data"]["item"]["year"] == 2024
+    assert output["data"]["item"]["prompt_version"] == "0.0.1"
+    assert output["data"]["item"]["pipeline_version"] == "TestModel/0.0.1"
     assert output["data"]["item"]["url_mediatree"] == get_url_mediatree(row["start"], row["channel_name"])

@@ -17,11 +17,11 @@ from pg_utils import (
     is_there_data_for_this_day_safe_guard,
 )
 from pipeline import Pipeline, PipelineInput, SinglePromptPipeline
+from prompts import PIPELINE_PRODUCTION_PROMPT, PROMPTS
 from s3_utils import check_if_object_exists_in_s3, get_s3_client, save_to_s3
 from secret_utils import get_secret_docker
 from sentry_sdk.crons import monitor
 from sentry_utils import sentry_close, sentry_init
-from whisper_utils import get_videofile_mp4_buffer, transform_mp4_to_mp3
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -70,6 +70,8 @@ def detect_misinformation(
             lambda x: x["model_result"]
         )
         df_news["model_name"] = model_name
+        df_news["prompt_version"] = pipeline.prompt_version
+        df_news["pipeline_version"] = pipeline.pipeline_version
     except Exception as e:
         logging.error(f"Error during apply: {e}")
         raise
@@ -116,7 +118,11 @@ def main(country: Country):
         )
         # For the moment the prompt does not change according to the different countries
         # If this changes we need to parametrize the country here
-        pipeline = SinglePromptPipeline(model_name=model_name, api_key=openai_api_key)
+        pipeline = SinglePromptPipeline(
+            model_name=model_name,
+            api_key=openai_api_key,
+            prompt=PROMPTS[PIPELINE_PRODUCTION_PROMPT],
+        )
 
         date_range = get_date_range(date_env, minus_days=number_of_previous_days)
         logging.info(
@@ -124,7 +130,11 @@ def main(country: Country):
         )
         channels = get_channels(country)
         session = get_db_session()
-        labelstudio_db_session = get_db_session(engine=connect_to_db(db_database=os.environ.get("POSTGRES_DB_LS", "labelstudio")))
+        labelstudio_db_session = get_db_session(
+            engine=connect_to_db(
+                db_database=os.environ.get("POSTGRES_DB_LS", "labelstudio")
+            )
+        )
         for date in date_range:
             was_the_day_processed_in_keywords = is_there_data_for_this_day_safe_guard(
                 session=session, date=date, country=country
@@ -280,6 +290,6 @@ if __name__ == "__main__":
         main(country)
         # sync label studio only if there are new data
         wait_and_sync_label_studio(country.label_studio_id)
-    
-    sentry_close() # monitoring
+
+    sentry_close()  # monitoring
     sys.exit(0)
