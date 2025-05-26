@@ -82,7 +82,7 @@ class SinglePromptPipeline(Pipeline):
 
         self._system_prompt = prompt.prompt
         self.prompt_verison = prompt.version
-        self.version = f"{model_name/prompt.version}"
+        self.version = f"{model_name}/{prompt.version}"
         self._steps = [f"Single Open AI prompt with {self._model} - prompt version: {prompt.version} - prompt text: {self._system_prompt}"]
 
     def process(self, input_data: PipelineInput) -> int:
