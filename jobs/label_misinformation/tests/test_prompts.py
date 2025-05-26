@@ -14,7 +14,7 @@ def test_production_prompt_defined():
 
 def test_prompt_versions():
     for version in PROMPTS:
-        assert version == PROMPTS[version]
+        assert version == PROMPTS[version].version
 
 
 def test_create_prompt():
