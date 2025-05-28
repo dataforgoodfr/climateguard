@@ -78,4 +78,10 @@ notebooks/**/.ipynb_checkpoints/
 data/raw/
 data
 deployments
-notebooks
+climateguard/finetuning/grpo/data
+climateguard/finetuning/grpo/data_xml
+climateguard/finetuning/grpo/data_messages
+climateguard/finetuning/grpo/*adapters
+climateguard/finetuning/sft/data
+climateguard/finetuning/sft/*adapters
+climateguard/finetuning/bert/data
