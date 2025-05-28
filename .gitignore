@@ -85,3 +85,10 @@ climateguard/finetuning/grpo/*adapters
 climateguard/finetuning/sft/data
 climateguard/finetuning/sft/*adapters
 climateguard/finetuning/bert/data
+qdrant
+data/benchmark
+data/annotated
+data/processed
+notebooks/experiments/data
+notebooks/experiments/*.csv
+
