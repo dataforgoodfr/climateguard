@@ -2,9 +2,10 @@ import argparse
 import json
 import re
 
+import pandas as pd
 from datasets import load_dataset
 from mlx_lm import generate, load
-from mlx_lm.sample_utils import make_sampler, make_logits_processors
+from mlx_lm.sample_utils import make_logits_processors, make_sampler
 from prompts import prompt_chat
 from sklearn.metrics import classification_report
 from tqdm import tqdm
@@ -122,6 +123,7 @@ if __name__ == "__main__":
         labels.append(int(record["misinformation"]))
 
     print(classification_report(labels, predictions))
+    print(pd.Series(predictions).value_counts())
 
 
 
