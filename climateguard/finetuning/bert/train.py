@@ -1,21 +1,20 @@
 import argparse
+import json
 import os
 import random
 from datetime import datetime
+from typing import Any, Dict, List, Union
 
 import numpy as np
 import pandas as pd
-import torch
 import wandb
 from datasets import load_dataset
 from datasets.arrow_dataset import Dataset
-from datasets.dataset_dict import DatasetDict, IterableDatasetDict
-from datasets.iterable_dataset import IterableDataset
+from default_training_args import DEFAULT_TRAINING_ARGS
 from dotenv import load_dotenv
 from huggingface_hub import HfFolder
 from llama_index.core.node_parser import SentenceSplitter
 from sklearn.metrics import (
-    classification_report,
     f1_score,
     precision_score,
     recall_score,
@@ -30,19 +29,63 @@ from transformers import (
 
 def compute_metrics(eval_pred):
     predictions, labels = eval_pred
-    predictions = np.argmax(predictions, axis=1)
-    f1 = f1_score(labels, predictions, labels=labels, pos_label=1, average="weighted")
-    recall = recall_score(
-        labels, predictions, labels=labels, pos_label=1, average="weighted"
-    )
-    precision = precision_score(
-        labels, predictions, labels=labels, pos_label=1, average="weighted"
-    )
+    predictions = predictions.argmax(1)
+    f1 = f1_score(labels, predictions, pos_label=1)
+    recall = recall_score(labels, predictions, pos_label=1)
+    precision = precision_score(labels, predictions, pos_label=1)
     return {
         "f1": float(f1) if f1 == 1 else f1,
         "recall": float(recall) if recall == 1 else recall,
         "precision": float(precision) if precision == 1 else precision,
     }
+
+
+def sample_dataset(
+    args: argparse.Namespace, dataset: Union[List[Dict[str, Any]], Dataset]
+):
+    splitter = SentenceSplitter(
+        chunk_size=args.chunk_size,
+        chunk_overlap=args.chunk_overlap,
+    )
+    records = []
+    n_true = 0
+    n_false = 0
+    n_max = args.max_samples_per_class if args.max_samples_per_class else 1e6
+    for record in dataset:
+        if record["misinformation_claims"] and n_true < n_max:
+            for claim in record["misinformation_claims"]:
+                for label in claim["labels"]:
+                    claim_text = claim["text"]
+                    plaintext = (
+                        record["plaintext_whisper"]
+                        .lower()
+                        .replace(".", "")
+                        .replace(",", "")
+                        .replace("?", "")
+                    )
+                    start_claim = record["plaintext_whisper"].find(claim_text)
+                    start_idx = max(start_claim - 100, 0)
+                    end_idx = start_idx + len(claim_text) + 512
+                    text = " ".join(plaintext[start_idx:end_idx].split(" ")[:-1])
+                    chunk = splitter.split_text(text)[0]
+                    records.append({"text": chunk, "label": 1})
+                    n_true += 1
+        elif not record["misinformation"]:
+            if args.chunk and n_false < n_max:
+                chunks = splitter.split_text(
+                    record["plaintext_whisper"]
+                    .lower()
+                    .replace(".", "")
+                    .replace(",", "")
+                )
+                records.append(
+                    {
+                        "text": random.choice(chunks),
+                        "label": int(record["misinformation"]),
+                    }
+                )
+                n_false += 1
+    return records
 
 
 if __name__ == "__main__":
@@ -78,22 +121,9 @@ if __name__ == "__main__":
         help="Max segments length to train the model on (default: 512).",
     )
     parser.add_argument(
-        "--text-feature",
-        type=str,
-        default="plaintext",
-        help="Dataset feature containing the text input (default: 'plaintext').",
-    )
-    parser.add_argument(
-        "--label",
-        type=str,
-        default="misinformation",
-        help="Dataset feature containing the labels (default: 'misinformation').",
-    )
-    parser.add_argument(
         "--chunk",
-        type=argparse.BooleanOptionalAction,
-        default=True,
-        help="Split texts longer than max tokens into chunks (default: True)",
+        action="store_true",
+        help="Split texts longer than max tokens into chunks, if flag is present",
     )
     parser.add_argument(
         "--chunk-size",
@@ -104,7 +134,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--chunk-overlap",
         type=int,
-        default=128,
+        default=0,
         help="Overlap between chunks if chunk=True (default: 128).",
     )
     parser.add_argument(
@@ -125,6 +155,29 @@ if __name__ == "__main__":
         default="wandb",
         help="Where to log to. Either `None` or `wandb` (for weights and biases)",
     )
+    parser.add_argument(
+        "--max-samples-per-class",
+        type=int,
+        default=None,
+        help="Number of training samples to use for each class (default: 200).",
+    )
+    parser.add_argument(
+        "--push-to-hub",
+        action="store_true",
+        help="Push training checkpoints to hub if active",
+    )
+    parser.add_argument(
+        "--training-args",
+        type=str,
+        help=(
+            "JSON encoded string containing all the training arguments for the HF Trainer. "
+            "Defaults defined in the default_training_args.py file. Can also be partial "
+            "as the arguments will be updated key by key. "
+            "See https://huggingface.co/docs/transformers/v4.52.3/main_classes/trainer "
+            "for more info"
+        ),
+    )
+
     args = parser.parse_args()
 
     load_dotenv()
@@ -132,45 +185,19 @@ if __name__ == "__main__":
         wandb.login()
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
-    splitter = SentenceSplitter(
-        chunk_size=args.chunk_size,
-        chunk_overlap=args.chunk_overlap,
-    )
-
     # Load raw dataset
     train_dataset = load_dataset(args.dataset, split=args.split)
-    records = []
 
-    # for record in train_dataset:
-    #     # if record["misinformation_claims"]:
-    #     #     for claim in record["misinformation_claims"]:
-    #     #         for label in claim["labels"]:
-    #     #             records.append({"text": claim["text"], "label": 1})
-    #     chunks = splitter.split_text(record[args.text_feature])
-    #     for chunk in chunks:
-    #         records.append(
-    #             {
-    #                 "text": random.choice(chunk),
-    #                 "label": int(record[args.label]),
-    #             }
-    #     )
-
-    for record in train_dataset:
-        if record["misinformation_claims"]:
-            for claim in record["misinformation_claims"]:
-                for label in claim["labels"]:
-                    records.append({"text": claim["text"], "label": 1})
-        else:
-            chunks = splitter.split_text(record["plaintext"])
-            records.append(
-                {
-                    "text": random.choice(chunks),
-                    "label": int(record["misinformation"]),
-                }
-            )
-
+    records = sample_dataset(args, train_dataset)
     claims_dataset = Dataset.from_pandas(pd.DataFrame.from_records(records))
-    split_dataset = claims_dataset.train_test_split(test_size=args.train_val_split)
+    claims_dataset = claims_dataset.class_encode_column("label")
+    split_dataset = claims_dataset.train_test_split(
+        test_size=args.train_val_split, stratify_by_column="label"
+    )
+    print(
+        "Sampled the following distribution of examples from dataset: \n",
+        claims_dataset.to_pandas().label.value_counts(),
+    )
 
     # Load Tokenizer
     tokenizer = AutoTokenizer.from_pretrained(args.model)
@@ -179,9 +206,9 @@ if __name__ == "__main__":
     def tokenize(batch):
         return tokenizer(
             batch["text"],
-            padding=True,
+            padding="max_length",
             truncation=True,
-            max_length=512,
+            max_length=args.max_tokens,
             return_tensors="pt",
         )
 
@@ -227,41 +254,34 @@ if __name__ == "__main__":
         f"Training {round(requires_grad_params/1e6)}M parameters out of {round(total_params/1e6)}M"
     )
 
-    # Metric helper method
+    training_args = DEFAULT_TRAINING_ARGS
+    if args.push_to_hub:
+        hub_params = dict(
+            push_to_hub=args.push_to_hub,
+            hub_strategy="every_save",
+            hub_token=HfFolder.get_token(),
+        )
+        training_args.update(hub_params)
+    if args.training_args:
+        try:
+            training_args.update(json.loads(args.training_args))
+        except json.JSONDecodeError as e:
+            print(f"Could not load training arguments from string {args.training_args}")
+            raise e
 
+    # Metric helper method
     # Define training args
     training_args = TrainingArguments(
-        output_dir="runs/" + args.model.split("/")[-1] + "-" + args.dataset.split("/")[-1],
+        output_dir="runs/"
+        + args.model.split("/")[-1]
+        + "-"
+        + args.dataset.split("/")[-1],
         run_name=args.model.split("/")[-1]
         + "-"
         + args.dataset.split("/")[-1]
         + datetime.now().strftime("%d-%m-%Y_%H-%M-%S"),
-        per_device_train_batch_size=4,
-        per_device_eval_batch_size=2,
-        learning_rate=5e-6,
-        warmup_steps=50,
-        weight_decay=0.01,
-        lr_scheduler_type="cosine",
-        num_train_epochs=10,
-        bf16=False,  # bfloat16 training
-        fp16=False,
-        optim="adamw_torch_fused",  # improved optimizer
-        # logging & evaluation strategies
-        logging_strategy="steps",
-        logging_steps=20,
-        eval_strategy="steps",
-        eval_steps=20,
-        save_strategy="steps",
-        save_steps=100,
-        save_total_limit=2,
-        load_best_model_at_end=True,
-        use_mps_device=True,
-        metric_for_best_model="f1",
-        # push to hub parameters
-        push_to_hub=True,
-        hub_strategy="every_save",
-        hub_token=HfFolder.get_token(),
         report_to=args.logging_type,
+        **training_args,
     )
 
     # Create a Trainer instance
@@ -273,20 +293,6 @@ if __name__ == "__main__":
         compute_metrics=compute_metrics,
     )
     trainer.train()
-
-    for parameter in model.parameters():
-        parameter.requires_grad = False
-
-    print("Testing on validation set.")
-    with torch.no_grad():
-        # for record in tokenized_dataset:
-        outputs = model(
-            tokenized_dataset["test"]["input_ids"],
-            tokenized_dataset["test"]["attention_mask"],
-        )
-    predictions = outputs.logits.argmax(1)
-    labels = list(map(int, tokenized_dataset["test"]["misinformation"]))
-    print(classification_report(labels, predictions))
 
     model.save_pretrained(
         "models/" + args.model.split("/")[-1] + "-" + args.dataset.split("/")[-1]
