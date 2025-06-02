@@ -89,3 +89,10 @@ runs/
 models/
 wandb
 notebooks
+qdrant
+data/benchmark
+data/annotated
+data/processed
+notebooks/experiments/data
+notebooks/experiments/*.csv
+
