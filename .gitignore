@@ -88,6 +88,7 @@ climateguard/finetuning/deberta/data
 runs/
 models/
 wandb
+notebooks
 qdrant
 data/benchmark
 data/annotated
