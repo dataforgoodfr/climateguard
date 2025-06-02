@@ -22,6 +22,7 @@ from s3_utils import check_if_object_exists_in_s3, get_s3_client, save_to_s3
 from secret_utils import get_secret_docker
 from sentry_sdk.crons import monitor
 from sentry_utils import sentry_close, sentry_init
+from whisper_utils import WHISPER_COLUMN_NAME
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -237,7 +238,7 @@ def main(country: Country):
                             )
 
                             # remove the records with empty transcripts
-                            df_whispered = df_whispered.dropna()
+                            df_whispered = df_whispered.dropna(subset=[WHISPER_COLUMN_NAME])
 
                             # save JSON LabelStudio format
                             # If the dataframe is empty after the dropna, the function will still
