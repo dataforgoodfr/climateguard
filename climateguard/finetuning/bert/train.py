@@ -1,5 +1,6 @@
 import argparse
 import json
+import logging
 import os
 import random
 from datetime import datetime
@@ -26,6 +27,10 @@ from transformers import (
     TrainingArguments,
 )
 
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 def compute_metrics(eval_pred):
     predictions, labels = eval_pred
@@ -179,6 +184,8 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
+    arg_names = "\n".join([f"{key}={value}" for key, value in vars(args).items()])
+    logging.info(f"Starting training with the following arguments: \n{arg_names}")
 
     load_dotenv()
     if args.logging_type:
@@ -194,9 +201,9 @@ if __name__ == "__main__":
     split_dataset = claims_dataset.train_test_split(
         test_size=args.train_val_split, stratify_by_column="label"
     )
-    print(
-        "Sampled the following distribution of examples from dataset: \n",
-        claims_dataset.to_pandas().label.value_counts(),
+    logging.info(
+        "Sampled the following distribution of examples from dataset: \n"
+        f"{claims_dataset.to_pandas().label.value_counts()}"
     )
 
     # Load Tokenizer
@@ -250,7 +257,7 @@ if __name__ == "__main__":
         total_params += parameter.nelement()
         if parameter.requires_grad:
             requires_grad_params += parameter.nelement()
-    print(
+    logging.info(
         f"Training {round(requires_grad_params/1e6)}M parameters out of {round(total_params/1e6)}M"
     )
 
@@ -266,8 +273,14 @@ if __name__ == "__main__":
         try:
             training_args.update(json.loads(args.training_args))
         except json.JSONDecodeError as e:
-            print(f"Could not load training arguments from string {args.training_args}")
+            logging.fatal(f"Could not load training arguments from string {args.training_args}")
             raise e
+    else:
+        logging.warning(
+            "No training arguments have been passed. Defaults will be applied. "
+            "See `default_training_args.py` for more info. To pass customised training "
+            "arguments, use the `--training-args` flag."
+        )
 
     # Metric helper method
     # Define training args
