@@ -72,7 +72,7 @@ def detect_misinformation(
         )
         df_news["model_name"] = model_name
         df_news["prompt_version"] = pipeline.prompt_version
-        df_news["pipeline_version"] = pipeline.pipeline_version
+        df_news["pipeline_version"] = pipeline.version
     except Exception as e:
         logging.error(f"Error during apply: {e}")
         raise
