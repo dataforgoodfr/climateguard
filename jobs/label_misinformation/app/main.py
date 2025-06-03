@@ -72,7 +72,7 @@ def detect_misinformation(
         )
         df_news["model_name"] = model_name
         df_news["prompt_version"] = pipeline.prompt_version
-        df_news["pipeline_version"] = pipeline.pipeline_version
+        df_news["pipeline_version"] = pipeline.version
     except Exception as e:
         logging.error(f"Error during apply: {e}")
         raise
@@ -147,19 +147,19 @@ def main(country: Country):
                         logging.info(
                             f"processing date {date} for channel : {channel} inside bucket {bucket_output} folder {bucket_output_folder}"
                         )
-                        # if the date/channel has already been saved or not
-                        if check_if_object_exists_in_s3(
-                            day=date,
-                            channel=channel,
-                            s3_client=s3_client,
-                            bucket=bucket_output,
-                            root_folder=bucket_output_folder,
-                            country=country,
-                        ):
-                            logging.info(
-                                f"Skipping as already saved before: {channel} inside bucket {bucket_output} folder {bucket_output_folder}"
-                            )
-                            continue
+                        # # if the date/channel has already been saved or not
+                        # if check_if_object_exists_in_s3(
+                        #     day=date,
+                        #     channel=channel,
+                        #     s3_client=s3_client,
+                        #     bucket=bucket_output,
+                        #     root_folder=bucket_output_folder,
+                        #     country=country,
+                        # ):
+                        #     logging.info(
+                        #         f"Skipping as already saved before: {channel} inside bucket {bucket_output} folder {bucket_output_folder}"
+                        #     )
+                        #     continue
 
                         # check what ids are already present in labelstudio
                         ids_in_labelstudio = get_labelstudio_ids(
