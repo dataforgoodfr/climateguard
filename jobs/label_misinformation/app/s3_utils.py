@@ -118,7 +118,7 @@ def reformat_and_save(df, output_folder="output_json_files") -> str:
         task_data = get_label_studio_format(row)
 
         # Define the file path for each row
-        file_path = os.path.join(output_folder, f"task_{idx + 1}.json")
+        file_path = os.path.join(output_folder, f"{row['id']}.json")
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         # Write the formatted data to a file
         with open(file_path, "w", encoding="utf-8") as f:
