@@ -72,9 +72,7 @@ class Keywords(Base):
         onupdate=text("now() at time zone 'Europe/Paris'"),
         nullable=True,
     )
-    keywords_with_timestamp = Column(
-        JSON
-    )  # ALTER TABLE keywords ADD keywords_with_timestamp json;
+    keywords_with_timestamp = Column(JSON)  # ALTER TABLE keywords ADD keywords_with_timestamp json;
     number_of_keywords_climat = Column(
         Integer
     )  # sum of all climatique counters without duplicate (like number_of_keywords)
@@ -106,7 +104,7 @@ class LabelStudioTask(BaseLS):
     unresolved_comment_count = Column(Integer, nullable=False)
 
 
-def connect_to_db(db_database:str = None):
+def connect_to_db(db_database: str = None):
     if db_database is None:
         db_database = os.environ.get("POSTGRES_DB", "barometre")
     DB_USER = os.environ.get("POSTGRES_USER", "user")
@@ -146,7 +144,7 @@ def create_tables(conn=None, label_studio=False):
             engine = conn
 
         if label_studio:
-            BaseLS.metadata.create_all(engine, checkfirst=True)
+            LabelStudioTask.metadata.create_all(engine, checkfirst=True)
         else:
             Base.metadata.create_all(engine, checkfirst=True)
     except Exception as error:
@@ -169,9 +167,7 @@ def is_there_data_for_this_day_safe_guard(
     end_of_day = start_of_day + timedelta(days=1)
     if not country == ALL_COUNTRIES:
         statement = statement.filter(Keywords.country == country.name)
-    statement = statement.filter(
-        and_(Keywords.start >= start_of_day, Keywords.start < end_of_day)
-    )
+    statement = statement.filter(and_(Keywords.start >= start_of_day, Keywords.start < end_of_day))
 
     output = session.execute(statement).scalar()
     logging.info(f"Previous mediatree job got {output} elements saved")
@@ -219,12 +215,10 @@ def get_keywords_for_a_day_and_channel(
     # filter records where 'start' is within the same day
     start_of_day = date.replace(hour=0, minute=0, second=0, microsecond=0)
     end_of_day = start_of_day + timedelta(days=1)
-    statement = statement.filter(
-        and_(Keywords.start >= start_of_day, Keywords.start < end_of_day)
-    )
+    statement = statement.filter(and_(Keywords.start >= start_of_day, Keywords.start < end_of_day))
     if ids_to_avoid:
         statement = statement.filter(Keywords.id.notin_(ids_to_avoid))
-        
+
     output = session.execute(statement).fetchall()
 
     columns = [
@@ -263,9 +257,21 @@ def get_labelstudio_ids(
         .select_from(LabelStudioTask)
         .where(
             and_(
-                cast(LabelStudioTask.data.op("#>>")(literal_column("ARRAY['item','channel_name']")), Text) == channel_name,
-                cast(LabelStudioTask.data.op("#>>")(literal_column("ARRAY['item','start']")), DateTime) >= start_of_day,
-                cast(LabelStudioTask.data.op("#>>")(literal_column("ARRAY['item','start']")), DateTime) < end_of_day,
+                cast(
+                    LabelStudioTask.data.op("#>>")(literal_column("ARRAY['item','channel_name']")),
+                    Text,
+                )
+                == channel_name,
+                cast(
+                    LabelStudioTask.data.op("#>>")(literal_column("ARRAY['item','start']")),
+                    DateTime,
+                )
+                >= start_of_day,
+                cast(
+                    LabelStudioTask.data.op("#>>")(literal_column("ARRAY['item','start']")),
+                    DateTime,
+                )
+                < end_of_day,
                 cast(LabelStudioTask.project_id, Integer) == int(country.label_studio_project),
             )
         )
@@ -277,6 +283,8 @@ def get_labelstudio_ids(
         raise  # or log the error
     columns = ["id"]
     dataframe = pd.DataFrame(output, columns=columns)
-    
-    logging.info(f"Got {len(dataframe)} ids in labelstudio for date {date} for country {country.name} and channel_name : {channel_name}")
-    return dataframe.id.str.replace('"', '').unique().tolist()
+
+    logging.info(
+        f"Got {len(dataframe)} ids in labelstudio for date {date} for country {country.name} and channel_name : {channel_name}"
+    )
+    return dataframe.id.str.replace('"', "").unique().tolist()

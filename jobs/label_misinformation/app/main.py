@@ -1,3 +1,4 @@
+from collections import defaultdict
 import logging
 import os
 import sys
@@ -21,11 +22,9 @@ from s3_utils import check_if_object_exists_in_s3, get_s3_client, save_to_s3
 from secret_utils import get_secret_docker
 from sentry_sdk.crons import monitor
 from sentry_utils import sentry_close, sentry_init
-from whisper_utils import get_videofile_mp4_buffer, transform_mp4_to_mp3
+from whisper_utils import WHISPER_COLUMN_NAME, get_videofile_mp4_buffer, transform_mp4_to_mp3
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
 def get_channels(country):
@@ -63,12 +62,8 @@ def detect_misinformation(
         df_news["model_result"] = df_news["plaintext"].apply(
             lambda transcript: extract_model_result(transcript, pipeline)
         )
-        df_news["model_reason"] = df_news["model_result"].apply(
-            lambda x: x["model_reason"]
-        )
-        df_news["model_result"] = df_news["model_result"].apply(
-            lambda x: x["model_result"]
-        )
+        df_news["model_reason"] = df_news["model_result"].apply(lambda x: x["model_reason"])
+        df_news["model_result"] = df_news["model_result"].apply(lambda x: x["model_result"])
         df_news["model_name"] = model_name
     except Exception as e:
         logging.error(f"Error during apply: {e}")
@@ -78,9 +73,7 @@ def detect_misinformation(
     misinformation_only_news = df_news[
         df_news["model_result"] >= min_misinformation_score
     ].reset_index(drop=True)
-    logging.info(
-        "Schema misinformation_only_news :\n%s", misinformation_only_news.dtypes
-    )
+    logging.info("Schema misinformation_only_news :\n%s", misinformation_only_news.dtypes)
     return misinformation_only_news
 
 
@@ -119,12 +112,13 @@ def main(country: Country):
         pipeline = SinglePromptPipeline(model_name=model_name, api_key=openai_api_key)
 
         date_range = get_date_range(date_env, minus_days=number_of_previous_days)
-        logging.info(
-            f"Number of days to query : {len(date_range)} - day_range : {date_range}"
-        )
+        logging.info(f"Number of days to query : {len(date_range)} - day_range : {date_range}")
         channels = get_channels(country)
+
         session = get_db_session()
-        labelstudio_db_session = get_db_session(engine=connect_to_db(db_database=os.environ.get("POSTGRES_DB_LS", "labelstudio")))
+        # labelstudio_db_session = get_db_session(
+        #     engine=connect_to_db(db_database=os.environ.get("POSTGRES_DB_LS", "labelstudio"))
+        # )
         for date in date_range:
             was_the_day_processed_in_keywords = is_there_data_for_this_day_safe_guard(
                 session=session, date=date, country=country
@@ -150,20 +144,20 @@ def main(country: Country):
                             )
                             continue
 
-                        # check what ids are already present in labelstudio
-                        ids_in_labelstudio = get_labelstudio_ids(
-                            labelstudio_db_session,
-                            date=date,
-                            channel_name=channel,
-                            country=country,
-                        )
+                        # # check what ids are already present in labelstudio
+                        # ids_in_labelstudio = get_labelstudio_ids(
+                        #     labelstudio_db_session,
+                        #     date=date,
+                        #     channel_name=channel,
+                        #     country=country,
+                        # )
 
                         df_news = get_keywords_for_a_day_and_channel(
                             session=session,
                             date=date,
                             country=country,
                             channel_name=channel,
-                            ids_to_avoid=ids_in_labelstudio,
+                            # ids_to_avoid=ids_in_labelstudio,
                         )
 
                         if df_news.empty:
@@ -218,16 +212,16 @@ def main(country: Country):
                             )
 
                             # ray has problem with tiny dataframes
-                            misinformation_only_news = (
-                                misinformation_only_news._to_pandas()
+                            misinformation_only_news = misinformation_only_news._to_pandas()
+
+                            logger.info(
+                                f"Whisperizing df with {len(misinformation_only_news)} elements"
                             )
 
-                            df_whispered = get_new_plaintext_from_whisper(
-                                misinformation_only_news
-                            )
+                            df_whispered = get_new_plaintext_from_whisper(misinformation_only_news)
 
                             # remove the records with empty transcripts
-                            df_whispered = df_whispered.dropna()
+                            df_whispered = df_whispered.dropna(subset=WHISPER_COLUMN_NAME)
 
                             # save JSON LabelStudio format
                             # If the dataframe is empty after the dropna, the function will still
@@ -266,6 +260,7 @@ def main(country: Country):
                 continue
 
         logging.info("Exiting with success")
+
         return True
     except Exception as err:
         logging.fatal("Main crash (%s) %s" % (type(err).__name__, err))
@@ -279,7 +274,7 @@ if __name__ == "__main__":
     for country in countries:
         main(country)
         # sync label studio only if there are new data
-        wait_and_sync_label_studio(country.label_studio_id)
-    
-    sentry_close() # monitoring
+        # wait_and_sync_label_studio(country.label_studio_id)
+
+    sentry_close()  # monitoring
     sys.exit(0)

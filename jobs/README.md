@@ -28,7 +28,7 @@ Install [Docker](https://www.docker.com/get-started/) in a few minutes on the of
 ```
 docker compose up testconsole -d
 docker compose exec testconsole bash
-> pytest -vv -k test_pg_insert_data # will insert misinformation data linked to rmc on 2025 march 10
+> pytest -o log_cli=true -o log_cli_level=DEBUG -vv -k test_pg_insert_data # will insert misinformation data linked to rmc on 2025 march 10
 > exit
 docker compose up app
 ```
