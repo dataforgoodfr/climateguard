@@ -1,15 +1,17 @@
 import argparse
 import json
 import re
+import sys
 
 import pandas as pd
 from datasets import load_dataset
 from mlx_lm import generate, load
 from mlx_lm.sample_utils import make_logits_processors, make_sampler
-from prompts import prompt_chat
 from sklearn.metrics import classification_report
 from tqdm import tqdm
+sys.path.append("./..")
 
+from prompts import prompt_chat
 
 def remove_thinking(text, thinking_token):
     if thinking_token:

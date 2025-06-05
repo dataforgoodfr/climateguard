@@ -1,7 +1,7 @@
 import argparse
 import asyncio
-import json
 import os
+import sys
 from typing import Any, Dict, Union
 
 import jsonlines
@@ -10,16 +10,17 @@ from dotenv import load_dotenv
 from huggingface_hub import login
 from numpy.random import randint
 from openai import AsyncOpenAI, OpenAI
+from tqdm.asyncio import tqdm
+
+sys.path.append("./..")
 from prompts import (
     prompt_chat,
     prompt_synthetic_information,
     prompt_synthetic_misinformation,
 )
-from tqdm.asyncio import tqdm
 
 load_dotenv()
 login(token=os.getenv("HF_TOKEN"))
-
 
 async def synth_gen_model_reason(
     client: AsyncOpenAI, record: Dict[str, Any], model: str = "gpt-4o-mini"
