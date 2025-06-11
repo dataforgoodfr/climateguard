@@ -243,6 +243,72 @@ def get_keywords_for_a_day_and_channel(
     return dataframe
 
 
+def get_keywords_for_period_and_channels(
+    session: Session,
+    date_start: datetime,
+    date_end: datetime,
+    channels: List[str],
+    country: Union[Country, CountryCollection] = FRANCE_COUNTRY,
+    limit: int = 10000,
+    ids_to_avoid: List[str] = [],
+) -> pd.DataFrame:
+    logging.info(
+        f"Getting keywords table from {date_start} to date {date_end}, for country {country.name}. Available channels are: \n{', '.join(channels)}"
+    )
+
+    statement = (
+        select(
+            Keywords.id,
+            Keywords.start,
+            Keywords.channel_program,
+            Keywords.channel_program_type,
+            Keywords.channel_title,
+            Keywords.channel_name,
+            Keywords.plaintext,
+            Keywords.country,
+        )
+        .select_from(Keywords)
+        .limit(limit)
+    )
+    if country == ALL_COUNTRIES:
+        statement = statement.filter(
+            or_(Keywords.number_of_keywords_climat > 0, Keywords.number_of_keywords > 0)
+        )
+    elif country in LEGACY_COUNTRIES:  # preserve legacy format
+        statement = statement.filter(Keywords.country == country.name)
+        statement = statement.filter(Keywords.number_of_keywords_climat > 0)
+    else:
+        statement = statement.filter(Keywords.country == country.name)
+        statement = statement.filter(Keywords.number_of_keywords > 0)
+    statement = statement.filter(Keywords.channel_name in channels)
+
+    # filter records where 'start' is within the same day
+    start_of_period = date_start.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_of_period = date_end.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
+    statement = statement.filter(
+        and_(Keywords.start >= start_of_period, Keywords.start < end_of_period)
+    )
+    if ids_to_avoid:
+        statement = statement.filter(Keywords.id.notin_(ids_to_avoid))
+        
+    output = session.execute(statement).fetchall()
+
+    columns = [
+        "id",
+        "start",
+        "channel_program",
+        "channel_program_type",
+        "channel_title",
+        "channel_name",
+        "plaintext",
+        "country",
+    ]
+    dataframe = pd.DataFrame(output, columns=columns)
+
+    logging.info(f"Got {len(dataframe)} keywords from SQL Table Keywords")
+    return dataframe
+
+
 def get_labelstudio_ids(
     session: Session,
     date: datetime,
@@ -280,3 +346,60 @@ def get_labelstudio_ids(
     
     logging.info(f"Got {len(dataframe)} ids in labelstudio for date {date} for country {country.name} and channel_name : {channel_name}")
     return dataframe.id.str.replace('"', '').unique().tolist()
+
+
+def get_labelstudio_records_period(
+    session: Session,
+    date_start: datetime,
+    date_end: datetime,
+    channels: List[str],
+    country: Union[Country, CountryCollection] = FRANCE_COUNTRY,
+) -> List[str]:
+    logging.info(
+        f"Getting keywords table from {date_start} to date {date_end}, "
+        f"for country {country.name} (sourcing labelstudio project id: {country.label_studio_project}). "
+        f"Available channels are: \n{', '.join(channels)}"
+    )
+
+    start_of_period = date_start.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_of_period = date_end.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
+    statement = (
+        select(
+            LabelStudioTask.id,
+            LabelStudioTask.data,
+            LabelStudioTask.created_at,
+            LabelStudioTask.updated_at,
+            LabelStudioTask.is_labeled,
+            LabelStudioTask.project_id,
+            LabelStudioTask.meta,
+            LabelStudioTask.overlap,
+            LabelStudioTask.file_upload_id,
+            LabelStudioTask.updated_by_id,
+            LabelStudioTask.inner_id,
+            LabelStudioTask.total_annotations,
+            LabelStudioTask.cancelled_annotations,
+            LabelStudioTask.total_predictions,
+            LabelStudioTask.comment_count,
+            LabelStudioTask.last_comment_updated_at,
+            LabelStudioTask.unresolved_comment_count,
+        )
+        .select_from(LabelStudioTask)
+        .where(
+            and_(
+                cast(LabelStudioTask.data.op("#>>")(literal_column("ARRAY['item','channel_name']")), Text) in channels,
+                cast(LabelStudioTask.data.op("#>>")(literal_column("ARRAY['item','start']")), DateTime) >= start_of_period,
+                cast(LabelStudioTask.data.op("#>>")(literal_column("ARRAY['item','start']")), DateTime) < end_of_period,
+                cast(LabelStudioTask.project_id, Integer) == int(country.label_studio_project),
+            )
+        )
+    )
+    try:
+        output = session.execute(statement).fetchall()
+    except Exception as e:
+        session.rollback()  # ← this resets the transaction
+        raise  # or log the error
+    columns = ["id"]
+    dataframe = pd.DataFrame(output, columns=columns)
+    
+    logging.info(f"Found {len(dataframe)} records in labelstudio.")
+    return dataframe
