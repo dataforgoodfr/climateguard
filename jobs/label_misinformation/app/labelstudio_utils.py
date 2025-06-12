@@ -2,6 +2,7 @@ from mediatree_utils import get_url_mediatree
 from whisper_utils import WHISPER_COLUMN_NAME
 import modin.pandas as pd
 import base64
+import json
 import logging
 import time
 import requests
@@ -118,3 +119,8 @@ def wait_and_sync_label_studio(label_studio_project_id: int):
             return sync_s3_storage(API_LABEL_STUDIO_KEY, label_studio_project_id)
     else:
         logging.warning("To activate label studio import, set LABEL_STUDIO_PROJECT_ID")
+
+def edit_labelstudio_record_data(row: pd.Series, update_dict: dict) -> dict:
+    record = json.loads(row.data)
+    record["item"].update(update_dict)
+    return record
