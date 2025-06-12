@@ -150,6 +150,9 @@ class BertPipeline(Pipeline):
         if tokenizer_name is None:
             tokenizer_name = model_name
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+        self.version = f"{model_name}/{chunk_size}_{chunk_overlap}"
+        self.batch_size = batch_size
+        self.chunk_size = chunk_size
 
         self.splitter = SentenceSplitter(
             chunk_size=chunk_size,
