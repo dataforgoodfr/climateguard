@@ -38,6 +38,7 @@ from sqlalchemy import (
     select,
     text,
 )
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 Base = declarative_base()
@@ -224,7 +225,7 @@ def get_keywords_for_a_day_and_channel(
     )
     if ids_to_avoid:
         statement = statement.filter(Keywords.id.notin_(ids_to_avoid))
-        
+    logging.info(f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}")
     output = session.execute(statement).fetchall()
 
     columns = [
@@ -280,7 +281,7 @@ def get_keywords_for_period_and_channels(
     else:
         statement = statement.filter(Keywords.country == country.name)
         statement = statement.filter(Keywords.number_of_keywords > 0)
-    statement = statement.filter(Keywords.channel_name in channels)
+    statement = statement.filter(Keywords.channel_name.in_(channels))
 
     # filter records where 'start' is within the same day
     start_of_period = date_start.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -291,6 +292,7 @@ def get_keywords_for_period_and_channels(
     if ids_to_avoid:
         statement = statement.filter(Keywords.id.notin_(ids_to_avoid))
         
+    logging.info(f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}")
     output = session.execute(statement).fetchall()
 
     columns = [
@@ -337,6 +339,7 @@ def get_labelstudio_ids(
         )
     )
     try:
+        logging.info(f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}")
         output = session.execute(statement).fetchall()
     except Exception as e:
         session.rollback()  # ← this resets the transaction
@@ -386,7 +389,7 @@ def get_labelstudio_records_period(
         .select_from(LabelStudioTask)
         .where(
             and_(
-                cast(LabelStudioTask.data.op("#>>")(literal_column("ARRAY['item','channel_name']")), Text) in channels,
+                cast(LabelStudioTask.data.op("#>>")(literal_column("ARRAY['item','channel_name']")), Text).in_(channels),
                 cast(LabelStudioTask.data.op("#>>")(literal_column("ARRAY['item','start']")), DateTime) >= start_of_period,
                 cast(LabelStudioTask.data.op("#>>")(literal_column("ARRAY['item','start']")), DateTime) < end_of_period,
                 cast(LabelStudioTask.project_id, Integer) == int(country.label_studio_project),
@@ -394,11 +397,30 @@ def get_labelstudio_records_period(
         )
     )
     try:
+        logging.info(f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}")
         output = session.execute(statement).fetchall()
     except Exception as e:
         session.rollback()  # ← this resets the transaction
         raise  # or log the error
-    columns = ["id"]
+    columns = [
+        "id",
+        "data",
+        "created_at",
+        "updated_at",
+        "is_labeled",
+        "project_id",
+        "meta",
+        "overlap",
+        "file_upload_id",
+        "updated_by_id",
+        "inner_id",
+        "total_annotations",
+        "cancelled_annotations",
+        "total_predictions",
+        "comment_count",
+        "last_comment_updated_at",
+        "unresolved_comment_count",
+    ]
     dataframe = pd.DataFrame(output, columns=columns)
     
     logging.info(f"Found {len(dataframe)} records in labelstudio.")
