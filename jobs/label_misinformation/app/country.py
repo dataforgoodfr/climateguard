@@ -62,8 +62,8 @@ BELGIUM_COUNTRY = Country(
     language="french",
     bucket=os.getenv("BUCKET_OUTPUT_BELGIUM", "climateguard-belgium"),
     model=get_secret_docker("MODEL_NAME", "gpt-4o-mini"),
-    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID_BELGIUM", 99),
-    label_studio_project=os.getenv("LABEL_STUDIO_PROJECT_BELGIUM", 99),
+    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID_BELGIUM", 12),
+    label_studio_project=os.getenv("LABEL_STUDIO_PROJECT_BELGIUM", 17),
     channels=[]
 )
 BRAZIL_COUNTRY = Country(
