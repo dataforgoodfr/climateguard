@@ -64,7 +64,13 @@ BELGIUM_COUNTRY = Country(
     model=get_secret_docker("MODEL_NAME", "gpt-4o-mini"),
     label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID_BELGIUM", 12),
     label_studio_project=os.getenv("LABEL_STUDIO_PROJECT_BELGIUM", 17),
-    channels=[]
+    channels=[
+        "CANALZ",
+        "LAUNE",
+        "LN24",
+        "RTL",
+        "LATROIS"
+    ]
 )
 BRAZIL_COUNTRY = Country(
     code="bra",
