@@ -2,6 +2,7 @@ import logging
 import json
 import os
 import sys
+import traceback
 from datetime import datetime
 
 import modin.pandas as pd
@@ -17,7 +18,7 @@ from pg_utils import (
     get_keywords_for_period_and_channels,
     get_labelstudio_records_period,
 )
-from pipeline import Pipeline, PipelineInput, BertPipeline
+from pipeline import PipelineInput, BertPipeline
 from s3_utils import get_s3_client, save_to_s3
 from secret_utils import get_secret_docker
 from sentry_sdk.crons import monitor
@@ -44,49 +45,6 @@ def get_channels(country):
     return channels
 
 
-def extract_model_result(transcript, pipeline: Pipeline):
-    try:
-        result = pipeline.process(PipelineInput(transcript=transcript))
-
-        return {"model_result": result.score, "model_reason": result.reason}
-    except:
-        return {"model_result": 0, "model_reason": "empty"}
-
-
-def detect_misinformation(
-    df_news: pd.DataFrame,
-    pipeline: Pipeline,
-    min_misinformation_score: int = 10,
-    model_name: str = "",
-) -> pd.DataFrame:
-    """Execute the pipeline on a dataframe and filters on min_score"""
-    try:
-        df_news["model_result"] = df_news["plaintext"].apply(
-            lambda transcript: extract_model_result(transcript, pipeline)
-        )
-        df_news["model_reason"] = df_news["model_result"].apply(
-            lambda x: x["model_reason"]
-        )
-        df_news["model_result"] = df_news["model_result"].apply(
-            lambda x: x["model_result"]
-        )
-        df_news["model_name"] = model_name
-        df_news["prompt_version"] = pipeline.prompt_version
-        df_news["pipeline_version"] = pipeline.version
-    except Exception as e:
-        logging.error(f"Error during apply: {e}")
-        raise
-    logging.info(f"model_result Examples : {df_news.head(10)}")
-
-    misinformation_only_news = df_news[
-        df_news["model_result"] >= min_misinformation_score
-    ].reset_index(drop=True)
-    logging.info(
-        "Schema misinformation_only_news :\n%s", misinformation_only_news.dtypes
-    )
-    return misinformation_only_news
-
-
 @monitor(monitor_slug="label-misinformation")
 def main(country: Country):
     pd.set_option("display.max_columns", None)
@@ -101,8 +59,6 @@ def main(country: Country):
     date_env: str = os.getenv("DATE", "")
     bucket_output_folder = os.getenv("BUCKET_OUTPUT_FOLDER", "")
     min_misinformation_score = int(os.getenv("MIN_MISINFORMATION_SCORE", 10))
-
-    openai_api_key = get_secret_docker("OPENAI_API_KEY")
 
     mediatree_check_secrets()
 
@@ -126,7 +82,8 @@ def main(country: Country):
             tokenizer_name=model_name,
             chunk_size=512,
             chunk_overlap=256,
-            batch_size=32,
+            batch_size=128,
+            verbose=True,
         )
 
         date_range = get_date_range(date_env, minus_days=number_of_previous_days)
@@ -151,11 +108,9 @@ def main(country: Country):
         labelstudio_df.index = (
             labelstudio_df
             .apply(
-                lambda row: json.loads(row["data"])["item"]["id"],
+                lambda row: row["data"]["item"]["id"].replace('"', ''),
                 axis=1,
-            )
-            .str
-            .replace('"', '')
+            )            
         )
         keywords_df = get_keywords_for_period_and_channels(
             session,
@@ -163,6 +118,10 @@ def main(country: Country):
             date_range.max(),
             channels,
             country,
+        )
+        logging.info(
+            f"Found {len(labelstudio_df)} records already present in labelstudio,"
+            f"With {len(keywords_df)} records in total for the period."
         )
         data_input_batch = [PipelineInput(id=row["id"], transcript=row["plaintext"]) for idx, row in keywords_df.iterrows()]
         shadow_pipeline_outputs = pipeline.batch_process(data_input_batch)
@@ -224,6 +183,7 @@ def main(country: Country):
             updated_record = edit_labelstudio_record_data(row, shadow_result)
 
             key = (
+                f"{bucket_output_folder}/"
                 f"country={country.name}/"
                 f"year={updated_record['year']}/"
                 f"month={updated_record['month']:1}/"
@@ -241,6 +201,7 @@ def main(country: Country):
         return True
     except Exception as err:
         logging.fatal("Main crash (%s) %s" % (type(err).__name__, err))
+        logging.fatal(traceback.format_exc())
         sys.exit(1)
 
 
@@ -248,11 +209,12 @@ if __name__ == "__main__":
     ray.init(log_to_driver=True)
     logger = getLogger()
     countries: CountryCollection = get_countries(os.getenv("COUNTRY", "france"))
-    model_name = os.getenv("SHADOW_LABELSTUDIO_ID", "")
+    labelstudio_id = os.getenv("SHADOW_LABELSTUDIO_ID")
     for country in countries:
         main(country)
         # sync label studio only if there are new data
-        wait_and_sync_label_studio(model_name)
+        if labelstudio_id:
+            wait_and_sync_label_studio(labelstudio_id)
 
     sentry_close()  # monitoring
     sys.exit(0)
