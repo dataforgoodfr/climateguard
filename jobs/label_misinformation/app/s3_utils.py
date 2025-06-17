@@ -6,8 +6,7 @@ from labelstudio_utils import get_label_studio_format
 from secret_utils import get_secret_docker
 import shutil
 import json
-from country import Country, CountryCollection, LEGACY_COUNTRIES, FRANCE_COUNTRY
-from typing import Union
+from country import Country, LEGACY_COUNTRIES, FRANCE_COUNTRY
 
 
 # Configuration for Scaleway Object Storage
@@ -120,11 +119,10 @@ def reformat_and_save(df, output_folder="output_json_files", shadow=False) -> st
             task_data["data"]["item"].update({
                 "shadow_prompt_version": row.get("shadow_prompt_version", ""),
                 "shadow_pipeline_version": row.get("shadow_pipeline_version", ""),
-                "shadow_model_result": row.get("shadow_model_result", ""),
+                "shadow_model_result": int(row.get("shadow_model_result", 0)),
                 "shadow_model_reason": row.get("shadow_model_reason", ""),
                 "shadow_model_name": row.get("shadow_model_name", ""),
             })
-
         # Define the file path for each row
         file_path = os.path.join(output_folder, f"{row['id']}.json")
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
