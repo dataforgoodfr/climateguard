@@ -245,7 +245,6 @@ class BertPipeline(Pipeline):
             }
         )
         results_df = results_df.groupby(["id"]).agg("max").reset_index()
-        logging.info(results_df.info())
         return [
             PipelineOutput(id=row["id"], score=row["prediction"], probability=row["probability"])
             for idx, row in results_df.iterrows()
