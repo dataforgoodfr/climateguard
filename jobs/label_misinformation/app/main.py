@@ -4,7 +4,7 @@ import sys
 
 import modin.pandas as pd
 import ray
-from country import Country, CountryCollection, get_countries
+from country import Country, CountryCollection, get_countries, BELGIUM_COUNTRY
 from date_utils import get_date_range
 from labelstudio_utils import wait_and_sync_label_studio
 from logging_utils import getLogger
@@ -233,12 +233,22 @@ def main(country: Country):
                                 misinformation_only_news._to_pandas()
                             )
 
-                            df_whispered = get_new_plaintext_from_whisper(
-                                misinformation_only_news
-                            )
+                            if country != BELGIUM_COUNTRY: # not from mediatree, so cannot get the new audio
+                                logging.info("Getting new plaintext from whisper by getting the original audio...")
+                                df_whispered = get_new_plaintext_from_whisper(
+                                    misinformation_only_news
+                                )
 
-                            # remove the records with empty transcripts
-                            df_whispered = df_whispered.dropna(subset=[WHISPER_COLUMN_NAME])
+                                # remove the records with empty transcripts
+                                df_whispered = df_whispered.dropna(subset=[WHISPER_COLUMN_NAME])
+                            else:
+                                logging.info(
+                                    "Belgium country - no whispering, keeping the original dataframe"
+                                )
+                                # empty string for whisper column
+                                misinformation_only_news[WHISPER_COLUMN_NAME] = ""
+
+                                df_whispered = misinformation_only_news
 
                             # save JSON LabelStudio format
                             # If the dataframe is empty after the dropna, the function will still

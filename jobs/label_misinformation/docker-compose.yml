@@ -35,6 +35,9 @@ services:
       LABEL_STUDIO_PROJECT: 6
       LABEL_STUDIO_PROJECT_ID_BRAZIL: 5
       LABEL_STUDIO_PROJECT_BRAZIL: 9
+      LABEL_STUDIO_PROJECT_ID_BELGIUM: 12
+      LABEL_STUDIO_PROJECT_BELGIUM: 17
+      BUCKET_OUTPUT_BELGIUM: climateguard-belgium
       API_LABEL_STUDIO_KEY: 820ee53b50e14ec0f96c262cf90c04aca4057e1c
     depends_on:
       - postgres_db
@@ -91,7 +94,6 @@ services:
       LABEL_STUDIO_PROJECT_ID_BRAZIL: 5
       LABEL_STUDIO_PROJECT_BRAZIL: 9
       API_LABEL_STUDIO_KEY: 820ee53b50e14ec0f96c262cf90c04aca4057e1c
-      BUCKET_OUTPUT_SHADOW: modernbert-shadow
       SHADOW_MODEL: "gmguarino/ModernBERT-large-climateguard"
       SHADOW_LABELSTUDIO_ID: 
     depends_on:
