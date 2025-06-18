@@ -23,12 +23,14 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
+    Double,
     ForeignKey,
     Integer,
     MetaData,
     String,
     Table,
     Text,
+    Uuid,
     and_,
     cast,
     create_engine,
@@ -46,7 +48,7 @@ BaseLS = declarative_base()
 
 keywords_table = "keywords"
 labelstudio_task_table = "task"
-
+labelstudio_task_completion_table = "task_completion"
 
 class Keywords(Base):
     __tablename__ = keywords_table
@@ -105,6 +107,32 @@ class LabelStudioTask(BaseLS):
     comment_count = Column(Integer, nullable=False)
     last_comment_updated_at = Column(DateTime, nullable=True)
     unresolved_comment_count = Column(Integer, nullable=False)
+
+
+class LabelStudioTaskCompletion(BaseLS):
+    __tablename__ = labelstudio_task_completion_table
+    # column_name,data_type,character_maximum_length,column_default,is_nullable
+    id = Column(Integer, nullable=False, primary_key=True)
+    result = Column(JSON, nullable=True)
+    was_cancelled = Column(Boolean, nullable=False)
+    ground_truth = Column(Boolean, nullable=False)
+    created_at = Column(DateTime, nullable=False)
+    updated_at = Column(DateTime, nullable=False)
+    task_id = Column(Integer, nullable=True)
+    prediction = Column(JSON, nullable=True)
+    lead_time = Column(Double, nullable=True)
+    result_count = Column(Integer, nullable=False)
+    completed_by_id = Column(Integer, nullable=True)
+    parent_prediction_id = Column(Integer, nullable=True)
+    parent_annotation_id = Column(Integer, nullable=True)
+    last_action = Column(Text, nullable=True)
+    last_created_by_id = Column(Integer, nullable=True)
+    project_id = Column(Integer, nullable=True)
+    updated_by_id = Column(Integer, nullable=True)
+    unique_id = Column(Uuid, nullable=True)
+    draft_created_at = Column((DateTime()), nullable=True)
+    import_id = Column(BigInteger, nullable=True)
+    bulk_created = Column(Boolean, nullable=True, default=False)
 
 
 def connect_to_db(db_database:str = None):
@@ -420,6 +448,78 @@ def get_labelstudio_records_period(
         "comment_count",
         "last_comment_updated_at",
         "unresolved_comment_count",
+    ]
+    dataframe = pd.DataFrame(output, columns=columns)
+    
+    logging.info(f"Found {len(dataframe)} records in labelstudio.")
+    return dataframe
+
+
+def get_labelstudio_annotations(
+    session: Session,
+    task_ids: List[int],
+) -> List[str]:
+    logging.info("Getting annotation for labelstudio tasks ")
+
+    statement = (
+        select(
+            LabelStudioTaskCompletion.id,
+            LabelStudioTaskCompletion.result,
+            LabelStudioTaskCompletion.was_cancelled,
+            LabelStudioTaskCompletion.ground_truth,
+            LabelStudioTaskCompletion.created_at,
+            LabelStudioTaskCompletion.updated_at,
+            LabelStudioTaskCompletion.task_id,
+            LabelStudioTaskCompletion.prediction,
+            LabelStudioTaskCompletion.lead_time,
+            LabelStudioTaskCompletion.result_count,
+            LabelStudioTaskCompletion.completed_by_id,
+            LabelStudioTaskCompletion.parent_prediction_id,
+            LabelStudioTaskCompletion.parent_annotation_id,
+            LabelStudioTaskCompletion.last_action,
+            LabelStudioTaskCompletion.last_created_by_id,
+            LabelStudioTaskCompletion.project_id,
+            LabelStudioTaskCompletion.updated_by_id,
+            LabelStudioTaskCompletion.unique_id,
+            LabelStudioTaskCompletion.draft_created_at,
+            LabelStudioTaskCompletion.import_id,
+            LabelStudioTaskCompletion.bulk_created,
+        )
+        .select_from(LabelStudioTaskCompletion)
+        .where(
+            and_(
+                LabelStudioTaskCompletion.task_id.in_(task_ids),
+            )
+        )
+    )
+    try:
+        logging.info(f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}")
+        output = session.execute(statement).fetchall()
+    except Exception as e:
+        session.rollback()  # ← this resets the transaction
+        raise  # or log the error
+    columns = [
+        "id",
+        "result",
+        "was_cancelled",
+        "ground_truth",
+        "created_at",
+        "updated_at",
+        "task_id",
+        "prediction",
+        "lead_time",
+        "result_count",
+        "completed_by_id",
+        "parent_prediction_id",
+        "parent_annotation_id",
+        "last_action",
+        "last_created_by_id",
+        "project_id",
+        "updated_by_id",
+        "unique_id",
+        "draft_created_at",
+        "import_id",
+        "bulk_created",
     ]
     dataframe = pd.DataFrame(output, columns=columns)
     
