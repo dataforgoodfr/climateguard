@@ -202,6 +202,7 @@ def test_get_labelstudio_ids():
         language="french",
         bucket="test",
         model="gpt-4o-mini",
+        prompt_version="0.0.0",
         label_studio_id=0,
         label_studio_project=1,
         channels=[
