@@ -84,6 +84,7 @@ def main(country: Country):
             chunk_size=512,
             chunk_overlap=256,
             batch_size=128,
+            min_probability=0.75,
             verbose=True,
         )
 
@@ -126,8 +127,8 @@ def main(country: Country):
             country,
         )
         logging.info(
-            f"Found {len(labelstudio_df)} records already present in labelstudio,"
-            f"With {len(keywords_df)} records in total for the period."
+            f"Found {len(labelstudio_df)} records already present in labelstudio, "
+            f"with {len(keywords_df)} records in total for the period."
         )
         data_input_batch = [PipelineInput(id=row["id"], transcript=row["plaintext"]) for idx, row in keywords_df.iterrows()]
         shadow_pipeline_outputs = pipeline.batch_process(data_input_batch)
@@ -142,7 +143,6 @@ def main(country: Country):
         output_df["shadow_prompt_version"] = ""
         output_df["shadow_pipeline_version"] = pipeline.version
         output_df["shadow_model_reason"] = output_df.probability
-
 
         # adding shadow_model_result and probability to merged_df
         # Columns: id, start, channel_program, channel_program_type, channel_title, channel_name, plaintext, country, shadow_model_result, probability
@@ -161,10 +161,6 @@ def main(country: Country):
         
         if not new_records.empty:
             # add whisper to data that is not present in labelstudio
-            new_records = get_new_plaintext_from_whisper(
-                new_records
-            )
-            new_records = new_records.dropna(subset=[WHISPER_COLUMN_NAME])
             new_records["model_result"] = 0
             new_records["model_reason"] = ""
             new_records["model_name"] = country.model
@@ -177,6 +173,10 @@ def main(country: Country):
             groups = new_records.groupby(["country", "year", "month", "day", "channel_name"])
             for columns, group in groups:
                 # How do we inject the new results in the labelstudio record ?
+                group = get_new_plaintext_from_whisper(
+                    group
+                )
+                group = group.dropna(subset=[WHISPER_COLUMN_NAME])
                 for idx, row in group.iterrows():
                     task_data = get_label_studio_format(row)
                     task_data["data"]["item"].update({
@@ -202,16 +202,6 @@ def main(country: Country):
                         Key=key,
                     )
                     logging.info(f"S3 response: {response}")
-                # save_to_s3(
-                #     group,
-                #     channel=columns[4],
-                #     date=datetime(columns[1], columns[2], columns[3]),
-                #     s3_client=s3_client,
-                #     bucket=bucket_output,
-                #     folder_inside_bucket=bucket_output_folder,
-                #     country=country,
-                #     shadow=True,
-                # )
         if not records_labelstudio.empty:
             logging.info("Saving records that are already present in labelstudio.")
 
@@ -256,7 +246,6 @@ if __name__ == "__main__":
     labelstudio_id = os.getenv("SHADOW_LABELSTUDIO_ID")
     for country in countries:
         main(country)
-        # sync label studio only if there are new data
         if labelstudio_id:
             wait_and_sync_label_studio(labelstudio_id)
 
