@@ -84,7 +84,7 @@ def main(country: Country):
             chunk_size=512,
             chunk_overlap=256,
             batch_size=128,
-            min_probability=0.75,
+            min_probability=0.7,
             verbose=True,
         )
 
