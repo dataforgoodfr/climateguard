@@ -146,7 +146,7 @@ class BertPipeline(Pipeline):
     def __init__(
         self,
         model_name: str,
-        tokenizer_name: str = None,
+        tokenizer_name: Optional[str] = None,
         chunk_size: int = 512,
         chunk_overlap: int = 256,
         batch_size: int = 32,
