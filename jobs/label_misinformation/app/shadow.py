@@ -126,6 +126,8 @@ def main(country: Country):
             channels,
             country,
         )
+        session.close()
+        labelstudio_db_session.close()
         logging.info(
             f"Found {len(labelstudio_df)} records already present in labelstudio, "
             f"with {len(keywords_df)} records in total for the period."
