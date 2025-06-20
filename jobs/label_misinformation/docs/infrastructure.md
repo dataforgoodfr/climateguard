@@ -22,7 +22,10 @@ The following document illustrates the different tools that have been deployed o
 * `mediatree`: Stores the data imported from the mediatree API. This is the same data that is loaded into the barometre database.
 
 ### Scaleway docker registry
-* misinformation/label-misinformation
+* `misinformation/label-misinformation`: docker registry for the `label disinformation` job.
+* `namespace-barometre/s3`: docker registry for the `api-to-s3` job.
+* `namespace-barometre/mediatree-import`: docker registry for the `mediatree` job.
+* `namespace-barometre/stopwords`: docker registry for the `stopwords` job.
 
 ### Serverless containers 
 * `metabase`: Exposes the BI interface Metabase.
