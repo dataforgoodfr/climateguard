@@ -150,6 +150,7 @@ class BertPipeline(Pipeline):
         chunk_size: int = 512,
         chunk_overlap: int = 256,
         batch_size: int = 32,
+        min_probability: Optional[float] = None,
         verbose: bool = False,
     ):
         self._model = model_name
@@ -162,6 +163,7 @@ class BertPipeline(Pipeline):
         self.version = f"{model_name}/{chunk_size}_{chunk_overlap}"
         self.batch_size = batch_size
         self.chunk_size = chunk_size
+        self.min_probability = min_probability
         self.verbose = verbose
 
         self.splitter = SentenceSplitter(
@@ -221,7 +223,7 @@ class BertPipeline(Pipeline):
         predictions = []
         probabilities = []
         logging.info(
-            f"Processing {len(inputs['input_ids'])} texts "
+            f"Processing {len(inputs['input_ids'])} texts after chunking,"
             f"with batch size {self.batch_size}: {len(inputs["input_ids"]) // self.batch_size + 1} iterations"
         )
         for window in range(len(inputs["input_ids"]) // self.batch_size + 1):
@@ -234,9 +236,12 @@ class BertPipeline(Pipeline):
                 batch_size=self.batch_size,
                 show_progress=True,
             )
-            predictions.extend(outputs.logits.numpy().argmax(1).tolist())
-            probabilities.extend(nn.functional.softmax(outputs.logits, dim=-1).numpy().max(1).tolist())
-        logging.info(len(predictions))
+            if self.min_probability:
+                _predictions = (nn.functional.softmax(outputs.logits, dim=-1)[:, 1] > self.min_probability).int().tolist()
+            else:
+                _predictions = outputs.logits.numpy().argmax(1).tolist()
+            predictions.extend(_predictions)
+            probabilities.extend((nn.functional.softmax(outputs.logits, dim=-1)[:, 1]).tolist())
         results_df = pd.DataFrame(
             {
                 "id": ids,
@@ -245,6 +250,10 @@ class BertPipeline(Pipeline):
             }
         )
         results_df = results_df.groupby(["id"]).agg("max").reset_index()
+        logging.info(f"Elaborated {len(predictions)} texts")
+        logging.info(
+            f"Misinformation detection results: {results_df.prediction.value_counts()}"
+        )
         return [
             PipelineOutput(id=row["id"], score=row["prediction"], probability=row["probability"])
             for idx, row in results_df.iterrows()
