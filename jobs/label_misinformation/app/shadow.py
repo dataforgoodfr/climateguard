@@ -171,7 +171,7 @@ def main(country: Country):
             new_records["channel"] = new_records["channel_name"]
 
             # Saving records that are not in labelstudio and shadow_model_result is 1
-            logging.info("Saving records found by shadow model only.")
+            logging.info(f"Saving records found by shadow model only: {len(new_records)} records")
             groups = new_records.groupby(["country", "year", "month", "day", "channel_name"])
             for columns, group in groups:
                 # How do we inject the new results in the labelstudio record ?
@@ -205,7 +205,7 @@ def main(country: Country):
                     )
                     logging.info(f"S3 response: {response}")
         if not records_labelstudio.empty:
-            logging.info("Saving records that are already present in labelstudio.")
+            logging.info(f"Saving records that are already present in labelstudio: {len(records_labelstudio)} records")
 
             # Saving shadow model scores for all annotations in labelstudio
             records_labelstudio_dict = records_labelstudio.set_index('id').to_dict(orient="index")
