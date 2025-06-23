@@ -6,8 +6,7 @@ from labelstudio_utils import get_label_studio_format
 from secret_utils import get_secret_docker
 import shutil
 import json
-from country import Country, CountryCollection, LEGACY_COUNTRIES, FRANCE_COUNTRY
-from typing import Union
+from country import Country, LEGACY_COUNTRIES, FRANCE_COUNTRY
 
 
 # Configuration for Scaleway Object Storage
@@ -110,13 +109,20 @@ def save_csv(
 
 
 # https://labelstud.io/guide/storage#One-Task-One-JSON-File
-def reformat_and_save(df, output_folder="output_json_files") -> str:
+def reformat_and_save(df, output_folder="output_json_files", shadow=False) -> str:
     # Ensure the output folder exists
     os.makedirs(os.path.dirname(output_folder), exist_ok=True)
 
     for idx, row in df.iterrows():
         task_data = get_label_studio_format(row)
-
+        if shadow:
+            task_data["data"]["item"].update({
+                "shadow_prompt_version": row.get("shadow_prompt_version", ""),
+                "shadow_pipeline_version": row.get("shadow_pipeline_version", ""),
+                "shadow_model_result": int(row.get("shadow_model_result", 0)),
+                "shadow_model_reason": row.get("shadow_model_reason", ""),
+                "shadow_model_name": row.get("shadow_model_name", ""),
+            })
         # Define the file path for each row
         file_path = os.path.join(output_folder, f"{row['id']}.json")
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
@@ -129,7 +135,7 @@ def reformat_and_save(df, output_folder="output_json_files") -> str:
 
 # one json file per json row
 def save_json(
-    df: pd.DataFrame, channel: str, date: pd.Timestamp, s3_path, folder_inside_bucket=None, country:Country=FRANCE_COUNTRY
+    df: pd.DataFrame, channel: str, date: pd.Timestamp, s3_path, folder_inside_bucket=None, country:Country=FRANCE_COUNTRY, shadow=False,
 ) -> str:
     based_path = "s3"
 
@@ -139,7 +145,7 @@ def save_json(
         local_json = f"{based_path}/{folder_inside_bucket}"
     os.makedirs(os.path.dirname(local_json), exist_ok=True)
 
-    local_json = reformat_and_save(df, output_folder=local_json)
+    local_json = reformat_and_save(df, output_folder=local_json, shadow=shadow)
     logging.info(f"JSON saved locally {local_json}")
     return local_json
 
@@ -172,6 +178,7 @@ def save_to_s3(
     bucket: str,
     folder_inside_bucket=None,
     country:Country=FRANCE_COUNTRY,
+    shadow: bool=False,
 ) -> None:
     logging.info(f"Saving DF with {len(df)} elements to S3 for {date}, country {country.name} and channel {channel}")
 

@@ -2,11 +2,12 @@ from mediatree_utils import get_url_mediatree
 from whisper_utils import WHISPER_COLUMN_NAME
 import modin.pandas as pd
 import base64
+import json
 import logging
 import time
 import requests
 import os
-
+from uuid import UUID
 
 LABEL_STUDIO_URL = os.getenv("LABEL_STUDIO_URL", "")
 HEALTH_ENDPOINT = f"{LABEL_STUDIO_URL}/health"
@@ -55,9 +56,9 @@ def get_label_studio_format(row) -> str:
                 "pipeline_version": row.get("pipeline_version", ""),
                 "model_result": row["model_result"],
                 "model_reason": row["model_reason"],
-                "year": row["year"],
-                "month": row["month"],
-                "day": row["day"],
+                "year": int(row["year"]),
+                "month": int(row["month"]),
+                "day": int(row["day"]),
                 "channel": row["channel"],
                 "country": row["country"],
                 "url_mediatree": url_mediatree,
@@ -118,3 +119,29 @@ def wait_and_sync_label_studio(label_studio_project_id: int):
             return sync_s3_storage(API_LABEL_STUDIO_KEY, label_studio_project_id)
     else:
         logging.warning("To activate label studio import, set LABEL_STUDIO_PROJECT_ID")
+
+def convert_nested_timestamps(d):
+    if isinstance(d, str):
+        return d
+    for k, v in d.items():
+        if isinstance(v, dict):
+            d[k] = convert_nested_timestamps(v)
+        elif isinstance(v, list):
+            d[k] = [convert_nested_timestamps(item) for item in v]
+        elif isinstance(v, pd.Timestamp):
+            d[k] = v.isoformat()
+        elif isinstance(v, UUID):
+            d[k] = str(v)
+    return d
+
+def edit_labelstudio_record_data(row: pd.Series, update_dict: dict, annotations: list) -> dict:
+    record = row.to_dict()
+    if not isinstance(record["data"], dict):
+        record = json.loads(row.data)
+    if "date" in record["data"]["item"]:
+        del record["data"]["item"]["date"]
+    record["data"]["item"].update(update_dict)
+    record["annotations"] = annotations
+    record["predictions"] = []
+    record = convert_nested_timestamps(record)
+    return record

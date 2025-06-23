@@ -8,18 +8,18 @@ services:
       OPENAI_API_KEY: /run/secrets/openai_key
       MODEL_NAME:  gpt-4o-mini
       MODEL_NAME_BRAZIL:  gpt-4o-mini
-      BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing 
-      BUCKET_OUTPUT_BRAZIL: test-bucket-mediatree # change to test-bucket-mediatree for testing 
-      BUCKET_OUTPUT_FOLDER: labelstudio_sandbox/test_oneshot
+      BUCKET_OUTPUT: climateguard # change to test-bucket-mediatree for testing 
+      BUCKET_OUTPUT_BRAZIL: climateguard-brazil # change to test-bucket-mediatree for testing 
+      BUCKET_OUTPUT_FOLDER: label-misinformation-input
       BUCKET_ACCESS: /run/secrets/bucket_access
       BUCKET_SECRET: /run/secrets/bucket_secret
       AWS_DEFAULT_REGION: fr-par
-      MIN_MISINFORMATION_SCORE: 10 # the minimum score to have to be kept (10 out of 10)
-      DATE: 2025-03-30 # YYYY-MM-DD 
-      NUMBER_OF_PREVIOUS_DAYS: 10
+      MIN_MISINFORMATION_SCORE: 8 # the minimum score to have to be kept (10 out of 10)
+      DATE: 2025-06-03 # YYYY-MM-DD 
+      NUMBER_OF_PREVIOUS_DAYS: 33
       # SENTRY_DSN: prod_only
       # CHANNEL: tvrecord # mediatree former channel name, not title (cnews) ---- rmc or tvrecord for testing
-      COUNTRY: prod # brazil, france, belgium, all, prod
+      COUNTRY: france # brazil, france, belgium, all, prod
       MEDIATREE_USER : /run/secrets/username_api
       MEDIATREE_PASSWORD: /run/secrets/pwd_api
       MEDIATREE_AUTH_URL: https://keywords.mediatree.fr/api/auth/token/
@@ -31,10 +31,10 @@ services:
       POSTGRES_HOST: postgres_db
       POSTGRES_PORT: 5432
       LABEL_STUDIO_URL: http://labelstudio:8080
-      LABEL_STUDIO_PROJECT_ID: 1
+      LABEL_STUDIO_PROJECT_ID: 4
       LABEL_STUDIO_PROJECT: 6
-      LABEL_STUDIO_PROJECT_ID_BRAZIL: 2
-      LABEL_STUDIO_PROJECT_BRAZIL: 14
+      LABEL_STUDIO_PROJECT_ID_BRAZIL: 5
+      LABEL_STUDIO_PROJECT_BRAZIL: 9
       LABEL_STUDIO_PROJECT_ID_BELGIUM: 12
       LABEL_STUDIO_PROJECT_BELGIUM: 17
       BUCKET_OUTPUT_BELGIUM: climateguard-belgium
@@ -43,7 +43,63 @@ services:
       - postgres_db
       - labelstudio
     secrets:
-       - model_name
+       - openai_key
+       - bucket_access
+       - bucket_secret
+       - pwd_api
+       - username_api
+    volumes:
+      - ./app:/app/
+
+
+  shadow:
+    build: .
+    entrypoint: ["python", "shadow.py"]
+    shm_size: '6gb'
+    deploy:
+      resources:
+          reservations:
+            memory: 16G
+    environment:
+      LOGLEVEL: INFO
+      ENV: prod
+      APP_NAME: label-misinformation 
+      OPENAI_API_KEY: /run/secrets/openai_key
+      MODEL_NAME:  ft:gpt-4o-mini-2024-07-18:personal::B1xWiJRm
+      MODEL_NAME_BRAZIL:  ft:gpt-4o-mini-2024-07-18:personal::BJfrFQR1
+      BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing 
+      BUCKET_OUTPUT_FOLDER: modernbert-shadow
+      BUCKET_ACCESS: /run/secrets/bucket_access
+      BUCKET_SECRET: /run/secrets/bucket_secret
+      AWS_DEFAULT_REGION: fr-par
+      MIN_MISINFORMATION_SCORE: 8 # the minimum score to have to be kept (10 out of 10)
+      DATE: 2025-06-10 # YYYY-MM-DD 
+      NUMBER_OF_PREVIOUS_DAYS: 1
+      # SENTRY_DSN: prod_only
+      # CHANNEL: tvrecord # mediatree former channel name, not title (cnews) ---- rmc or tvrecord for testing
+      COUNTRY: france # brazil, france, belgium, all, prod
+      MEDIATREE_USER : /run/secrets/username_api
+      MEDIATREE_PASSWORD: /run/secrets/pwd_api
+      MEDIATREE_AUTH_URL: https://keywords.mediatree.fr/api/auth/token/
+      KEYWORDS_URL: https://keywords.mediatree.fr/api/export/single # https://keywords.mediatree.fr/api/docs/#/paths/~1api~1export~1single/get
+      POSTGRES_USER: user
+      POSTGRES_DB: barometre
+      POSTGRES_DB_LS: barometre
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST: postgres_db
+      POSTGRES_PORT: 5432
+      LABEL_STUDIO_URL: http://labelstudio:8080
+      LABEL_STUDIO_PROJECT_ID: 4
+      LABEL_STUDIO_PROJECT: 6
+      LABEL_STUDIO_PROJECT_ID_BRAZIL: 5
+      LABEL_STUDIO_PROJECT_BRAZIL: 9
+      API_LABEL_STUDIO_KEY: 820ee53b50e14ec0f96c262cf90c04aca4057e1c
+      SHADOW_MODEL: "gmguarino/ModernBERT-large-climateguard"
+      SHADOW_LABELSTUDIO_ID: 
+    depends_on:
+      - postgres_db
+      - labelstudio
+    secrets:
        - openai_key
        - bucket_access
        - bucket_secret
@@ -89,12 +145,13 @@ services:
   test:
     build: .
     entrypoint: ["pytest", "-vv", "--capture=tee-sys"]   # use to debug the container if needed ["pytest", "-vv"] 
+    shm_size: '6gb'
     environment:
       LOGLEVEL: DEBUG
       ENV: docker
       APP_NAME: label-misinformation 
       OPENAI_API_KEY: /run/secrets/openai_key
-      MODEL_NAME:  /run/secrets/model_name
+      MODEL_NAME:  gpt-4o-mini
       BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing
       BUCKET_OUTPUT_BRAZIL: test-bucket-mediatree # change to test-bucket-mediatree for testing 
       BUCKET_OUTPUT_FOLDER: label-misinformation-tmp
@@ -137,7 +194,7 @@ services:
       ENV: docker
       APP_NAME: label-misinformation 
       OPENAI_API_KEY: /run/secrets/openai_key
-      MODEL_NAME:  /run/secrets/model_name
+      MODEL_NAME:  gpt-4o-mini
       BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing
       BUCKET_OUTPUT_BRAZIL: test-bucket-mediatree # change to test-bucket-mediatree for testing 
       BUCKET_OUTPUT_FOLDER: label-misinformation-tmp

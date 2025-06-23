@@ -23,12 +23,14 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
+    Double,
     ForeignKey,
     Integer,
     MetaData,
     String,
     Table,
     Text,
+    Uuid,
     and_,
     cast,
     create_engine,
@@ -38,6 +40,7 @@ from sqlalchemy import (
     select,
     text,
 )
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 Base = declarative_base()
@@ -45,7 +48,7 @@ BaseLS = declarative_base()
 
 keywords_table = "keywords"
 labelstudio_task_table = "task"
-
+labelstudio_task_completion_table = "task_completion"
 
 class Keywords(Base):
     __tablename__ = keywords_table
@@ -104,6 +107,32 @@ class LabelStudioTask(BaseLS):
     comment_count = Column(Integer, nullable=False)
     last_comment_updated_at = Column(DateTime, nullable=True)
     unresolved_comment_count = Column(Integer, nullable=False)
+
+
+class LabelStudioTaskCompletion(BaseLS):
+    __tablename__ = labelstudio_task_completion_table
+    # column_name,data_type,character_maximum_length,column_default,is_nullable
+    id = Column(Integer, nullable=False, primary_key=True)
+    result = Column(JSON, nullable=True)
+    was_cancelled = Column(Boolean, nullable=False)
+    ground_truth = Column(Boolean, nullable=False)
+    created_at = Column(DateTime, nullable=False)
+    updated_at = Column(DateTime, nullable=False)
+    task_id = Column(Integer, nullable=True)
+    prediction = Column(JSON, nullable=True)
+    lead_time = Column(Double, nullable=True)
+    result_count = Column(Integer, nullable=False)
+    completed_by_id = Column(Integer, nullable=True)
+    parent_prediction_id = Column(Integer, nullable=True)
+    parent_annotation_id = Column(Integer, nullable=True)
+    last_action = Column(Text, nullable=True)
+    last_created_by_id = Column(Integer, nullable=True)
+    project_id = Column(Integer, nullable=True)
+    updated_by_id = Column(Integer, nullable=True)
+    unique_id = Column(Uuid, nullable=True)
+    draft_created_at = Column((DateTime()), nullable=True)
+    import_id = Column(BigInteger, nullable=True)
+    bulk_created = Column(Boolean, nullable=True, default=False)
 
 
 def connect_to_db(db_database:str = None):
@@ -224,7 +253,74 @@ def get_keywords_for_a_day_and_channel(
     )
     if ids_to_avoid:
         statement = statement.filter(Keywords.id.notin_(ids_to_avoid))
+    logging.info(f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}")
+    output = session.execute(statement).fetchall()
+
+    columns = [
+        "id",
+        "start",
+        "channel_program",
+        "channel_program_type",
+        "channel_title",
+        "channel_name",
+        "plaintext",
+        "country",
+    ]
+    dataframe = pd.DataFrame(output, columns=columns)
+
+    logging.info(f"Got {len(dataframe)} keywords from SQL Table Keywords")
+    return dataframe
+
+
+def get_keywords_for_period_and_channels(
+    session: Session,
+    date_start: datetime,
+    date_end: datetime,
+    channels: List[str],
+    country: Union[Country, CountryCollection] = FRANCE_COUNTRY,
+    limit: int = 10000,
+    ids_to_avoid: List[str] = [],
+) -> pd.DataFrame:
+    logging.info(
+        f"Getting keywords table from {date_start} to date {date_end}, for country {country.name}. Available channels are: \n{', '.join(channels)}"
+    )
+
+    statement = (
+        select(
+            Keywords.id,
+            Keywords.start,
+            Keywords.channel_program,
+            Keywords.channel_program_type,
+            Keywords.channel_title,
+            Keywords.channel_name,
+            Keywords.plaintext,
+            Keywords.country,
+        )
+        .select_from(Keywords)
+        .limit(limit)
+    )
+    if country == ALL_COUNTRIES:
+        statement = statement.filter(
+            or_(Keywords.number_of_keywords_climat > 0, Keywords.number_of_keywords > 0)
+        )
+    elif country in LEGACY_COUNTRIES:  # preserve legacy format
+        statement = statement.filter(Keywords.country == country.name)
+        statement = statement.filter(Keywords.number_of_keywords_climat > 0)
+    else:
+        statement = statement.filter(Keywords.country == country.name)
+        statement = statement.filter(Keywords.number_of_keywords > 0)
+    statement = statement.filter(Keywords.channel_name.in_(channels))
+
+    # filter records where 'start' is within the same day
+    start_of_period = date_start.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_of_period = date_end.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
+    statement = statement.filter(
+        and_(Keywords.start >= start_of_period, Keywords.start < end_of_period)
+    )
+    if ids_to_avoid:
+        statement = statement.filter(Keywords.id.notin_(ids_to_avoid))
         
+    logging.info(f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}")
     output = session.execute(statement).fetchall()
 
     columns = [
@@ -252,7 +348,6 @@ def get_labelstudio_ids(
     logging.info(
         f"Getting ids present in labelstudio table from {date} for country {country.name} and channel_name : {channel_name} for project {country.label_studio_project}"
     )
-    # TODO FILTER BY PROJECT IN LABELSTUDIO
 
     start_of_day = date.replace(hour=0, minute=0, second=0, microsecond=0)
     end_of_day = start_of_day + timedelta(days=1)
@@ -271,6 +366,7 @@ def get_labelstudio_ids(
         )
     )
     try:
+        logging.info(f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}")
         output = session.execute(statement).fetchall()
     except Exception as e:
         session.rollback()  # ← this resets the transaction
@@ -280,3 +376,151 @@ def get_labelstudio_ids(
     
     logging.info(f"Got {len(dataframe)} ids in labelstudio for date {date} for country {country.name} and channel_name : {channel_name}")
     return dataframe.id.str.replace('"', '').unique().tolist()
+
+
+def get_labelstudio_records_period(
+    session: Session,
+    date_start: datetime,
+    date_end: datetime,
+    channels: List[str],
+    country: Union[Country, CountryCollection] = FRANCE_COUNTRY,
+) -> List[str]:
+    logging.info(
+        f"Getting keywords table from {date_start} to date {date_end}, "
+        f"for country {country.name} (sourcing labelstudio project id: {country.label_studio_project}). "
+        f"Available channels are: \n{', '.join(channels)}"
+    )
+
+    start_of_period = date_start.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_of_period = date_end.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
+    statement = (
+        select(
+            LabelStudioTask.id,
+            LabelStudioTask.data,
+            LabelStudioTask.created_at,
+            LabelStudioTask.updated_at,
+            LabelStudioTask.is_labeled,
+            LabelStudioTask.project_id,
+            LabelStudioTask.meta,
+            LabelStudioTask.overlap,
+            LabelStudioTask.file_upload_id,
+            LabelStudioTask.updated_by_id,
+            LabelStudioTask.inner_id,
+            LabelStudioTask.total_annotations,
+            LabelStudioTask.cancelled_annotations,
+            LabelStudioTask.total_predictions,
+            LabelStudioTask.comment_count,
+            LabelStudioTask.last_comment_updated_at,
+            LabelStudioTask.unresolved_comment_count,
+        )
+        .select_from(LabelStudioTask)
+        .where(
+            and_(
+                cast(LabelStudioTask.data.op("#>>")(literal_column("ARRAY['item','channel_name']")), Text).in_(channels),
+                cast(LabelStudioTask.data.op("#>>")(literal_column("ARRAY['item','start']")), DateTime) >= start_of_period,
+                cast(LabelStudioTask.data.op("#>>")(literal_column("ARRAY['item','start']")), DateTime) < end_of_period,
+                cast(LabelStudioTask.project_id, Integer) == int(country.label_studio_project),
+            )
+        )
+    )
+    try:
+        logging.info(f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}")
+        output = session.execute(statement).fetchall()
+    except Exception as e:
+        session.rollback()  # ← this resets the transaction
+        raise  # or log the error
+    columns = [
+        "id",
+        "data",
+        "created_at",
+        "updated_at",
+        "is_labeled",
+        "project_id",
+        "meta",
+        "overlap",
+        "file_upload_id",
+        "updated_by_id",
+        "inner_id",
+        "total_annotations",
+        "cancelled_annotations",
+        "total_predictions",
+        "comment_count",
+        "last_comment_updated_at",
+        "unresolved_comment_count",
+    ]
+    dataframe = pd.DataFrame(output, columns=columns)
+    
+    logging.info(f"Found {len(dataframe)} records in labelstudio.")
+    return dataframe
+
+
+def get_labelstudio_annotations(
+    session: Session,
+    task_ids: List[int],
+) -> List[str]:
+    logging.info("Getting annotation for labelstudio tasks ")
+
+    statement = (
+        select(
+            LabelStudioTaskCompletion.id,
+            LabelStudioTaskCompletion.result,
+            LabelStudioTaskCompletion.was_cancelled,
+            LabelStudioTaskCompletion.ground_truth,
+            LabelStudioTaskCompletion.created_at,
+            LabelStudioTaskCompletion.updated_at,
+            LabelStudioTaskCompletion.task_id,
+            LabelStudioTaskCompletion.prediction,
+            LabelStudioTaskCompletion.lead_time,
+            LabelStudioTaskCompletion.result_count,
+            LabelStudioTaskCompletion.completed_by_id,
+            LabelStudioTaskCompletion.parent_prediction_id,
+            LabelStudioTaskCompletion.parent_annotation_id,
+            LabelStudioTaskCompletion.last_action,
+            LabelStudioTaskCompletion.last_created_by_id,
+            LabelStudioTaskCompletion.project_id,
+            LabelStudioTaskCompletion.updated_by_id,
+            LabelStudioTaskCompletion.unique_id,
+            LabelStudioTaskCompletion.draft_created_at,
+            LabelStudioTaskCompletion.import_id,
+            LabelStudioTaskCompletion.bulk_created,
+        )
+        .select_from(LabelStudioTaskCompletion)
+        .where(
+            and_(
+                LabelStudioTaskCompletion.task_id.in_(task_ids),
+            )
+        )
+    )
+    try:
+        logging.info(f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}")
+        output = session.execute(statement).fetchall()
+    except Exception as e:
+        session.rollback()  # ← this resets the transaction
+        raise  # or log the error
+    columns = [
+        "id",
+        "result",
+        "was_cancelled",
+        "ground_truth",
+        "created_at",
+        "updated_at",
+        "task_id",
+        "prediction",
+        "lead_time",
+        "result_count",
+        "completed_by_id",
+        "parent_prediction_id",
+        "parent_annotation_id",
+        "last_action",
+        "last_created_by_id",
+        "project_id",
+        "updated_by_id",
+        "unique_id",
+        "draft_created_at",
+        "import_id",
+        "bulk_created",
+    ]
+    dataframe = pd.DataFrame(output, columns=columns)
+    
+    logging.info(f"Found {len(dataframe)} records in labelstudio.")
+    return dataframe
