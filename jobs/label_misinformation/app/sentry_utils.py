@@ -2,8 +2,9 @@ import os
 import logging
 import sentry_sdk
 
-def sentry_init(version = "0.0"):
-    if(os.environ.get("SENTRY_DSN", None) != None):
+
+def sentry_init(version="0.0"):
+    if os.environ.get("SENTRY_DSN", None) != None:
         logging.info("Sentry init")
         sentry_sdk.init(
             enable_tracing=False,

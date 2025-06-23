@@ -51,7 +51,9 @@ async def generate_conversation(
     async with semaphore:
         reason = await synth_gen_model_reason(client=client, record=record)
         if reason is not None:
-            str_start = f"<think>\n{reason}\n</think>\n\n" if args.thinking else f"{reason}\n\n"
+            str_start = (
+                f"<think>\n{reason}\n</think>\n\n" if args.thinking else f"{reason}\n\n"
+            )
             messages.append(
                 {
                     "role": "assistant",

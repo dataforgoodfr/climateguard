@@ -14,8 +14,10 @@ class Country:
     bucket: str = field()  # Bucket for country data
     model: str = field()  # Model name for analyzing the country data
     prompt_version: str = field()  # Prompty version to be used in prod
-    label_studio_id: int = field() # ID for Cloud Storage ID (@see README)
-    label_studio_project: int = field() # ID for Label Studio project (visible on the web UI url)
+    label_studio_id: int = field()  # ID for Cloud Storage ID (@see README)
+    label_studio_project: int = (
+        field()
+    )  # ID for Label Studio project (visible on the web UI url)
     channels: List[str] = field()
 
     def verify_code(self, code: str):
@@ -37,7 +39,7 @@ FRANCE_COUNTRY = Country(
     prompt_version=get_secret_docker("PROMPT_VERSION", "0.0.1"),
     label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID", 4),
     label_studio_project=os.getenv("LABEL_STUDIO_PROJECT", 4),
-    channels = [
+    channels=[
         "tf1",
         "france2",
         "fr3-idf",
@@ -56,7 +58,7 @@ FRANCE_COUNTRY = Country(
         "france24",
         "france-info",
         "rfi",
-    ]
+    ],
 )
 BELGIUM_COUNTRY = Country(
     code="bel",
@@ -67,22 +69,16 @@ BELGIUM_COUNTRY = Country(
     prompt_version=get_secret_docker("PROMPT_VERSION", "0.0.1"),
     label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID_BELGIUM", 12),
     label_studio_project=os.getenv("LABEL_STUDIO_PROJECT_BELGIUM", 17),
-    channels=[
-        "CANALZ",
-        "LAUNE",
-        "LN24",
-        "RTL",
-        "LATROIS"
-    ]
+    channels=["CANALZ", "LAUNE", "LN24", "RTL", "LATROIS"],
 )
 BRAZIL_COUNTRY = Country(
     code="bra",
     name="brazil",
     language="portuguese",
     bucket=os.getenv("BUCKET_OUTPUT_BRAZIL", "climateguard-brazil"),
-    model=get_secret_docker("MODEL_NAME_BRAZIL", "gpt-4o-mini"), # add as get env 
+    model=get_secret_docker("MODEL_NAME_BRAZIL", "gpt-4o-mini"),  # add as get env
     prompt_version=get_secret_docker("PROMPT_VERSION", "0.0.1"),
-    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID_BRAZIL", 5), # pass as getenv
+    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID_BRAZIL", 5),  # pass as getenv
     label_studio_project=os.getenv("LABEL_STUDIO_PROJECT_BRAZIL", 5),
     channels=[
         "tvglobo",
@@ -91,7 +87,7 @@ BRAZIL_COUNTRY = Country(
         "redebandeirantes",
         "jovempan",
         "cnnbrasil",
-    ]
+    ],
 )
 
 

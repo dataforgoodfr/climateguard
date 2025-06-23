@@ -21,7 +21,7 @@ from sklearn.metrics import (
     f1_score,
     precision_score,
     recall_score,
-    classification_report
+    classification_report,
 )
 
 logging.basicConfig(
@@ -225,7 +225,11 @@ if __name__ == "__main__":
     split_dataset = claims_dataset.train_test_split(
         test_size=args.train_val_split, stratify_by_column="label"
     )
-    split_dataset["train"] = sample_dataset(split_dataset["train"], label_column="label", num_samples=args.max_samples_per_class)
+    split_dataset["train"] = sample_dataset(
+        split_dataset["train"],
+        label_column="label",
+        num_samples=args.max_samples_per_class,
+    )
     logging.info(
         "Sampled the following distribution of examples from dataset: \n"
         f"{split_dataset["train"].to_pandas().label.value_counts()}"

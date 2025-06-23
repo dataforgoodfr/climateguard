@@ -32,6 +32,7 @@ logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
+
 def compute_metrics(eval_pred):
     predictions, labels = eval_pred
     predictions = predictions.argmax(1)
@@ -273,7 +274,9 @@ if __name__ == "__main__":
         try:
             training_args.update(json.loads(args.training_args))
         except json.JSONDecodeError as e:
-            logging.fatal(f"Could not load training arguments from string {args.training_args}")
+            logging.fatal(
+                f"Could not load training arguments from string {args.training_args}"
+            )
             raise e
     else:
         logging.warning(

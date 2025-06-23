@@ -20,8 +20,9 @@ def remove_thinking(text, thinking_token):
             text = text[end_thought + len(f"</{thinking_token}>") :]
     return text
 
+
 def parse_xml(text, thinking_token=None):
-    pattern = r'misinformation>(.*?)</misinformation>'
+    pattern = r"misinformation>(.*?)</misinformation>"
     text = remove_thinking(text, thinking_token)
     match = re.search(pattern, text, re.DOTALL)
     if match:
@@ -30,6 +31,7 @@ def parse_xml(text, thinking_token=None):
     print("No XML match found")
     print(text)
     return {"misinformation": False}
+
 
 def parse_json(text, thinking_token=None):
     pattern = r"\{.*?\}"  # Matches JSON-like objects
@@ -45,7 +47,9 @@ def parse_json(text, thinking_token=None):
             json_str = json_str.removeprefix("{").removesuffix("}")
             json_obj = {}
             segments = json_str.split(":")
-            json_obj[segments[0].strip().replace('"', "").replace("'", "")] = segments[1].strip().replace('"', "").replace("'", "")
+            json_obj[segments[0].strip().replace('"', "").replace("'", "")] = (
+                segments[1].strip().replace('"', "").replace("'", "")
+            )
         finally:
             if list(json_obj.keys())[0] == "misinformation":
                 return json_obj
@@ -74,9 +78,11 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--adapters", type=str, default="adapters")
     parser.add_argument("-t", "--temp", type=float, default=0.1)
     parser.add_argument("--max-tokens", type=int, default=512)
-    parser.add_argument("--repetition-penalty", type=float, default=0                                                                                                               )
+    parser.add_argument("--repetition-penalty", type=float, default=0)
     parser.add_argument("--thinking-token", type=str, default=None)
-    parser.add_argument("--return-type", type=str, choices=["json", "xml"], default="json")
+    parser.add_argument(
+        "--return-type", type=str, choices=["json", "xml"], default="json"
+    )
     args = parser.parse_args()
     print("Found following args")
     print(str(args))
@@ -101,10 +107,14 @@ if __name__ == "__main__":
         ]
 
         prompt = tokenizer_lora.apply_chat_template(
-            messages, add_generation_prompt=True, enable_thinking=args.thinking_token is not None
+            messages,
+            add_generation_prompt=True,
+            enable_thinking=args.thinking_token is not None,
         )
         sampler = make_sampler(temp=args.temp)
-        logits_processors = make_logits_processors(repetition_penalty=args.repetition_penalty)
+        logits_processors = make_logits_processors(
+            repetition_penalty=args.repetition_penalty
+        )
         response = generate(
             model_lora,
             tokenizer_lora,
@@ -114,16 +124,13 @@ if __name__ == "__main__":
             sampler=sampler,
             # logits_processors=logits_processors,
         )
-        prediction = parse_function[args.return_type](response, thinking_token=args.thinking_token)
+        prediction = parse_function[args.return_type](
+            response, thinking_token=args.thinking_token
+        )
         predictions.append(
-            parse_bool(prediction["misinformation"])
-            if prediction
-            else 0
+            parse_bool(prediction["misinformation"]) if prediction else 0
         )
         labels.append(int(record["misinformation"]))
 
     print(classification_report(labels, predictions))
     print(pd.Series(predictions).value_counts())
-
-
-

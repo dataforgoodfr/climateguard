@@ -22,6 +22,7 @@ from prompts import (
 load_dotenv()
 login(token=os.getenv("HF_TOKEN"))
 
+
 async def synth_gen_model_reason(
     client: AsyncOpenAI, record: Dict[str, Any], model: str = "gpt-4o-mini"
 ):

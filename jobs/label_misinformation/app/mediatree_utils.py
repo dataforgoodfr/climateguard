@@ -16,14 +16,26 @@ API_BASE_URL = os.environ.get("KEYWORDS_URL")
 
 
 def mediatree_check_secrets():
-     if mediatree_user is None or mediatree_password is None or AUTH_URL is None or API_BASE_URL is None:
-        logging.error("Config missing: MEDIATREE_USER/MEDIATREE_PASSWORD/MEDIATREE_AUTH_URL/KEYWORDS_URL missing")
+    if (
+        mediatree_user is None
+        or mediatree_password is None
+        or AUTH_URL is None
+        or API_BASE_URL is None
+    ):
+        logging.error(
+            "Config missing: MEDIATREE_USER/MEDIATREE_PASSWORD/MEDIATREE_AUTH_URL/KEYWORDS_URL missing"
+        )
         raise Exception("Config missing: user/password/auth url missing")
+
 
 def get_auth_token(user=mediatree_user, password=mediatree_password):
     logging.debug("Getting a token")
     try:
-        post_arguments = {"grant_type": "password", "username": user, "password": password}
+        post_arguments = {
+            "grant_type": "password",
+            "username": user,
+            "password": password,
+        }
         response = requests.post(AUTH_URL, data=post_arguments)
         output = response.json()
         token = output["data"]["access_token"]
@@ -31,6 +43,7 @@ def get_auth_token(user=mediatree_user, password=mediatree_password):
         return token
     except Exception as err:
         raise Exception(f"Could not get token {err}")
+
 
 def get_start_and_end_of_chunk(start):
     logging.info(f"get_start_and_end_of_chunk - datetime: {start}")
@@ -59,14 +72,18 @@ def get_response_single_export_api(single_export_api):
 def fetch_video_url(row, token):
     """Fetches a single video URL based on a DataFrame row."""
     try:
-        if not pd.isna(row["start"]) and not pd.isna(row['channel_name']):
+        if not pd.isna(row["start"]) and not pd.isna(row["channel_name"]):
             logging.info(f"fetch_video_url for : {row}")
             start, end = get_start_and_end_of_chunk(row["start"])
             channel_name = row["channel_name"]
             logging.info(f"Fetching URL for {channel_name} {start} {end}...")
 
-            single_export_api = get_mediatree_single_export_url(token, channel_name, start, end)
-            logging.info(f"Fetching URL for {channel_name} [{start}-{end}]: {single_export_api}")
+            single_export_api = get_mediatree_single_export_url(
+                token, channel_name, start, end
+            )
+            logging.info(
+                f"Fetching URL for {channel_name} [{start}-{end}]: {single_export_api}"
+            )
 
             response = get_response_single_export_api(single_export_api)
             if response.status_code != 200:
@@ -81,7 +98,9 @@ def fetch_video_url(row, token):
             logging.info(f"Got response URL: {url}")
 
             if not url:
-                logging.warning(f"No video URL found for {channel_name} [{start}-{end}]")
+                logging.warning(
+                    f"No video URL found for {channel_name} [{start}-{end}]"
+                )
                 return None
             logging.debug(f"url is {url}")
             return url
@@ -91,6 +110,7 @@ def fetch_video_url(row, token):
     except Exception as e:
         logging.error(f"Error fetching video URL {row}: {e}")
         return None
+
 
 def get_video_urls(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -103,7 +123,7 @@ def get_video_urls(df: pd.DataFrame) -> pd.DataFrame:
 
     try:
         token = token = get_auth_token()
-        df["media_url"] = df.apply(lambda row: fetch_video_url(row,token), axis=1)
+        df["media_url"] = df.apply(lambda row: fetch_video_url(row, token), axis=1)
 
         return df
     except Exception as e:
@@ -118,7 +138,9 @@ def download_media(row) -> Optional[bytes]:
     try:
         url = row["media_url"]
         if not url:
-            logging.warning(f"Skipping empty URL for {row['channel_name']} at {row['start']}")
+            logging.warning(
+                f"Skipping empty URL for {row['channel_name']} at {row['start']}"
+            )
             return None
         logging.info(f"Downloading: {url}")
         response = requests.get(url, stream=True)
@@ -151,10 +173,13 @@ def add_medias_to_df(df: pd.DataFrame):
         logging.error(f"Error with add_medias_to_df: {e}")
         raise e
 
+
 """
 TODO: move this entire function in an abstracted client
 From a dataframe with the mp3 information
 """
+
+
 def get_whispered_transcript(audio_bytes: Optional[bytes]) -> str:
     if audio_bytes is None:
         logging.warning("get_whispered_transcript - audio bytes is None")
@@ -179,12 +204,14 @@ def get_whispered_transcript(audio_bytes: Optional[bytes]) -> str:
         logging.error(f"Error with whisper client: {e}")
         raise e
 
+
 def add_new_plaintext_column_from_whister(df: pd.DataFrame) -> pd.DataFrame:
     df[WHISPER_COLUMN_NAME] = df.apply(
         lambda row: get_whispered_transcript(row["media"]), axis=1
     )
 
     return df
+
 
 def get_new_plaintext_from_whisper(df: pd.DataFrame) -> pd.DataFrame:
     df = add_medias_to_df(df)

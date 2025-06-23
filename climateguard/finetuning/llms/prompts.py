@@ -52,7 +52,3 @@ prompt_synthetic_information = (
     "- Show your thinking step by step\n\n"
     "Here is the text:\n"
 )
-
-
-
-

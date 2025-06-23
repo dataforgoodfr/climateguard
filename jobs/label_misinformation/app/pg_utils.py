@@ -50,6 +50,7 @@ keywords_table = "keywords"
 labelstudio_task_table = "task"
 labelstudio_task_completion_table = "task_completion"
 
+
 class Keywords(Base):
     __tablename__ = keywords_table
 
@@ -135,7 +136,7 @@ class LabelStudioTaskCompletion(BaseLS):
     bulk_created = Column(Boolean, nullable=True, default=False)
 
 
-def connect_to_db(db_database:str = None):
+def connect_to_db(db_database: str = None):
     if db_database is None:
         db_database = os.environ.get("POSTGRES_DB", "barometre")
     DB_USER = os.environ.get("POSTGRES_USER", "user")
@@ -253,7 +254,9 @@ def get_keywords_for_a_day_and_channel(
     )
     if ids_to_avoid:
         statement = statement.filter(Keywords.id.notin_(ids_to_avoid))
-    logging.info(f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}")
+    logging.info(
+        f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}"
+    )
     output = session.execute(statement).fetchall()
 
     columns = [
@@ -313,14 +316,18 @@ def get_keywords_for_period_and_channels(
 
     # filter records where 'start' is within the same day
     start_of_period = date_start.replace(hour=0, minute=0, second=0, microsecond=0)
-    end_of_period = date_end.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
+    end_of_period = date_end.replace(
+        hour=0, minute=0, second=0, microsecond=0
+    ) + timedelta(days=1)
     statement = statement.filter(
         and_(Keywords.start >= start_of_period, Keywords.start < end_of_period)
     )
     if ids_to_avoid:
         statement = statement.filter(Keywords.id.notin_(ids_to_avoid))
-        
-    logging.info(f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}")
+
+    logging.info(
+        f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}"
+    )
     output = session.execute(statement).fetchall()
 
     columns = [
@@ -358,24 +365,47 @@ def get_labelstudio_ids(
         .select_from(LabelStudioTask)
         .where(
             and_(
-                cast(LabelStudioTask.data.op("#>>")(literal_column("ARRAY['item','channel_name']")), Text) == channel_name,
-                cast(LabelStudioTask.data.op("#>>")(literal_column("ARRAY['item','start']")), DateTime) >= start_of_day,
-                cast(LabelStudioTask.data.op("#>>")(literal_column("ARRAY['item','start']")), DateTime) < end_of_day,
-                cast(LabelStudioTask.project_id, Integer) == int(country.label_studio_project),
+                cast(
+                    LabelStudioTask.data.op("#>>")(
+                        literal_column("ARRAY['item','channel_name']")
+                    ),
+                    Text,
+                )
+                == channel_name,
+                cast(
+                    LabelStudioTask.data.op("#>>")(
+                        literal_column("ARRAY['item','start']")
+                    ),
+                    DateTime,
+                )
+                >= start_of_day,
+                cast(
+                    LabelStudioTask.data.op("#>>")(
+                        literal_column("ARRAY['item','start']")
+                    ),
+                    DateTime,
+                )
+                < end_of_day,
+                cast(LabelStudioTask.project_id, Integer)
+                == int(country.label_studio_project),
             )
         )
     )
     try:
-        logging.info(f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}")
+        logging.info(
+            f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}"
+        )
         output = session.execute(statement).fetchall()
     except Exception as e:
         session.rollback()  # ← this resets the transaction
         raise  # or log the error
     columns = ["id"]
     dataframe = pd.DataFrame(output, columns=columns)
-    
-    logging.info(f"Got {len(dataframe)} ids in labelstudio for date {date} for country {country.name} and channel_name : {channel_name}")
-    return dataframe.id.str.replace('"', '').unique().tolist()
+
+    logging.info(
+        f"Got {len(dataframe)} ids in labelstudio for date {date} for country {country.name} and channel_name : {channel_name}"
+    )
+    return dataframe.id.str.replace('"', "").unique().tolist()
 
 
 def get_labelstudio_records_period(
@@ -392,7 +422,9 @@ def get_labelstudio_records_period(
     )
 
     start_of_period = date_start.replace(hour=0, minute=0, second=0, microsecond=0)
-    end_of_period = date_end.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
+    end_of_period = date_end.replace(
+        hour=0, minute=0, second=0, microsecond=0
+    ) + timedelta(days=1)
     statement = (
         select(
             LabelStudioTask.id,
@@ -416,15 +448,35 @@ def get_labelstudio_records_period(
         .select_from(LabelStudioTask)
         .where(
             and_(
-                cast(LabelStudioTask.data.op("#>>")(literal_column("ARRAY['item','channel_name']")), Text).in_(channels),
-                cast(LabelStudioTask.data.op("#>>")(literal_column("ARRAY['item','start']")), DateTime) >= start_of_period,
-                cast(LabelStudioTask.data.op("#>>")(literal_column("ARRAY['item','start']")), DateTime) < end_of_period,
-                cast(LabelStudioTask.project_id, Integer) == int(country.label_studio_project),
+                cast(
+                    LabelStudioTask.data.op("#>>")(
+                        literal_column("ARRAY['item','channel_name']")
+                    ),
+                    Text,
+                ).in_(channels),
+                cast(
+                    LabelStudioTask.data.op("#>>")(
+                        literal_column("ARRAY['item','start']")
+                    ),
+                    DateTime,
+                )
+                >= start_of_period,
+                cast(
+                    LabelStudioTask.data.op("#>>")(
+                        literal_column("ARRAY['item','start']")
+                    ),
+                    DateTime,
+                )
+                < end_of_period,
+                cast(LabelStudioTask.project_id, Integer)
+                == int(country.label_studio_project),
             )
         )
     )
     try:
-        logging.info(f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}")
+        logging.info(
+            f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}"
+        )
         output = session.execute(statement).fetchall()
     except Exception as e:
         session.rollback()  # ← this resets the transaction
@@ -449,7 +501,7 @@ def get_labelstudio_records_period(
         "unresolved_comment_count",
     ]
     dataframe = pd.DataFrame(output, columns=columns)
-    
+
     logging.info(f"Found {len(dataframe)} records in labelstudio.")
     return dataframe
 
@@ -492,7 +544,9 @@ def get_labelstudio_annotations(
         )
     )
     try:
-        logging.info(f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}")
+        logging.info(
+            f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}"
+        )
         output = session.execute(statement).fetchall()
     except Exception as e:
         session.rollback()  # ← this resets the transaction
@@ -521,6 +575,6 @@ def get_labelstudio_annotations(
         "bulk_created",
     ]
     dataframe = pd.DataFrame(output, columns=columns)
-    
+
     logging.info(f"Found {len(dataframe)} records in labelstudio.")
     return dataframe
