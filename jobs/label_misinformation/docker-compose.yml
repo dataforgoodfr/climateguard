@@ -145,12 +145,13 @@ services:
   test:
     build: .
     entrypoint: ["pytest", "-vv", "--capture=tee-sys"]   # use to debug the container if needed ["pytest", "-vv"] 
+    shm_size: '6gb'
     environment:
       LOGLEVEL: DEBUG
       ENV: docker
       APP_NAME: label-misinformation 
       OPENAI_API_KEY: /run/secrets/openai_key
-      MODEL_NAME:  /run/secrets/model_name
+      MODEL_NAME:  gpt-4o-mini
       BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing
       BUCKET_OUTPUT_BRAZIL: test-bucket-mediatree # change to test-bucket-mediatree for testing 
       BUCKET_OUTPUT_FOLDER: label-misinformation-tmp
@@ -193,7 +194,7 @@ services:
       ENV: docker
       APP_NAME: label-misinformation 
       OPENAI_API_KEY: /run/secrets/openai_key
-      MODEL_NAME:  /run/secrets/model_name
+      MODEL_NAME:  gpt-4o-mini
       BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing
       BUCKET_OUTPUT_BRAZIL: test-bucket-mediatree # change to test-bucket-mediatree for testing 
       BUCKET_OUTPUT_FOLDER: label-misinformation-tmp

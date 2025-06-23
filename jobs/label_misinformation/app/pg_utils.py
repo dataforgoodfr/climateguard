@@ -348,7 +348,6 @@ def get_labelstudio_ids(
     logging.info(
         f"Getting ids present in labelstudio table from {date} for country {country.name} and channel_name : {channel_name} for project {country.label_studio_project}"
     )
-    # TODO FILTER BY PROJECT IN LABELSTUDIO
 
     start_of_day = date.replace(hour=0, minute=0, second=0, microsecond=0)
     end_of_day = start_of_day + timedelta(days=1)
