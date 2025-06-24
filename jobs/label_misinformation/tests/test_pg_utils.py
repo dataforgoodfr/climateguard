@@ -344,11 +344,12 @@ def test_get_keywords_for_period_and_channels():
         date_start=pd.to_datetime("2024-12-11 10:10:10"),
         date_end=pd.to_datetime("2024-12-13 10:10:10"),
         channels=["itele"],
-        country= FRANCE_COUNTRY,
+        country=FRANCE_COUNTRY,
     )
     output = output._to_pandas()
     dataframe_to_save = dataframe_to_save._to_pandas()
     pd.testing.assert_frame_equal(dataframe_to_save, output, check_like=True)
+
 
 def test_get_labelstudio_records_period():
     create_tables(
@@ -414,9 +415,10 @@ def test_get_labelstudio_records_period():
         date_start=pd.to_datetime("2024-12-11 10:10:10"),
         date_end=pd.to_datetime("2024-12-13 10:10:10"),
         channels=["itele"],
-        country= FRANCE_COUNTRY,
+        country=FRANCE_COUNTRY,
     )
     assert output.shape == (1, 17)
+
 
 def test_get_labelstudio_annotations():
     create_tables(
@@ -433,16 +435,18 @@ def test_get_labelstudio_annotations():
     annotations = [
         dict(
             id=1237,
-            result=json.dumps([
-                {
-                    "id": "Dxcd6WtsvJ",
-                    "type": "choices",
-                    "value": {"choices": ["Incorrect"]},
-                    "origin": "manual",
-                    "to_name": "table",
-                    "from_name": "choice",
-                },
-            ]),
+            result=json.dumps(
+                [
+                    {
+                        "id": "Dxcd6WtsvJ",
+                        "type": "choices",
+                        "value": {"choices": ["Incorrect"]},
+                        "origin": "manual",
+                        "to_name": "table",
+                        "from_name": "choice",
+                    },
+                ]
+            ),
             was_cancelled=False,
             ground_truth=False,
             created_at=pd.to_datetime("19-03-2025 09:44:00"),
@@ -460,16 +464,18 @@ def test_get_labelstudio_annotations():
         ),
         dict(
             id=3760,
-            result=json.dumps([
-                {
-                    "id": "Dxcd6WtsvJ",
-                    "type": "choices",
-                    "value": {"choices": ["Incorrect"]},
-                    "origin": "manual",
-                    "to_name": "table",
-                    "from_name": "choice",
-                },
-            ]),
+            result=json.dumps(
+                [
+                    {
+                        "id": "Dxcd6WtsvJ",
+                        "type": "choices",
+                        "value": {"choices": ["Incorrect"]},
+                        "origin": "manual",
+                        "to_name": "table",
+                        "from_name": "choice",
+                    },
+                ]
+            ),
             was_cancelled=False,
             ground_truth=False,
             created_at=pd.to_datetime("19-01-2025 09:44:00"),

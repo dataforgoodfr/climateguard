@@ -233,14 +233,20 @@ def main(country: Country):
                                 misinformation_only_news._to_pandas()
                             )
 
-                            if country != BELGIUM_COUNTRY: # not from mediatree, so cannot get the new audio
-                                logging.info("Getting new plaintext from whisper by getting the original audio...")
+                            if (
+                                country != BELGIUM_COUNTRY
+                            ):  # not from mediatree, so cannot get the new audio
+                                logging.info(
+                                    "Getting new plaintext from whisper by getting the original audio..."
+                                )
                                 df_whispered = get_new_plaintext_from_whisper(
                                     misinformation_only_news
                                 )
 
                                 # remove the records with empty transcripts
-                                df_whispered = df_whispered.dropna(subset=[WHISPER_COLUMN_NAME])
+                                df_whispered = df_whispered.dropna(
+                                    subset=[WHISPER_COLUMN_NAME]
+                                )
                             else:
                                 logging.info(
                                     "Belgium country - no whispering, keeping the original dataframe"

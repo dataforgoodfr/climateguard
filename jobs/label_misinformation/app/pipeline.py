@@ -127,13 +127,11 @@ class SinglePromptPipeline(Pipeline):
         except Exception as e:
             logging.error(f"Error : {e}")
             raise Exception
-        
+
     def batch_process(self, input_data: List[PipelineInput]):
         responses = []
         for data in input_data:
-            responses.append(
-                self.process(data)
-            )
+            responses.append(self.process(data))
         return responses
 
     def describe(self) -> None:
@@ -230,18 +228,31 @@ class BertPipeline(Pipeline):
             if self.verbose:
                 logging.info(f"Processing Batch number : {window+1}")
             outputs = self.model(
-                input_ids=inputs["input_ids"][self.batch_size * window: self.batch_size * (window+1)],
-                attention_mask=inputs["attention_mask"][self.batch_size * window: self.batch_size * (window+1)],
+                input_ids=inputs["input_ids"][
+                    self.batch_size * window : self.batch_size * (window + 1)
+                ],
+                attention_mask=inputs["attention_mask"][
+                    self.batch_size * window : self.batch_size * (window + 1)
+                ],
                 seq_len=self.chunk_size,
                 batch_size=self.batch_size,
                 show_progress=True,
             )
             if self.min_probability:
-                _predictions = (nn.functional.softmax(outputs.logits, dim=-1)[:, 1] > self.min_probability).int().tolist()
+                _predictions = (
+                    (
+                        nn.functional.softmax(outputs.logits, dim=-1)[:, 1]
+                        > self.min_probability
+                    )
+                    .int()
+                    .tolist()
+                )
             else:
                 _predictions = outputs.logits.numpy().argmax(1).tolist()
             predictions.extend(_predictions)
-            probabilities.extend((nn.functional.softmax(outputs.logits, dim=-1)[:, 1]).tolist())
+            probabilities.extend(
+                (nn.functional.softmax(outputs.logits, dim=-1)[:, 1]).tolist()
+            )
         results_df = pd.DataFrame(
             {
                 "id": ids,
@@ -255,6 +266,8 @@ class BertPipeline(Pipeline):
             f"Misinformation detection results: {results_df.prediction.value_counts()}"
         )
         return [
-            PipelineOutput(id=row["id"], score=row["prediction"], probability=row["probability"])
+            PipelineOutput(
+                id=row["id"], score=row["prediction"], probability=row["probability"]
+            )
             for idx, row in results_df.iterrows()
         ]

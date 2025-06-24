@@ -9,7 +9,11 @@ import modin.pandas as pd
 import ray
 from country import Country, CountryCollection, get_countries
 from date_utils import get_date_range
-from labelstudio_utils import edit_labelstudio_record_data, wait_and_sync_label_studio, get_label_studio_format
+from labelstudio_utils import (
+    edit_labelstudio_record_data,
+    wait_and_sync_label_studio,
+    get_label_studio_format,
+)
 from logging_utils import getLogger
 from mediatree_utils import get_new_plaintext_from_whisper, mediatree_check_secrets
 from pg_utils import (
@@ -107,17 +111,13 @@ def main(country: Country):
             channels,
             country,
         )
-        labelstudio_df.index = (
-            labelstudio_df
-            .apply(
-                lambda row: row["data"]["item"]["id"].replace('"', ''),
-                axis=1,
-            )            
+        labelstudio_df.index = labelstudio_df.apply(
+            lambda row: row["data"]["item"]["id"].replace('"', ""),
+            axis=1,
         )
         logging.info(labelstudio_df.id.to_list())
         labelstudio_annotations_df = get_labelstudio_annotations(
-            labelstudio_db_session,
-            labelstudio_df.id.to_list()
+            labelstudio_db_session, labelstudio_df.id.to_list()
         )
         keywords_df = get_keywords_for_period_and_channels(
             session,
@@ -132,11 +132,17 @@ def main(country: Country):
             f"Found {len(labelstudio_df)} records already present in labelstudio, "
             f"with {len(keywords_df)} records in total for the period."
         )
-        data_input_batch = [PipelineInput(id=row["id"], transcript=row["plaintext"]) for idx, row in keywords_df.iterrows()]
+        data_input_batch = [
+            PipelineInput(id=row["id"], transcript=row["plaintext"])
+            for idx, row in keywords_df.iterrows()
+        ]
         shadow_pipeline_outputs = pipeline.batch_process(data_input_batch)
         output_df = pd.DataFrame(
-            data=[[output.id, output.score, output.probability] for output in shadow_pipeline_outputs],
-            columns=["id", "shadow_model_result", "probability"]
+            data=[
+                [output.id, output.score, output.probability]
+                for output in shadow_pipeline_outputs
+            ],
+            columns=["id", "shadow_model_result", "probability"],
         )
 
         output_df.shadow_model_result = output_df.shadow_model_result.astype(int)
@@ -148,46 +154,57 @@ def main(country: Country):
 
         # adding shadow_model_result and probability to merged_df
         # Columns: id, start, channel_program, channel_program_type, channel_title, channel_name, plaintext, country, shadow_model_result, probability
-        merged_df = keywords_df.merge(
-            output_df,
-            left_on="id",
-            right_on="id"
-        )
+        merged_df = keywords_df.merge(output_df, left_on="id", right_on="id")
         merged_df["date"] = pd.to_datetime(merged_df.start)
         merged_df["year"] = merged_df["date"].dt.year
         merged_df["month"] = merged_df["date"].dt.month
         merged_df["day"] = merged_df["date"].dt.day
 
-        new_records = merged_df.loc[(merged_df["shadow_model_result"] == 1) & (~merged_df.id.isin(labelstudio_df.index))]
+        new_records = merged_df.loc[
+            (merged_df["shadow_model_result"] == 1)
+            & (~merged_df.id.isin(labelstudio_df.index))
+        ]
         records_labelstudio = merged_df.loc[merged_df.id.isin(labelstudio_df.index)]
-        
+
         if not new_records.empty:
             # add whisper to data that is not present in labelstudio
             new_records["model_result"] = 0
             new_records["model_reason"] = ""
             new_records["model_name"] = country.model
             new_records["prompt_version"] = country.prompt_version
-            new_records["pipeline_version"] = f"{country.model}/{country.prompt_version}"
+            new_records["pipeline_version"] = (
+                f"{country.model}/{country.prompt_version}"
+            )
             new_records["channel"] = new_records["channel_name"]
 
             # Saving records that are not in labelstudio and shadow_model_result is 1
-            logging.info(f"Saving records found by shadow model only: {len(new_records)} records")
-            groups = new_records.groupby(["country", "year", "month", "day", "channel_name"])
+            logging.info(
+                f"Saving records found by shadow model only: {len(new_records)} records"
+            )
+            groups = new_records.groupby(
+                ["country", "year", "month", "day", "channel_name"]
+            )
             for columns, group in groups:
                 # How do we inject the new results in the labelstudio record ?
-                group = get_new_plaintext_from_whisper(
-                    group
-                )
+                group = get_new_plaintext_from_whisper(group)
                 group = group.dropna(subset=[WHISPER_COLUMN_NAME])
                 for idx, row in group.iterrows():
                     task_data = get_label_studio_format(row)
-                    task_data["data"]["item"].update({
-                        "shadow_prompt_version": row.get("shadow_prompt_version", ""),
-                        "shadow_pipeline_version": row.get("shadow_pipeline_version", ""),
-                        "shadow_model_result": int(row.get("shadow_model_result", 0)),
-                        "shadow_model_reason": row.get("shadow_model_reason", ""),
-                        "shadow_model_name": row.get("shadow_model_name", ""),
-                    })
+                    task_data["data"]["item"].update(
+                        {
+                            "shadow_prompt_version": row.get(
+                                "shadow_prompt_version", ""
+                            ),
+                            "shadow_pipeline_version": row.get(
+                                "shadow_pipeline_version", ""
+                            ),
+                            "shadow_model_result": int(
+                                row.get("shadow_model_result", 0)
+                            ),
+                            "shadow_model_reason": row.get("shadow_model_reason", ""),
+                            "shadow_model_name": row.get("shadow_model_name", ""),
+                        }
+                    )
                     key = (
                         f"{bucket_output_folder}/"
                         f"country={country.name}/"
@@ -205,17 +222,27 @@ def main(country: Country):
                     )
                     logging.info(f"S3 response: {response}")
         if not records_labelstudio.empty:
-            logging.info(f"Saving records that are already present in labelstudio: {len(records_labelstudio)} records")
+            logging.info(
+                f"Saving records that are already present in labelstudio: {len(records_labelstudio)} records"
+            )
 
             # Saving shadow model scores for all annotations in labelstudio
-            records_labelstudio_dict = records_labelstudio.set_index('id').to_dict(orient="index")
+            records_labelstudio_dict = records_labelstudio.set_index("id").to_dict(
+                orient="index"
+            )
             for labelstudio_id, row in labelstudio_df.iterrows():
                 logging.info(labelstudio_id)
                 shadow_result = records_labelstudio_dict.get(labelstudio_id, {})
-                annotations = labelstudio_annotations_df.loc[labelstudio_annotations_df.task_id==row.id].to_dict("records")
-                updated_record = edit_labelstudio_record_data(row, shadow_result, annotations)
+                annotations = labelstudio_annotations_df.loc[
+                    labelstudio_annotations_df.task_id == row.id
+                ].to_dict("records")
+                updated_record = edit_labelstudio_record_data(
+                    row, shadow_result, annotations
+                )
 
-                logging.debug(f"Updated record for labelstudio_id {labelstudio_id}:\n {json.dumps(updated_record)}")
+                logging.debug(
+                    f"Updated record for labelstudio_id {labelstudio_id}:\n {json.dumps(updated_record)}"
+                )
                 key = (
                     f"{bucket_output_folder}/"
                     f"country={country.name}/"

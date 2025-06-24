@@ -33,7 +33,9 @@ def transform_mp4_to_mp3(media: bytes) -> Optional[bytes]:
             video_clip = VideoFileClip(temp_mp4_file.name)
 
             # Convert the video clip's audio to MP3 and save it in memory
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp_mp3_file:
+            with tempfile.NamedTemporaryFile(
+                delete=False, suffix=".mp3"
+            ) as temp_mp3_file:
                 video_clip.audio.write_audiofile(temp_mp3_file.name)
 
                 # Read the MP3 file content to return it as bytes

@@ -15,20 +15,27 @@ HEALTH_ENDPOINT = f"{LABEL_STUDIO_URL}/health"
 # Storage ID (not project id @see https://api.labelstud.io/api-reference/api-reference/import-storage/s-3/sync)
 LABEL_STUDIO_PROJECT_ID = os.getenv("LABEL_STUDIO_PROJECT_ID", "")
 SYNC_ENDPOINT = f"{LABEL_STUDIO_URL}/api/storages/s3/{LABEL_STUDIO_PROJECT_ID}/sync"
-API_LABEL_STUDIO_KEY = os.getenv("API_LABEL_STUDIO_KEY", "")  # Replace with your actual API key
+API_LABEL_STUDIO_KEY = os.getenv(
+    "API_LABEL_STUDIO_KEY", ""
+)  # Replace with your actual API key
+
 
 def get_sync_endopoint(label_studio_project_id: int):
     return f"{LABEL_STUDIO_URL}/api/storages/s3/{label_studio_project_id}/sync"
 
-# @see https://github.com/HumanSignal/label-studio/issues/1492#issuecomment-924522609   
+
+# @see https://github.com/HumanSignal/label-studio/issues/1492#issuecomment-924522609
 def encode_audio_base64(audio_bytes):
     return f"data:audio/mp3;base64,{base64.b64encode(audio_bytes).decode('utf-8')}"
+
 
 # https://labelstud.io/guide/storage#Amazon-S3
 def get_label_studio_format(row) -> str:
     url_mediatree = url_mediatree = get_url_mediatree(row["start"], row["channel_name"])
     start_time = (
-        row["start"].isoformat() if isinstance(row["start"], pd.Timestamp) else row["start"]
+        row["start"].isoformat()
+        if isinstance(row["start"], pd.Timestamp)
+        else row["start"]
     )
 
     # TODO make it labelstudio compatible
@@ -42,7 +49,7 @@ def get_label_studio_format(row) -> str:
     task_data = {
         "data": {
             "item": {
-                "id": row["id"], # from keywords.id
+                "id": row["id"],  # from keywords.id
                 "plaintext": row["plaintext"],
                 WHISPER_COLUMN_NAME: row[WHISPER_COLUMN_NAME],
                 # "media": media,  # TODO make it labelstudio compatible
@@ -75,7 +82,7 @@ def wait_for_health(url, timeout=240, interval=5):
     """Waits until the given URL returns a 200 status or timeout is reached."""
     logging.info("Waiting for the service to become healthy...")
     start_time = time.time()
-    
+
     while time.time() - start_time < timeout:
         try:
             logging.info(f"Sending get to {url}")
@@ -87,12 +94,13 @@ def wait_for_health(url, timeout=240, interval=5):
                 return True
         except requests.RequestException as e:
             logging.info(f"Health check failed: {e}")
-        
+
         logging.info(f"Label Studio Service not ready yet {url}. Retrying...")
         time.sleep(interval)
-    
+
     logging.warning("Timed out waiting for the service to become healthy.")
     return False
+
 
 # https://api.labelstud.io/api-reference/api-reference/import-storage/s-3/sync
 def sync_s3_storage(api_key, label_studio_project_id: int):
@@ -101,16 +109,21 @@ def sync_s3_storage(api_key, label_studio_project_id: int):
     sync_endpoint = get_sync_endopoint(label_studio_project_id)
     try:
         timeout = 60 * 5
-        logging.info(f"POST to {sync_endpoint} and waiting a maximum of {timeout} seconds for the sync...")
+        logging.info(
+            f"POST to {sync_endpoint} and waiting a maximum of {timeout} seconds for the sync..."
+        )
         response = requests.post(sync_endpoint, headers=headers, timeout=timeout)
         if response.status_code == 200:
             logging.info("Label Studio - S3 sync successful!")
             return True
         else:
-            logging.warning(f"Failed to sync S3 storage: {response.status_code} - {response.text}")
+            logging.warning(
+                f"Failed to sync S3 storage: {response.status_code} - {response.text}"
+            )
             return False
     except requests.RequestException as e:
         logging.warning(f"Error syncing S3 storage: {e}")
+
 
 def wait_and_sync_label_studio(label_studio_project_id: int):
     if label_studio_project_id != "" and label_studio_project_id is not None:
@@ -119,6 +132,7 @@ def wait_and_sync_label_studio(label_studio_project_id: int):
             return sync_s3_storage(API_LABEL_STUDIO_KEY, label_studio_project_id)
     else:
         logging.warning("To activate label studio import, set LABEL_STUDIO_PROJECT_ID")
+
 
 def convert_nested_timestamps(d):
     if isinstance(d, str):
@@ -134,7 +148,10 @@ def convert_nested_timestamps(d):
             d[k] = str(v)
     return d
 
-def edit_labelstudio_record_data(row: pd.Series, update_dict: dict, annotations: list) -> dict:
+
+def edit_labelstudio_record_data(
+    row: pd.Series, update_dict: dict, annotations: list
+) -> dict:
     record = row.to_dict()
     if not isinstance(record["data"], dict):
         record = json.loads(row.data)
