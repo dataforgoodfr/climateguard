@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Optional
 
+import asyncio
 import pandas as pd
 import openai
 from llama_index.core.node_parser import SentenceSplitter
@@ -93,12 +94,20 @@ def parse_response(response: str) -> PipelineOutput:
 
 class SinglePromptPipeline(Pipeline):
     def __init__(
-        self, model_name: str, api_key: str, prompt: DisinformationPrompt
+        self,
+        model_name: str,
+        api_key: str,
+        prompt: DisinformationPrompt,
+        batch_async: bool = False,
+        semaphore: int = 5,
     ) -> None:
         openai_key = get_secret_docker("OPENAI_API_KEY")
         openai.api_key = openai_key
         os.environ["OPENAI_API_KEY"] = openai_key
         self._model = model_name
+        self.batch_async = batch_async
+        self.semaphore = asyncio.Semaphore(semaphore)
+        self.async_client = openai.AsyncOpenAI(api_key=openai_key)
 
         self._system_prompt = prompt.prompt
         self.prompt_version = prompt.version
@@ -106,6 +115,18 @@ class SinglePromptPipeline(Pipeline):
         self._steps = [
             f"Single Open AI prompt with {self._model} - prompt version: {prompt.version} - prompt text: {self._system_prompt}"
         ]
+
+    async def _async_process(self, input_data: PipelineInput):
+        prompt = self._system_prompt + f" '''{input_data.transcript}'''"
+        messages = [{"role": "user", "content": prompt}]
+        async with self.semaphore:
+            response = await self.async_client.chat.completions.create(
+                model=self._model,
+                messages=messages,
+                temperature=0,
+            )
+        result = response.choices[0].message.content.strip()
+        return input_data.id, parse_response(result)
 
     def process(self, input_data: PipelineInput) -> int:
         prompt = self._system_prompt + f" '''{input_data.transcript}'''"
@@ -128,10 +149,29 @@ class SinglePromptPipeline(Pipeline):
             logging.error(f"Error : {e}")
             raise Exception
 
+    async def _async_batch_process(self, input_data: List[PipelineInput]):
+        return await asyncio.gather(
+            * [
+                self._async_process(
+                    PipelineInput(
+                        transcript=input.transcript,
+                        id=input.id if input.id else idx
+                    ) for idx, input in enumerate(input_data)
+                )
+            ]
+        )
     def batch_process(self, input_data: List[PipelineInput]):
-        responses = []
-        for data in input_data:
-            responses.append(self.process(data))
+        if self.batch_async:
+            unordered_responses = asyncio.run(self._async_batch_process(input_data))
+            response_dict = {idx: output for idx, output in unordered_responses}
+            responses = []
+            for idx, input in enumerate(input_data):
+                _id = input.id if input.id else idx
+                responses.append(response_dict[_id])
+        else:
+            responses = []
+            for data in input_data:
+                responses.append(self.process(data))
         return responses
 
     def describe(self) -> None:
@@ -148,7 +188,7 @@ class BertPipeline(Pipeline):
         chunk_size: int = 512,
         chunk_overlap: int = 256,
         batch_size: int = 32,
-        min_probability: Optional[float] = None,
+        min_probability: float = 0.5,
         verbose: bool = False,
     ):
         self._model = model_name
@@ -177,25 +217,30 @@ class BertPipeline(Pipeline):
         ]
 
     def process(self, input_data: PipelineInput) -> int:
-        prompt = self._system_prompt + f" '''{input_data.transcript}'''"
-        messages = [{"role": "user", "content": prompt}]
-        logging.debug(f"Send {messages}")
-
-        try:
-            openai_key = get_secret_docker("OPENAI_API_KEY")
-            openai.api_key = openai_key
-            response = openai.chat.completions.create(
-                model=self._model,
-                messages=messages,
-                temperature=0,
-            )
-            logging.debug(f"Response API: {response}")
-            result = response.choices[0].message.content.strip()
-
-            return parse_response(result)
-        except Exception as e:
-            logging.error(f"Error : {e}")
-            raise Exception
+        texts = []
+        chunks = self.splitter.split_text(input_data.transcript)
+        for chunk in chunks:
+            texts.append(chunk)
+        inputs = self.tokenizer(
+            texts,
+            padding="max_length",
+            truncation=True,
+            max_length=self.chunk_size,
+            return_tensors="pt",
+        )
+        logging.info(
+            f"Processing text of {len(input_data.transcript)}, split into {len(chunks)} chunks after chunking."
+        )
+        outputs = self.model(
+            input_ids=inputs["input_ids"],
+            attention_mask=inputs["attention_mask"],
+            seq_len=self.chunk_size,
+            batch_size=self.batch_size,
+            show_progress=True,
+        )
+        probability = (nn.functional.softmax(outputs.logits, dim=-1)[:, 1]).max().item()
+        prediction = probability >= self.min_probability
+        return PipelineOutput(score=prediction, probability=probability)
 
     def describe(self) -> None:
         for step in self._steps:
@@ -222,7 +267,7 @@ class BertPipeline(Pipeline):
         probabilities = []
         logging.info(
             f"Processing {len(inputs['input_ids'])} texts after chunking,"
-            f"with batch size {self.batch_size}: {len(inputs["input_ids"]) // self.batch_size + 1} iterations"
+            f"with batch size {self.batch_size}: {len(inputs['input_ids']) // self.batch_size + 1} iterations"
         )
         for window in range(len(inputs["input_ids"]) // self.batch_size + 1):
             if self.verbose:
