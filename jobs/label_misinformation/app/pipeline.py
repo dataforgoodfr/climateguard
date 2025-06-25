@@ -148,7 +148,7 @@ class BertPipeline(Pipeline):
         chunk_size: int = 512,
         chunk_overlap: int = 256,
         batch_size: int = 32,
-        min_probability: Optional[float] = None,
+        min_probability: float = 0.5,
         verbose: bool = False,
     ):
         self._model = model_name
@@ -177,25 +177,33 @@ class BertPipeline(Pipeline):
         ]
 
     def process(self, input_data: PipelineInput) -> int:
-        prompt = self._system_prompt + f" '''{input_data.transcript}'''"
-        messages = [{"role": "user", "content": prompt}]
-        logging.debug(f"Send {messages}")
-
-        try:
-            openai_key = get_secret_docker("OPENAI_API_KEY")
-            openai.api_key = openai_key
-            response = openai.chat.completions.create(
-                model=self._model,
-                messages=messages,
-                temperature=0,
-            )
-            logging.debug(f"Response API: {response}")
-            result = response.choices[0].message.content.strip()
-
-            return parse_response(result)
-        except Exception as e:
-            logging.error(f"Error : {e}")
-            raise Exception
+        texts = []
+        chunks = self.splitter.split_text(input_data.transcript)
+        for chunk in chunks:
+            texts.append(chunk)
+        inputs = self.tokenizer(
+            texts,
+            padding="max_length",
+            truncation=True,
+            max_length=self.chunk_size,
+            return_tensors="pt",
+        )
+        predictions = []
+        probabilities = []
+        logging.info(
+            f"Processing text of {len(input_data.transcript)}, split into {len(chunks)} chunks after chunking."
+        )
+        outputs = self.model(
+            input_ids=inputs["input_ids"],
+            attention_mask=inputs["attention_mask"],
+            seq_len=self.chunk_size,
+            batch_size=self.batch_size,
+            show_progress=True,
+        )
+        probability = (nn.functional.softmax(outputs.logits, dim=-1)[:, 1]).max().item()
+        prediction = probability >= self.min_probability
+        return PipelineOutput(score=prediction, probability=probability)
+        
 
     def describe(self) -> None:
         for step in self._steps:
@@ -222,7 +230,7 @@ class BertPipeline(Pipeline):
         probabilities = []
         logging.info(
             f"Processing {len(inputs['input_ids'])} texts after chunking,"
-            f"with batch size {self.batch_size}: {len(inputs["input_ids"]) // self.batch_size + 1} iterations"
+            f"with batch size {self.batch_size}: {len(inputs['input_ids']) // self.batch_size + 1} iterations"
         )
         for window in range(len(inputs["input_ids"]) // self.batch_size + 1):
             if self.verbose:
