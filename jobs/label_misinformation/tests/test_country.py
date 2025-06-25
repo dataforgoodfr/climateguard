@@ -10,6 +10,7 @@ from app.country import (
     BELGIUM_COUNTRY,
     BRAZIL_COUNTRY,
     FRANCE_COUNTRY,
+    GERMANY_COUNTRY,
     LEGACY_COUNTRIES,
     PROD_COUNTRIES,
     Country,
@@ -29,7 +30,7 @@ def test_empty_country_collection():
 
 def test_country_collection_presets():
     assert ALL_COUNTRIES == CountryCollection(
-        name="all", countries=[BELGIUM_COUNTRY, BRAZIL_COUNTRY, FRANCE_COUNTRY]
+        name="all", countries=[BELGIUM_COUNTRY, BRAZIL_COUNTRY, FRANCE_COUNTRY, GERMANY_COUNTRY]
     )
     assert LEGACY_COUNTRIES == CountryCollection(
         name="legacy",
@@ -41,7 +42,7 @@ def test_country_collection_presets():
         name="prod",
         code="None",
         language="all",
-        countries=[BRAZIL_COUNTRY, FRANCE_COUNTRY],
+        countries=[BRAZIL_COUNTRY, FRANCE_COUNTRY, GERMANY_COUNTRY],
     )
 
 
@@ -50,6 +51,7 @@ def test_get_country_or_collection_from_name():
         FRANCE_COUNTRY,
         BELGIUM_COUNTRY,
         BRAZIL_COUNTRY,
+        GERMANY_COUNTRY,
         PROD_COUNTRIES,
         LEGACY_COUNTRIES,
         ALL_COUNTRIES,

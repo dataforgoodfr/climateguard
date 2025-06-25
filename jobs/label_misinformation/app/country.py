@@ -90,10 +90,30 @@ BRAZIL_COUNTRY = Country(
     ],
 )
 
+GERMANY_COUNTRY = Country(
+    code="deu",
+    name="germany",
+    language="german",
+    bucket=os.getenv("BUCKET_OUTPUT_GERMANY", "climateguard-germany"),
+    model=get_secret_docker("MODEL_NAME_GERMANY", "gpt-4o-mini"),  # add as get env
+    prompt_version=get_secret_docker("PROMPT_VERSION", "0.0.1"),
+    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID_GERMANY", 14),  # pass as getenv
+    label_studio_project=os.getenv("LABEL_STUDIO_PROJECT_GERMANY", 19),
+    channels=[
+        "daserste", 
+        "zdf-neo", 
+        "zdf", 
+        "rtl-television", 
+        "sat1", 
+        "prosieben", 
+        "kabel-eins",
+    ],
+)
+
 
 def get_all_countries():
     return sorted(
-        [FRANCE_COUNTRY, BELGIUM_COUNTRY, BRAZIL_COUNTRY], key=lambda x: x.name
+        [FRANCE_COUNTRY, BELGIUM_COUNTRY, BRAZIL_COUNTRY, GERMANY_COUNTRY], key=lambda x: x.name
     )
 
 
@@ -128,7 +148,7 @@ class CountryCollection:
 
 
 ALL_COUNTRIES = CountryCollection(
-    name="all", countries=[BELGIUM_COUNTRY, BRAZIL_COUNTRY, FRANCE_COUNTRY]
+    name="all", countries=get_all_countries()
 )
 LEGACY_COUNTRIES = CountryCollection(
     name="legacy",
@@ -137,7 +157,7 @@ LEGACY_COUNTRIES = CountryCollection(
     countries=[BELGIUM_COUNTRY, FRANCE_COUNTRY],
 )
 PROD_COUNTRIES = CountryCollection(
-    name="prod", code="None", language="all", countries=[BRAZIL_COUNTRY, FRANCE_COUNTRY]
+    name="prod", code="None", language="all", countries=[BRAZIL_COUNTRY, FRANCE_COUNTRY, GERMANY_COUNTRY]
 )
 
 
