@@ -1,3 +1,4 @@
+import importlib
 import logging
 import os
 import re
@@ -8,11 +9,16 @@ from typing import List, Optional
 import asyncio
 import pandas as pd
 import openai
-from llama_index.core.node_parser import SentenceSplitter
 from prompts import DisinformationPrompt
 from secret_utils import get_secret_docker
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
-from torch import nn
+
+# Non prod modules
+if importlib.util.find_spec("llama_index"):
+    from llama_index.core.node_parser import SentenceSplitter
+if importlib.util.find_spec("transformers"):
+    from transformers import AutoModelForSequenceClassification, AutoTokenizer
+if importlib.util.find_spec("torch"):
+    from torch import nn
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
