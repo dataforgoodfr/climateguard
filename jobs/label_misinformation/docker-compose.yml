@@ -53,7 +53,10 @@ services:
 
 
   shadow:
-    build: .
+    build:
+      context: .
+      args:
+      - REQUIREMENTS=requirements_shadow.txt
     entrypoint: ["python", "shadow.py"]
     shm_size: '6gb'
     deploy:
