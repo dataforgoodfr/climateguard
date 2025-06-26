@@ -28,10 +28,28 @@ jobs:
         touch secrets/username_api.txt
         docker compose up test --exit-code-from test
 
+  test_build:
+    runs-on: ubuntu-latest
+    outputs:
+      PROJECT_VERSION: ${{ steps.get_version.outputs.PROJECT_VERSION }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Test build label-misinformation image and read stats
+      working-directory: jobs/label_misinformation
+      run: |
+        docker build -f Dockerfile . -t label-misinformation:test_build
+        docker image inspect label-misinformation:test_build
+
   build_and_bump:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
-    needs: test
+    needs: 
+      - test
+      - test_build
     outputs:
       PROJECT_VERSION: ${{ steps.get_version.outputs.PROJECT_VERSION }}
     steps:
