@@ -101,7 +101,6 @@ GERMANY_COUNTRY = Country(
     label_studio_project=os.getenv("LABEL_STUDIO_PROJECT_GERMANY", 19),
     channels=[
         "daserste", 
-        "zdf-neo", 
         "zdf", 
         "rtl-television", 
         "sat1", 
