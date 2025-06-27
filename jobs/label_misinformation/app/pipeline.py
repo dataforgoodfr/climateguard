@@ -1,3 +1,4 @@
+import importlib
 import logging
 import os
 import re
@@ -8,11 +9,16 @@ from typing import List, Optional
 import asyncio
 import pandas as pd
 import openai
-from llama_index.core.node_parser import SentenceSplitter
 from prompts import DisinformationPrompt
 from secret_utils import get_secret_docker
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
-from torch import nn
+
+# Non prod modules
+if importlib.util.find_spec("llama_index"):
+    from llama_index.core.node_parser import SentenceSplitter
+if importlib.util.find_spec("transformers"):
+    from transformers import AutoModelForSequenceClassification, AutoTokenizer
+if importlib.util.find_spec("torch"):
+    from torch import nn
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -98,16 +104,16 @@ class SinglePromptPipeline(Pipeline):
         model_name: str,
         api_key: str,
         prompt: DisinformationPrompt,
-        batch_async: bool = False,
-        semaphore: int = 5,
+        use_async: bool = False,
+        semaphore_limit: int = 5,
     ) -> None:
         openai_key = get_secret_docker("OPENAI_API_KEY")
         openai.api_key = openai_key
         os.environ["OPENAI_API_KEY"] = openai_key
         self._model = model_name
-        self.batch_async = batch_async
-        self.semaphore = asyncio.Semaphore(semaphore)
-        self.async_client = openai.AsyncOpenAI(api_key=openai_key)
+        self.use_async = use_async
+        if self.use_async:
+            self.semaphore_limit = semaphore_limit
 
         self._system_prompt = prompt.prompt
         self.prompt_version = prompt.version
@@ -116,11 +122,16 @@ class SinglePromptPipeline(Pipeline):
             f"Single Open AI prompt with {self._model} - prompt version: {prompt.version} - prompt text: {self._system_prompt}"
         ]
 
-    async def _async_process(self, input_data: PipelineInput):
+    async def _async_process(
+        self,
+        input_data: PipelineInput,
+        async_client: openai.AsyncOpenAI,
+        semaphore: asyncio.Semaphore = asyncio.Semaphore(1),
+    ):
         prompt = self._system_prompt + f" '''{input_data.transcript}'''"
         messages = [{"role": "user", "content": prompt}]
-        async with self.semaphore:
-            response = await self.async_client.chat.completions.create(
+        async with semaphore:
+            response = await async_client.chat.completions.create(
                 model=self._model,
                 messages=messages,
                 temperature=0,
@@ -150,18 +161,23 @@ class SinglePromptPipeline(Pipeline):
             raise Exception
 
     async def _async_batch_process(self, input_data: List[PipelineInput]):
+        semaphore = asyncio.Semaphore(self.semaphore_limit)
+        async_client = openai.AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         return await asyncio.gather(
-            * [
+            *[
                 self._async_process(
                     PipelineInput(
-                        transcript=input.transcript,
-                        id=input.id if input.id else idx
-                    ) for idx, input in enumerate(input_data)
+                        transcript=input.transcript, id=input.id if input.id else idx
+                    ),
+                    async_client,
+                    semaphore,
                 )
+                for idx, input in enumerate(input_data)
             ]
         )
+
     def batch_process(self, input_data: List[PipelineInput]):
-        if self.batch_async:
+        if self.use_async:
             unordered_responses = asyncio.run(self._async_batch_process(input_data))
             response_dict = {idx: output for idx, output in unordered_responses}
             responses = []
