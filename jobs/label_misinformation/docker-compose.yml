@@ -8,8 +8,11 @@ services:
       OPENAI_API_KEY: /run/secrets/openai_key
       MODEL_NAME:  gpt-4o-mini
       MODEL_NAME_BRAZIL:  gpt-4o-mini
-      BUCKET_OUTPUT: climateguard # change to test-bucket-mediatree for testing 
-      BUCKET_OUTPUT_BRAZIL: climateguard-brazil # change to test-bucket-mediatree for testing 
+      MODEL_NAME_GERMANY:  gpt-4o-mini
+      BUCKET_OUTPUT: test-bucket-mediatree
+      BUCKET_OUTPUT_BELGIUM: test-bucket-mediatree
+      BUCKET_OUTPUT_BRAZIL: test-bucket-mediatree
+      BUCKET_OUTPUT_GERMANY: test-bucket-mediatree
       BUCKET_OUTPUT_FOLDER: label-misinformation-input
       BUCKET_ACCESS: /run/secrets/bucket_access
       BUCKET_SECRET: /run/secrets/bucket_secret
@@ -37,7 +40,8 @@ services:
       LABEL_STUDIO_PROJECT_BRAZIL: 9
       LABEL_STUDIO_PROJECT_ID_BELGIUM: 12
       LABEL_STUDIO_PROJECT_BELGIUM: 17
-      BUCKET_OUTPUT_BELGIUM: climateguard-belgium
+      LABEL_STUDIO_PROJECT_ID_GERMANY: 14
+      LABEL_STUDIO_PROJECT_GERMANY: 20
       API_LABEL_STUDIO_KEY: 820ee53b50e14ec0f96c262cf90c04aca4057e1c
     depends_on:
       - postgres_db
@@ -94,8 +98,6 @@ services:
       LABEL_STUDIO_URL: http://labelstudio:8080
       LABEL_STUDIO_PROJECT_ID: 4
       LABEL_STUDIO_PROJECT: 6
-      LABEL_STUDIO_PROJECT_ID_BRAZIL: 5
-      LABEL_STUDIO_PROJECT_BRAZIL: 9
       API_LABEL_STUDIO_KEY: 820ee53b50e14ec0f96c262cf90c04aca4057e1c
       SHADOW_MODEL: "gmguarino/ModernBERT-large-climateguard"
       SHADOW_LABELSTUDIO_ID: 
@@ -157,6 +159,7 @@ services:
       MODEL_NAME:  gpt-4o-mini
       BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing
       BUCKET_OUTPUT_BRAZIL: test-bucket-mediatree # change to test-bucket-mediatree for testing 
+      BUCKET_OUTPUT_GERMANY: test-bucket-mediatree # change to test-bucket-mediatree for testing
       BUCKET_OUTPUT_FOLDER: label-misinformation-tmp
       BUCKET_ACCESS: /run/secrets/bucket_access
       BUCKET_SECRET: /run/secrets/bucket_secret
@@ -197,8 +200,12 @@ services:
       APP_NAME: label-misinformation 
       OPENAI_API_KEY: /run/secrets/openai_key
       MODEL_NAME:  gpt-4o-mini
-      BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing
-      BUCKET_OUTPUT_BRAZIL: test-bucket-mediatree # change to test-bucket-mediatree for testing 
+      MODEL_NAME_BRAZIL: gpt-4o-mini
+      MODEL_NAME_GERMANY: gpt-4o-mini
+      BUCKET_OUTPUT: test-bucket-mediatree
+      BUCKET_OUTPUT_BELGIUM: test-bucket-mediatree
+      BUCKET_OUTPUT_BRAZIL: test-bucket-mediatree
+      BUCKET_OUTPUT_GERMANY: test-bucket-mediatree
       BUCKET_OUTPUT_FOLDER: label-misinformation-tmp
       BUCKET_ACCESS: /run/secrets/bucket_access
       BUCKET_SECRET: /run/secrets/bucket_secret
