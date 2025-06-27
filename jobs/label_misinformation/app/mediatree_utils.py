@@ -196,7 +196,7 @@ def get_whispered_transcript(audio_bytes: Optional[bytes]) -> str:
         # It looks weird but this is the whisper response to an empty audio track
         # Probably better ways to detect the empty audio and avoid the api call TODO
         if transcript == "you you you you you\n":
-            logging.error("get_whispered_transcript - No video URL found")
+            logging.error("get_whispered_transcript - Empty audio track")
             return None
         logging.info(f"Whisper sample: {transcript[:100]}...")
         return transcript
@@ -205,9 +205,20 @@ def get_whispered_transcript(audio_bytes: Optional[bytes]) -> str:
         raise e
 
 
+def get_whispered_transcript_from_row(row: pd.Series):
+    media = row.get("media")
+    plaintext = row.get("plaintext", "")
+    if media is not None:
+        return get_whispered_transcript(media)
+    else:
+        logging.info("Media not present, returning plaintext.")
+        return plaintext
+
+
 def add_new_plaintext_column_from_whister(df: pd.DataFrame) -> pd.DataFrame:
     df[WHISPER_COLUMN_NAME] = df.apply(
-        lambda row: get_whispered_transcript(row["media"]), axis=1
+        lambda row: get_whispered_transcript_from_row(row),
+        axis=1,
     )
 
     return df

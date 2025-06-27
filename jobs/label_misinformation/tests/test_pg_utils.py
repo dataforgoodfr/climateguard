@@ -2,6 +2,7 @@ import json
 import os
 import sys
 
+import pandas as pd
 import pytest
 
 sys.path.append(os.path.abspath("/app"))
