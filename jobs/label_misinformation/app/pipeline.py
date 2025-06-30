@@ -9,7 +9,7 @@ from typing import List, Optional
 import asyncio
 import pandas as pd
 import openai
-from prompts import DisinformationPrompt
+from prompts import DisinformationPrompt, PROMPTS, PIPELINE_PRODUCTION_PROMPT
 from secret_utils import get_secret_docker
 
 # Non prod modules
@@ -102,8 +102,7 @@ class SinglePromptPipeline(Pipeline):
     def __init__(
         self,
         model_name: str,
-        api_key: str,
-        prompt: DisinformationPrompt,
+        prompt: DisinformationPrompt = PROMPTS[PIPELINE_PRODUCTION_PROMPT],
         use_async: bool = False,
         semaphore_limit: int = 5,
     ) -> None:
@@ -332,3 +331,13 @@ class BertPipeline(Pipeline):
             )
             for idx, row in results_df.iterrows()
         ]
+
+def get_pipeline_from_name(name: str):
+    mapping = {
+        "bert": BertPipeline,
+        "simple_prompt": SinglePromptPipeline,
+    }
+    if name in mapping:
+        return mapping[name]
+    else:
+        logging.error(f"Cannot retrive pipeline {name}. Available pipelines are: {list(mapping.keys())}")
