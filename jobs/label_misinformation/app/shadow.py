@@ -23,7 +23,7 @@ from pg_utils import (
     get_labelstudio_annotations,
     get_labelstudio_records_period,
 )
-from pipeline import PipelineInput, BertPipeline
+from pipeline import PipelineInput, BertPipeline, get_pipeline_from_name
 from s3_utils import get_s3_client, save_to_s3
 from secret_utils import get_secret_docker
 from sentry_sdk.crons import monitor
@@ -51,7 +51,7 @@ def get_channels(country):
 
 
 @monitor(monitor_slug="label-misinformation")
-def main(country: Country):
+def main(country: Country, shadow_labelstudio_id: int):
     pd.set_option("display.max_columns", None)
     sentry_init()
 
@@ -82,15 +82,28 @@ def main(country: Country):
         # For the moment the prompt does not change according to the different countries
         # If this changes we need to parametrize the country here
 
-        pipeline = BertPipeline(
-            model_name=model_name,
-            tokenizer_name=model_name,
-            chunk_size=512,
-            chunk_overlap=256,
-            batch_size=128,
-            min_probability=0.7,
-            verbose=True,
+        # Make the choice of pipeline type a parameter
+        try:
+            pipeline_args = json.loads(os.getenv("SHADOW_PIPELINE_ARGS"))
+        except Exception as e:
+            logging.error(
+                f"{e} Cannot parse {os.getenv('SHADOW_PIPELINE_ARGS')} as JSON. ",
+                "Fix this via the SHADOW_PIPELINE_ARGS environment variable.\n",
+                "Will default to default args.",
+            )
+            pipeline_args = {}
+        pipeline = get_pipeline_from_name(os.getenv("SHADOW_PIPELINE_NAME"))(
+            model_name=model_name, **pipeline_args
         )
+        # pipeline = get_pipeline_from_name(os.getenv("PIPELINE_NAME"))(
+        #     model_name=model_name,
+        #     tokenizer_name=model_name,
+        #     chunk_size=512,
+        #     chunk_overlap=256,
+        #     batch_size=128,
+        #     min_probability=0.7,
+        #     verbose=True,
+        # )
 
         date_range = get_date_range(date_env, minus_days=number_of_previous_days)
         logging.info(
@@ -104,18 +117,41 @@ def main(country: Country):
             )
         )
 
-        labelstudio_df = get_labelstudio_records_period(
+        # Get labelstudio records for shadow project in period
+        shadow_labelstudio_df = get_labelstudio_records_period(
             labelstudio_db_session,
             date_range.min(),
             date_range.max(),
             channels,
             country,
+            project_override=shadow_labelstudio_id,
         )
-        labelstudio_df.index = labelstudio_df.apply(
+        shadow_labelstudio_df.index = shadow_labelstudio_df.apply(
             lambda row: row["data"]["item"]["id"].replace('"', ""),
             axis=1,
         )
+
+        # Remove ids in shadow project from import
+        project_labelstudio_df = get_labelstudio_records_period(
+            labelstudio_db_session,
+            date_range.min(),
+            date_range.max(),
+            channels,
+            country,
+            ids_to_avoid=shadow_labelstudio_df.index,
+        )
+
+        project_labelstudio_df.index = project_labelstudio_df.apply(
+            lambda row: row["data"]["item"]["id"].replace('"', ""),
+            axis=1,
+        )
+
+        labelstudio_df = pd.concat(
+            [shadow_labelstudio_df, project_labelstudio_df], axis=0
+        )
+
         logging.info(labelstudio_df.id.to_list())
+
         labelstudio_annotations_df = get_labelstudio_annotations(
             labelstudio_db_session, labelstudio_df.id.to_list()
         )
@@ -142,15 +178,18 @@ def main(country: Country):
                 [output.id, output.score, output.probability]
                 for output in shadow_pipeline_outputs
             ],
-            columns=["id", "shadow_model_result", "probability"],
+            columns=["id", f"result_{model_name}", f"probability_{model_name}"],
         )
 
-        output_df.shadow_model_result = output_df.shadow_model_result.astype(int)
-        output_df.probability = output_df.probability.astype(float)
-        output_df["shadow_model_name"] = model_name
-        output_df["shadow_prompt_version"] = ""
-        output_df["shadow_pipeline_version"] = pipeline.version
-        output_df["shadow_model_reason"] = output_df.probability
+        output_df[f"result_{model_name}"] = output_df[f"result_{model_name}"].astype(
+            int
+        )
+        output_df[f"probability_{model_name}"] = output_df[
+            f"probability_{model_name}"
+        ].astype(float)
+        output_df[f"prompt_version_{model_name}"] = ""
+        output_df[f"pipeline_version_{model_name}"] = pipeline.version
+        output_df[f"reason_{model_name}"] = output_df[f"probability_{model_name}"]
 
         # adding shadow_model_result and probability to merged_df
         # Columns: id, start, channel_program, channel_program_type, channel_title, channel_name, plaintext, country, shadow_model_result, probability
@@ -161,7 +200,7 @@ def main(country: Country):
         merged_df["day"] = merged_df["date"].dt.day
 
         new_records = merged_df.loc[
-            (merged_df["shadow_model_result"] == 1)
+            (merged_df[f"result_{model_name}"] == 1)
             & (~merged_df.id.isin(labelstudio_df.index))
         ]
         records_labelstudio = merged_df.loc[merged_df.id.isin(labelstudio_df.index)]
@@ -192,17 +231,19 @@ def main(country: Country):
                     task_data = get_label_studio_format(row)
                     task_data["data"]["item"].update(
                         {
-                            "shadow_prompt_version": row.get(
-                                "shadow_prompt_version", ""
+                            f"result_{model_name}": int(
+                                row.get(f"result_{model_name}", "")
                             ),
-                            "shadow_pipeline_version": row.get(
-                                "shadow_pipeline_version", ""
+                            f"probability_{model_name}": row.get(
+                                f"probability_{model_name}", ""
                             ),
-                            "shadow_model_result": int(
-                                row.get("shadow_model_result", 0)
+                            f"prompt_version_{model_name}": row.get(
+                                f"prompt_version_{model_name}"
                             ),
-                            "shadow_model_reason": row.get("shadow_model_reason", ""),
-                            "shadow_model_name": row.get("shadow_model_name", ""),
+                            f"pipeline_version_{model_name}": row.get(
+                                f"pipeline_version_{model_name}", ""
+                            ),
+                            f"reason_{model_name}": row.get(f"reason_{model_name}", ""),
                         }
                     )
                     key = (
@@ -272,11 +313,11 @@ if __name__ == "__main__":
     ray.init(log_to_driver=True)
     logger = getLogger()
     countries: CountryCollection = get_countries(os.getenv("COUNTRY", "france"))
-    labelstudio_id = os.getenv("SHADOW_LABELSTUDIO_ID")
+    shadow_labelstudio_id = os.getenv("SHADOW_LABELSTUDIO_ID")
     for country in countries:
-        main(country)
-        if labelstudio_id:
-            wait_and_sync_label_studio(labelstudio_id)
+        main(country, shadow_labelstudio_id)
+        if shadow_labelstudio_id:
+            wait_and_sync_label_studio(shadow_labelstudio_id)
 
     sentry_close()  # monitoring
     sys.exit(0)
