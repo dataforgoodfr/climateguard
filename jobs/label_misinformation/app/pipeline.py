@@ -9,7 +9,7 @@ from typing import List, Optional
 import asyncio
 import pandas as pd
 import openai
-from prompts import DisinformationPrompt, PROMPTS, PIPELINE_PRODUCTION_PROMPT
+from prompts import DisinformationPrompt, PROMPTS
 from secret_utils import get_secret_docker
 
 # Non prod modules
@@ -86,7 +86,7 @@ def parse_response_reason(response: str) -> PipelineOutput:
     return PipelineOutput(score=score, reason=reason)
 
 
-def parse_response(response: str) -> PipelineOutput:
+def parse_response(response: str, id: Optional[str] = None) -> PipelineOutput:
     """Parse response containing only a score."""
     match = re.match(r"^[^\d]*(\d+)", response)
     if match:
@@ -95,18 +95,27 @@ def parse_response(response: str) -> PipelineOutput:
         logging.warning(f"Could not parse {response}")
         score = 0
     logging.info(f"Parsed score: {score}")
-    return PipelineOutput(score=score)
+    return PipelineOutput(score=score, id=id)
 
 
 class SinglePromptPipeline(Pipeline):
     def __init__(
         self,
         model_name: str,
-        prompt: DisinformationPrompt = PROMPTS[PIPELINE_PRODUCTION_PROMPT],
+        api_key: Optional[str] = None,
+        prompt: Optional[DisinformationPrompt] = None,
+        prompt_version: Optional[str] = None,
         use_async: bool = False,
         semaphore_limit: int = 5,
     ) -> None:
-        openai_key = get_secret_docker("OPENAI_API_KEY")
+        if not prompt:
+            if not prompt_version:
+                raise ValueError(
+                    "Must define either prompt or prompt_version to retrieve prompt from versions."
+                )
+            prompt = self._get_prompt_from_version(prompt_version)
+
+        openai_key = api_key if api_key else get_secret_docker("OPENAI_API_KEY")
         openai.api_key = openai_key
         os.environ["OPENAI_API_KEY"] = openai_key
         self._model = model_name
@@ -120,6 +129,9 @@ class SinglePromptPipeline(Pipeline):
         self._steps = [
             f"Single Open AI prompt with {self._model} - prompt version: {prompt.version} - prompt text: {self._system_prompt}"
         ]
+
+    def _get_prompt_from_version(self, version_string: str):
+        return PROMPTS[version_string]
 
     async def _async_process(
         self,
@@ -136,7 +148,7 @@ class SinglePromptPipeline(Pipeline):
                 temperature=0,
             )
         result = response.choices[0].message.content.strip()
-        return input_data.id, parse_response(result)
+        return input_data.id, parse_response(result, input_data.id)
 
     def process(self, input_data: PipelineInput) -> int:
         prompt = self._system_prompt + f" '''{input_data.transcript}'''"
@@ -332,6 +344,7 @@ class BertPipeline(Pipeline):
             for idx, row in results_df.iterrows()
         ]
 
+
 def get_pipeline_from_name(name: str):
     mapping = {
         "bert": BertPipeline,
@@ -340,4 +353,6 @@ def get_pipeline_from_name(name: str):
     if name in mapping:
         return mapping[name]
     else:
-        logging.error(f"Cannot retrive pipeline {name}. Available pipelines are: {list(mapping.keys())}")
+        logging.error(
+            f"Cannot retrive pipeline {name}. Available pipelines are: {list(mapping.keys())}"
+        )
