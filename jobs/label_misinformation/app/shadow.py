@@ -82,7 +82,6 @@ def main(country: Country, shadow_labelstudio_id: int):
         # For the moment the prompt does not change according to the different countries
         # If this changes we need to parametrize the country here
 
-        # Make the choice of pipeline type a parameter
         try:
             pipeline_args = json.loads(os.getenv("SHADOW_PIPELINE_ARGS"))
         except Exception as e:
@@ -95,15 +94,9 @@ def main(country: Country, shadow_labelstudio_id: int):
         pipeline = get_pipeline_from_name(os.getenv("SHADOW_PIPELINE_NAME"))(
             model_name=model_name, **pipeline_args
         )
-        # pipeline = get_pipeline_from_name(os.getenv("PIPELINE_NAME"))(
-        #     model_name=model_name,
-        #     tokenizer_name=model_name,
-        #     chunk_size=512,
-        #     chunk_overlap=256,
-        #     batch_size=128,
-        #     min_probability=0.7,
-        #     verbose=True,
-        # )
+        readable_model_name = (
+            model_name.replace(":", "_").replace("-", "_").replace("/", "_")
+        )
 
         date_range = get_date_range(date_env, minus_days=number_of_previous_days)
         logging.info(
@@ -126,6 +119,12 @@ def main(country: Country, shadow_labelstudio_id: int):
             country,
             project_override=shadow_labelstudio_id,
         )
+        logging.info(
+           (
+                f" Found {len(shadow_labelstudio_df)} records already present "
+                "in shadow labelstudio project for given time period."
+           )
+        )
         shadow_labelstudio_df.index = shadow_labelstudio_df.apply(
             lambda row: row["data"]["item"]["id"].replace('"', ""),
             axis=1,
@@ -145,12 +144,16 @@ def main(country: Country, shadow_labelstudio_id: int):
             lambda row: row["data"]["item"]["id"].replace('"', ""),
             axis=1,
         )
+        logging.info(
+            (
+                f" Found {len(shadow_labelstudio_df)} records present "
+                "in country labelstudio project for given time period."
+            )
+        )
 
         labelstudio_df = pd.concat(
             [shadow_labelstudio_df, project_labelstudio_df], axis=0
         )
-
-        logging.info(labelstudio_df.id.to_list())
 
         labelstudio_annotations_df = get_labelstudio_annotations(
             labelstudio_db_session, labelstudio_df.id.to_list()
@@ -165,8 +168,10 @@ def main(country: Country, shadow_labelstudio_id: int):
         session.close()
         labelstudio_db_session.close()
         logging.info(
-            f"Found {len(labelstudio_df)} records already present in labelstudio, "
-            f"with {len(keywords_df)} records in total for the period."
+            (
+                f"Found {len(labelstudio_df)} records already present in labelstudio, "
+                f"with {len(keywords_df)} records in total, for given country and period."
+            )
         )
         data_input_batch = [
             PipelineInput(id=row["id"], transcript=row["plaintext"])
@@ -178,18 +183,26 @@ def main(country: Country, shadow_labelstudio_id: int):
                 [output.id, output.score, output.probability]
                 for output in shadow_pipeline_outputs
             ],
-            columns=["id", f"result_{model_name}", f"probability_{model_name}"],
+            columns=[
+                "id",
+                f"result_{readable_model_name}",
+                f"probability_{readable_model_name}",
+            ],
         )
 
-        output_df[f"result_{model_name}"] = output_df[f"result_{model_name}"].astype(
-            int
+        output_df[f"result_{readable_model_name}"] = output_df[
+            f"result_{readable_model_name}"
+        ].astype(int)
+        output_df[f"probability_{readable_model_name}"] = (
+            output_df[f"probability_{readable_model_name}"].astype(float).fillna(0.0)
         )
-        output_df[f"probability_{model_name}"] = output_df[
-            f"probability_{model_name}"
-        ].astype(float)
-        output_df[f"prompt_version_{model_name}"] = ""
-        output_df[f"pipeline_version_{model_name}"] = pipeline.version
-        output_df[f"reason_{model_name}"] = output_df[f"probability_{model_name}"]
+        output_df[f"prompt_version_{readable_model_name}"] = pipeline_args.get(
+            "prompt_version", ""
+        )
+        output_df[f"pipeline_version_{readable_model_name}"] = pipeline.version
+        output_df[f"reason_{readable_model_name}"] = output_df[
+            f"probability_{readable_model_name}"
+        ].fillna("")
 
         # adding shadow_model_result and probability to merged_df
         # Columns: id, start, channel_program, channel_program_type, channel_title, channel_name, plaintext, country, shadow_model_result, probability
@@ -200,7 +213,7 @@ def main(country: Country, shadow_labelstudio_id: int):
         merged_df["day"] = merged_df["date"].dt.day
 
         new_records = merged_df.loc[
-            (merged_df[f"result_{model_name}"] == 1)
+            (merged_df[f"result_{readable_model_name}"] >= min_misinformation_score)
             & (~merged_df.id.isin(labelstudio_df.index))
         ]
         records_labelstudio = merged_df.loc[merged_df.id.isin(labelstudio_df.index)]
@@ -231,19 +244,21 @@ def main(country: Country, shadow_labelstudio_id: int):
                     task_data = get_label_studio_format(row)
                     task_data["data"]["item"].update(
                         {
-                            f"result_{model_name}": int(
-                                row.get(f"result_{model_name}", "")
+                            f"result_{readable_model_name}": int(
+                                row.get(f"result_{readable_model_name}", "")
                             ),
-                            f"probability_{model_name}": row.get(
-                                f"probability_{model_name}", ""
+                            f"probability_{readable_model_name}": row.get(
+                                f"probability_{readable_model_name}", ""
                             ),
-                            f"prompt_version_{model_name}": row.get(
-                                f"prompt_version_{model_name}"
+                            f"prompt_version_{readable_model_name}": row.get(
+                                f"prompt_version_{readable_model_name}"
                             ),
-                            f"pipeline_version_{model_name}": row.get(
-                                f"pipeline_version_{model_name}", ""
+                            f"pipeline_version_{readable_model_name}": row.get(
+                                f"pipeline_version_{readable_model_name}", ""
                             ),
-                            f"reason_{model_name}": row.get(f"reason_{model_name}", ""),
+                            f"reason_{readable_model_name}": row.get(
+                                f"reason_{readable_model_name}", ""
+                            ),
                         }
                     )
                     key = (
