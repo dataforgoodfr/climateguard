@@ -60,7 +60,7 @@ services:
     build:
       context: .
       args:
-      - REQUIREMENTS=requirements_shadow.txt
+        - REQUIREMENTS=requirements_shadow.txt
     entrypoint: ["python", "shadow.py"]
     shm_size: '6gb'
     deploy:
@@ -75,7 +75,7 @@ services:
       MODEL_NAME:  ft:gpt-4o-mini-2024-07-18:personal::B1xWiJRm
       MODEL_NAME_BRAZIL:  ft:gpt-4o-mini-2024-07-18:personal::BJfrFQR1
       BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing 
-      BUCKET_OUTPUT_FOLDER: modernbert-shadow
+      BUCKET_OUTPUT_FOLDER: france-shadow
       BUCKET_ACCESS: /run/secrets/bucket_access
       BUCKET_SECRET: /run/secrets/bucket_secret
       AWS_DEFAULT_REGION: fr-par
@@ -100,7 +100,9 @@ services:
       LABEL_STUDIO_PROJECT: 6
       API_LABEL_STUDIO_KEY: 820ee53b50e14ec0f96c262cf90c04aca4057e1c
       SHADOW_MODEL: "gmguarino/ModernBERT-large-climateguard"
-      SHADOW_LABELSTUDIO_ID: 
+      SHADOW_LABEL_STUDIO_PROJECT_ID: 15
+      SHADOW_PIPELINE_NAME: bert
+      SHADOW_PIPELINE_ARGS: "{\"chunk_size\": 512, \"chunk_overlap\": 256, \"batch_size\": 128, \"min_probability\": 0.75, \"verbose\": true}"
     depends_on:
       - postgres_db
       - labelstudio

@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from datetime import datetime, timedelta
-from typing import Union, List
+from typing import Union, List, Optional
 
 import modin.pandas as pd
 from country import (
@@ -414,6 +414,8 @@ def get_labelstudio_records_period(
     date_end: datetime,
     channels: List[str],
     country: Union[Country, CountryCollection] = FRANCE_COUNTRY,
+    project_override: Optional[int] = None,
+    ids_to_avoid: Optional[int] = None,
 ) -> List[str]:
     logging.info(
         f"Getting keywords table from {date_start} to date {date_end}, "
@@ -425,6 +427,7 @@ def get_labelstudio_records_period(
     end_of_period = date_end.replace(
         hour=0, minute=0, second=0, microsecond=0
     ) + timedelta(days=1)
+    project_id = int(country.label_studio_project) if project_override is None else int(project_override)
     statement = (
         select(
             LabelStudioTask.id,
@@ -469,10 +472,19 @@ def get_labelstudio_records_period(
                 )
                 < end_of_period,
                 cast(LabelStudioTask.project_id, Integer)
-                == int(country.label_studio_project),
+                == project_id,
             )
         )
     )
+    if ids_to_avoid is not None:
+        statement = statement.filter(
+            cast(
+                LabelStudioTask.data.op("#>>")(
+                    literal_column("ARRAY['item','id']")
+                ),
+                Text,
+            ).in_(ids_to_avoid)
+        )
     try:
         logging.info(
             f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}"
