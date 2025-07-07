@@ -1,7 +1,7 @@
 #  Get VPC
 data "scaleway_vpc" "default_barometre" {
   name       = "default"
-  project_id = var.barometre_project_id
+  project_id = data.scaleway_account_project.barometre.id
   is_default = true
 }
 
@@ -12,21 +12,21 @@ data "scaleway_vpc_private_network" "pvn_barometre" {
 
 # Container definition
 resource "scaleway_container_namespace" "container_namespace" {
-  name                     = "climateguard-${var.environment}"
-  project_id               = scaleway_account_project.project_climatesafeguards_dev.id
+  name       = "climateguard-${var.environment}"
+  project_id = scaleway_account_project.project_climatesafeguards.id
 }
 
 resource "scaleway_container" "labelstudio_container" {
-  name               = "labelstudio-${var.country}-${var.environment}"
-  namespace_id       = scaleway_container_namespace.container_namespace.id
-  min_scale          = 0
-  max_scale          = 1
-  memory_limit       = 2048
-  cpu_limit          = 1000
-  registry_image     = "heartexlabs/label-studio:1.19.0"
-  port               = 8080
-  deploy             = true
-  protocol           = "http1"
+  name           = "labelstudio-${var.country}-${var.environment}"
+  namespace_id   = scaleway_container_namespace.container_namespace.id
+  min_scale      = 0
+  max_scale      = 1
+  memory_limit   = 2048
+  cpu_limit      = 1000
+  registry_image = "heartexlabs/label-studio:1.19.0"
+  port           = 8080
+  deploy         = true
+  protocol       = "http1"
 
   sandbox = "v1"
 
@@ -77,12 +77,13 @@ resource "scaleway_container" "labelstudio_container" {
 
   }
   secret_environment_variables = {
-    "AWS_ACCESS_KEY_ID"     = var.access_key_id
-    "AWS_SECRET_ACCESS_KEY" = var.secret_access_key
-    "LABEL_STUDIO_PASSWORD" = var.labelstudio_admin_password
-    "POSTGRE_PASSWORD"      = scaleway_rdb_user.labelstudio_user.password
-    "POSTGRE_USER"          = scaleway_rdb_user.labelstudio_user.name
-    "POSTGRE_HOST"          = data.scaleway_rdb_instance.barometre_rdb.endpoint_ip
+    "AWS_ACCESS_KEY_ID"       = scaleway_iam_api_key.project_api_key.access_key
+    "AWS_SECRET_ACCESS_KEY"   = scaleway_iam_api_key.project_api_key.secret_key
+    "LABEL_STUDIO_PASSWORD"   = var.labelstudio_admin_password
+    "LABEL_STUDIO_USER_TOKEN" = var.labelstudio_user_token
+    "POSTGRE_PASSWORD"        = scaleway_rdb_user.labelstudio_user.password
+    "POSTGRE_USER"            = scaleway_rdb_user.labelstudio_user.name
+    "POSTGRE_HOST"            = data.scaleway_rdb_instance.barometre_rdb.endpoint_ip
   }
 
 }

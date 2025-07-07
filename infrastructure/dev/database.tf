@@ -1,6 +1,6 @@
 data "scaleway_rdb_instance" "barometre_rdb" {
   name = var.barometre_pg_instance_name
-  project_id = var.barometre_project_id
+  project_id = data.scaleway_account_project.barometre.id
 }
 
 # Create PostgreSQL user
