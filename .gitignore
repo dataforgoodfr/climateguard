@@ -6,6 +6,8 @@
 .env
 data/.ipynb_checkpoints/
 
+.terraform
+
 jobs/label_misinformation/build
 jobs/label_misinformation/jobs
 **.egg-info/
