@@ -18,17 +18,22 @@ variable "environment" {
   default = "dev"
 }
 
-variable "subject" {
-  type    = string
-  default = "climate"
-}
-
 variable "labelstudio_admin_password" {
   type = string
   sensitive = true
 }
 
 variable "labelstudio_user_token" {
+  type = string
+  sensitive = true
+}
+
+variable "mediatree_password" {
+  type = string
+  sensitive = true
+}
+
+variable "openai_api_key" {
   type = string
   sensitive = true
 }

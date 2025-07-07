@@ -6,14 +6,14 @@ data "scaleway_rdb_instance" "barometre_rdb" {
 # Create PostgreSQL user
 resource "scaleway_rdb_user" "labelstudio_user" {
   instance_id = data.scaleway_rdb_instance.barometre_rdb.id
-  name        = "labelstudio-${var.subject}-${var.country}-${var.environment}"
+  name        = "labelstudio-${var.country}-${var.environment}"
   password    = var.postgres_password
 }
 
 # Create PostgreSQL database
 resource "scaleway_rdb_database" "labelstudio_db" {
   instance_id = data.scaleway_rdb_instance.barometre_rdb.id
-  name        = "labelstudio-${var.subject}-${var.country}-${var.environment}"
+  name        = "labelstudio-${var.country}-${var.environment}"
 }
 
 resource "scaleway_rdb_privilege" "labelstudio_policy" {
