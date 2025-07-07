@@ -7,7 +7,7 @@ resource "scaleway_secret" "mediatree_password" {
   path       = "global-${var.environment}"
   project_id = scaleway_account_project.project_climatesafeguards.id
 }
-resource "scaleway_secret_version" "access_key_id" {
+resource "scaleway_secret_version" "mediatree_password" {
   secret_id = scaleway_secret.mediatree_password.id
   data      = var.mediatree_password
 }
@@ -18,7 +18,7 @@ resource "scaleway_secret" "openai_api_key" {
   path       = "global-${var.environment}"
   project_id = scaleway_account_project.project_climatesafeguards.id
 }
-resource "scaleway_secret_version" "access_key_id" {
+resource "scaleway_secret_version" "openai_api_key" {
   secret_id = scaleway_secret.openai_api_key.id
   data      = var.openai_api_key
 }
@@ -33,7 +33,7 @@ resource "scaleway_secret" "access_key_id" {
   project_id = scaleway_account_project.project_climatesafeguards.id
 }
 resource "scaleway_secret_version" "access_key_id" {
-  secret_id = scaleway_secret.api_label_studio_key.id
+  secret_id = scaleway_secret.access_key_id.id
   data      = scaleway_iam_api_key.project_api_key.access_key
 }
 
@@ -44,7 +44,7 @@ resource "scaleway_secret" "secret_key_id" {
   project_id = scaleway_account_project.project_climatesafeguards.id
 }
 resource "scaleway_secret_version" "secret_key_id" {
-  secret_id = scaleway_secret.api_label_studio_key.id
+  secret_id = scaleway_secret.secret_key_id.id
   data      = scaleway_iam_api_key.project_api_key.secret_key
 }
 
@@ -54,7 +54,7 @@ resource "scaleway_secret" "secret_label_studio_token" {
   project_id = scaleway_account_project.project_climatesafeguards.id
 }
 resource "scaleway_secret_version" "api_label_studio_key_value" {
-  secret_id = scaleway_secret.api_label_studio_key.id
+  secret_id = scaleway_secret.secret_label_studio_token.id
   data      = var.labelstudio_user_token
 }
 
@@ -64,7 +64,7 @@ resource "scaleway_secret" "postgres_password" {
   path       = "${var.country}-${var.environment}"
   project_id = scaleway_account_project.project_climatesafeguards.id
 }
-resource "scaleway_secret_version" "access_key_id" {
+resource "scaleway_secret_version" "postgres_password" {
   secret_id = scaleway_secret.postgres_password.id
   data      = var.postgres_password
 }
