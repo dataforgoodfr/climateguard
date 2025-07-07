@@ -3,7 +3,12 @@ variable "barometre_pg_instance_name" {
   default = "rdb-poc"
 }
 
-variable "postgres_password" {
+variable "postgres_password_barometre" {
+  type      = string
+  sensitive = true
+}
+
+variable "postgres_password_labelstudio" {
   type      = string
   sensitive = true
 }
@@ -16,6 +21,14 @@ variable "country" {
 variable "environment" {
   type    = string
   default = "dev"
+}
+
+variable "labelstudio_project" {
+  type = number
+}
+
+variable "labelstudio_project_id" {
+  type = number
 }
 
 variable "labelstudio_admin_password" {
@@ -36,4 +49,8 @@ variable "mediatree_password" {
 variable "openai_api_key" {
   type = string
   sensitive = true
+}
+
+variable "model_name" {
+  type = string
 }
