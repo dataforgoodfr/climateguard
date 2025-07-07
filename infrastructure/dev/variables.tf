@@ -1,7 +1,3 @@
-variable "barometre_project_id" {
-  type = string
-}
-
 variable "barometre_pg_instance_name" {
   type    = string
   default = "rdb-poc"
@@ -27,17 +23,12 @@ variable "subject" {
   default = "climate"
 }
 
-variable "access_key_id" {
-  type = string
-  sensitive = true
-}
-
-variable "secret_access_key" {
-  type = string
-  sensitive = true
-}
-
 variable "labelstudio_admin_password" {
+  type = string
+  sensitive = true
+}
+
+variable "labelstudio_user_token" {
   type = string
   sensitive = true
 }
