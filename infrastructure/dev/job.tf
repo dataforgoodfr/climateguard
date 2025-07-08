@@ -1,10 +1,10 @@
 resource "scaleway_job_definition" "main" {
-  name         = "testjob"
+  name         = "label-misinformation-${var.country}-${var.environment}"
   cpu_limit    = 4000
   memory_limit = 8192
   image_uri    = "rg.fr-par.scw.cloud/misinformation/label-misinformation:latest"
   timeout      = "60m"
-  project_id   = scaleway_account_project.project_climatesafeguards.id
+  project_id   = data.scaleway_account_project.project_climatesafeguards.id
 
   cron {
     schedule = "5 6 * * *"
@@ -26,14 +26,16 @@ resource "scaleway_job_definition" "main" {
     "KEYWORDS_URL"            = "https://keywords.mediatree.fr/api/export/single"
     "LABEL_STUDIO_PROJECT"    = var.labelstudio_project
     "LABEL_STUDIO_PROJECT_ID" = var.labelstudio_project_id
-    "LABEL_STUDIO_URL"        = scaleway_container.labelstudio_container.domain_name
+    "LABEL_STUDIO_URL"        = "https://${scaleway_container.labelstudio_container.domain_name}"
     "LOGLEVEL"                = "INFO"
+    "MEDIATREE_AUTH_URL"      = "https://keywords.mediatree.fr/api/auth/token/"
+    "MEDIATREE_USER"          = "quotaclimat"
     "MODEL_NAME"              = var.model_name
     "MODIN_MEMORY"            = 3000000000
     "POSTGRES_DB"             = data.scaleway_rdb_database.barometre.name
     "POSTGRES_HOST"           = data.scaleway_rdb_instance.barometre_rdb.endpoint_ip
     "POSTGRES_PORT"           = data.scaleway_rdb_instance.barometre_rdb.endpoint_port
-    "POSTGRES_USER"           = scaleway_rdb_user.barometre_user.name
+    "POSTGRES_USER"           = "barometreclimat"
     "RAY_COLOR_PREFIX"        = 1
     "SENTRY_DSN"              = "https://59b6ac362c8725c76e725438483ae87d@o4506785184612352.ingest.us.sentry.io/4508846066630656"
 

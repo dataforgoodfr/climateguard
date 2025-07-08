@@ -5,7 +5,7 @@
 resource "scaleway_secret" "mediatree_password" {
   name       = "mediatree-password-${var.environment}"
   path       = "/global-${var.environment}"
-  project_id = scaleway_account_project.project_climatesafeguards.id
+  project_id = data.scaleway_account_project.project_climatesafeguards.id
 }
 resource "scaleway_secret_version" "mediatree_password" {
   secret_id = scaleway_secret.mediatree_password.id
@@ -16,7 +16,7 @@ resource "scaleway_secret_version" "mediatree_password" {
 resource "scaleway_secret" "openai_api_key" {
   name       = "openai-api-key-${var.environment}"
   path       = "/global-${var.environment}"
-  project_id = scaleway_account_project.project_climatesafeguards.id
+  project_id = data.scaleway_account_project.project_climatesafeguards.id
 }
 resource "scaleway_secret_version" "openai_api_key" {
   secret_id = scaleway_secret.openai_api_key.id
@@ -30,7 +30,7 @@ resource "scaleway_secret_version" "openai_api_key" {
 resource "scaleway_secret" "access_key_id" {
   name       = "access-key-${var.country}-${var.environment}"
   path       = "/${var.country}-${var.environment}"
-  project_id = scaleway_account_project.project_climatesafeguards.id
+  project_id = data.scaleway_account_project.project_climatesafeguards.id
 }
 resource "scaleway_secret_version" "access_key_id" {
   secret_id = scaleway_secret.access_key_id.id
@@ -41,7 +41,7 @@ resource "scaleway_secret_version" "access_key_id" {
 resource "scaleway_secret" "secret_key_id" {
   name       = "secret-key-${var.country}-${var.environment}"
   path       = "/${var.country}-${var.environment}"
-  project_id = scaleway_account_project.project_climatesafeguards.id
+  project_id = data.scaleway_account_project.project_climatesafeguards.id
 }
 resource "scaleway_secret_version" "secret_key_id" {
   secret_id = scaleway_secret.secret_key_id.id
@@ -52,7 +52,7 @@ resource "scaleway_secret_version" "secret_key_id" {
 resource "scaleway_secret" "secret_label_studio_token" {
   name       = "labelstudio-${var.country}-${var.environment}-token"
   path       = "/${var.country}-${var.environment}"
-  project_id = scaleway_account_project.project_climatesafeguards.id
+  project_id = data.scaleway_account_project.project_climatesafeguards.id
 }
 resource "scaleway_secret_version" "api_label_studio_key_value" {
   secret_id = scaleway_secret.secret_label_studio_token.id
@@ -61,9 +61,9 @@ resource "scaleway_secret_version" "api_label_studio_key_value" {
 
 # POSTGRES_PASSWORD
 resource "scaleway_secret" "postgres_password_barometre" {
-  name       = "postgres_password-key-${var.country}-${var.environment}"
-  path       = "/${var.country}-${var.environment}"
-  project_id = scaleway_account_project.project_climatesafeguards.id
+  name       = "postgres_password-barometre"
+  path       = "/common"
+  project_id = data.scaleway_account_project.project_climatesafeguards.id
 }
 resource "scaleway_secret_version" "postgres_password_barometre" {
   secret_id = scaleway_secret.postgres_password_barometre.id
