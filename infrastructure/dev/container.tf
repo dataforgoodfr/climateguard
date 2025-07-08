@@ -13,7 +13,7 @@ data "scaleway_vpc_private_network" "pvn_barometre" {
 # Container definition
 resource "scaleway_container_namespace" "container_namespace" {
   name       = "climateguard-${var.environment}"
-  project_id = scaleway_account_project.project_climatesafeguards.id
+  project_id = data.scaleway_account_project.project_climatesafeguards.id
 }
 
 resource "scaleway_container" "labelstudio_container" {
