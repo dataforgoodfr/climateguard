@@ -1,15 +1,15 @@
 variable "project_secret_access_key" {
-  type = string
+  type      = string
   sensitive = true
 }
 
 variable "project_access_key_id" {
-  type = string
+  type      = string
   sensitive = true
 }
 
 variable "project_id" {
-  type = string
+  type      = string
   sensitive = true
 }
 
@@ -47,22 +47,22 @@ variable "labelstudio_project_id" {
 }
 
 variable "labelstudio_admin_password" {
-  type = string
+  type      = string
   sensitive = true
 }
 
 variable "labelstudio_user_token" {
-  type = string
+  type      = string
   sensitive = true
 }
 
 variable "mediatree_password" {
-  type = string
+  type      = string
   sensitive = true
 }
 
 variable "openai_api_key" {
-  type = string
+  type      = string
   sensitive = true
 }
 
