@@ -10,3 +10,8 @@ data "scaleway_account_project" "project" {
   provider = scaleway.project
   name     = "${var.subject}-safeguards-${var.environment}"
 }
+
+resource "scaleway_container_namespace" "container_namespace" {
+  name       = "${var.subject}-safeguards-containers-${var.environment}"
+  project_id = data.scaleway_account_project.project.id
+}
