@@ -1,20 +1,33 @@
-init:
-	source $(tofu_dir)/.env && tofu -chdir=$(tofu_dir) init
+# Define tofu_dir if not passed in externally
+tofu_dir ?= .
 
-plan:
-	source $(tofu_dir)/.env && tofu -chdir=$(tofu_dir) plan
+# Using a recipe macro to improve DRY
+define TOFU_CMD
+	@bash -c 'source $(tofu_dir)/.env && tofu -chdir=$(tofu_dir) $(1)'
+endef
 
-apply:
-	source $(tofu_dir)/.env && tofu -chdir=$(tofu_dir) apply
+.PHONY: setup tofu-init tofu-plan tofu-apply tofu-fmt tofu-state-pull tofu-state-list tofu-destroy
 
-fmt:
-	source $(tofu_dir)/.env && tofu -chdir=$(tofu_dir) fmt
+setup:
+	@bash ./bin/setup.sh
 
-get-state:
-	source $(tofu_dir)/.env && tofu -chdir=$(tofu_dir) state pull
+tofu-init:
+	$(call TOFU_CMD,init)
 
-state:
-	source $(tofu_dir)/.env && tofu -chdir=$(tofu_dir) state list
+tofu-plan:
+	$(call TOFU_CMD,plan)
 
-destroy:
-	source $(tofu_dir)/.env && tofu -chdir=$(tofu_dir) destroy
+tofu-apply:
+	$(call TOFU_CMD,apply)
+
+tofu-fmt:
+	$(call TOFU_CMD,fmt)
+
+tofu-state-pull:
+	$(call TOFU_CMD,"state pull")
+
+tofu-state-list:
+	$(call TOFU_CMD,"state list")
+
+tofu-destroy:
+	$(call TOFU_CMD,destroy)
