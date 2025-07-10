@@ -2,7 +2,7 @@
 # MEDIATREE_PASSWORD
 resource "scaleway_secret" "mediatree_password" {
   name       = "mediatree-password"
-  path       = "/global"
+  path       = "/common"
   project_id = data.scaleway_account_project.project.id
 }
 resource "scaleway_secret_version" "mediatree_password" {
@@ -13,7 +13,7 @@ resource "scaleway_secret_version" "mediatree_password" {
 # OPENAI_API_KEY
 resource "scaleway_secret" "openai_api_key" {
   name       = "openai-api-key"
-  path       = "/global"
+  path       = "/common"
   project_id = data.scaleway_account_project.project.id
 }
 resource "scaleway_secret_version" "openai_api_key" {
