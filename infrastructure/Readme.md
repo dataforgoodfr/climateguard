@@ -17,6 +17,7 @@ The other folders take on the names of the environments, for example `dev/` cont
 
 ```bash
 ├── Makefile
+├── .env.dist
 ├── Readme.md
 ├── bin
 │   └── setup.sh
@@ -24,18 +25,21 @@ The other folders take on the names of the environments, for example `dev/` cont
 │   └── climate
 │       ├── dev
 │       │   ├── common
+│       │   │   ├── .env.secrets.dist
 │       │   │   ├── backend.tf
 │       │   │   ├── common.tf
 │       │   │   ├── providers.tf
 │       │   │   ├── terraform.tfvars
 │       │   │   └── variables.tf
 │       │   └── france
+│       │       ├── .env.secrets.dist
 │       │       ├── backend.tf
 │       │       ├── main.tf
 │       │       ├── providers.tf
 │       │       ├── terraform.tfvars
 │       │       └── variables.tf
 │       └── environments
+│           ├── .env.secrets.dist
 │           ├── dev.tf
 │           ├── main.tf
 │           └── prod.tf
