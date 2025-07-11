@@ -2,7 +2,7 @@
 
 
 module "common" {
-  source                      = "../../../modules/common/"
+  source                      = "../../../../modules/common/"
   mediatree_password          = var.mediatree_password
   postgres_password_barometre = var.postgres_password_barometre
   openai_api_key              = var.openai_api_key
