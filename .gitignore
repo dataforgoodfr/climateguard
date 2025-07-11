@@ -4,10 +4,12 @@
 #     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
 
 .env
+.env.secrets
 data/.ipynb_checkpoints/
 
 .terraform
-
+.bw-session.env
+dev_backup/
 jobs/label_misinformation/build
 jobs/label_misinformation/jobs
 **.egg-info/
