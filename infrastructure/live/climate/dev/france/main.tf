@@ -1,5 +1,5 @@
 module "france" {
-  source = "../../../../modules/deployment"
+  source = "../../../../modules/country"
   # Defined in terraform.tfvars
   subject     = var.subject
   country     = var.country
