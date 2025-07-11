@@ -3,7 +3,7 @@ tofu_dir ?= .
 
 # Using a recipe macro to improve DRY
 define TOFU_CMD
-	@bash -c 'source $(tofu_dir)/.env && tofu -chdir=$(tofu_dir) $(1)'
+	@bash -c 'source .env && source $(tofu_dir)/.env.secrets && tofu -chdir=$(tofu_dir) $(1)'
 endef
 
 .PHONY: setup tofu-init tofu-plan tofu-apply tofu-fmt tofu-state-pull tofu-state-list tofu-destroy
