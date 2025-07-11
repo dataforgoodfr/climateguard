@@ -23,12 +23,3 @@ provider "scaleway" {
   region = "fr-par"
 }
 
-data "scaleway_account_project" "barometre" {
-  name = "barometre"
-}
-resource "scaleway_account_project" "project_climatesafeguards_dev" {
-  name = "climate-safeguards-dev"
-}
-# resource "scaleway_account_project" "project_climatesafeguards_prod" {
-#   name = "climate-safeguards-prod"
-# }
