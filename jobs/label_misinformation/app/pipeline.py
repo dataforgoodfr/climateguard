@@ -306,9 +306,9 @@ class BertPipeline(Pipeline):
                 attention_mask=inputs["attention_mask"][
                     self.batch_size * window : self.batch_size * (window + 1)
                 ],
-                seq_len=self.chunk_size,
-                batch_size=self.batch_size,
-                show_progress=True,
+                # seq_len=self.chunk_size,
+                # batch_size=self.batch_size,
+                # show_progress=True,
             )
             if self.min_probability:
                 _predictions = (
@@ -336,6 +336,9 @@ class BertPipeline(Pipeline):
         logging.info(f"Elaborated {len(predictions)} texts")
         logging.info(
             f"Misinformation detection results: {results_df.prediction.value_counts()}"
+        )
+        logging.info(
+            f"Misinformation probabilities results: {results_df.probability.describe()}"
         )
         return [
             PipelineOutput(
