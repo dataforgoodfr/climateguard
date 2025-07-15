@@ -23,9 +23,8 @@ from pg_utils import (
     get_labelstudio_annotations,
     get_labelstudio_records_period,
 )
-from pipeline import PipelineInput, BertPipeline, get_pipeline_from_name
-from s3_utils import get_s3_client, save_to_s3
-from secret_utils import get_secret_docker
+from pipeline import PipelineInput, get_pipeline_from_name
+from s3_utils import get_s3_client
 from sentry_sdk.crons import monitor
 from sentry_utils import sentry_close, sentry_init
 from whisper_utils import WHISPER_COLUMN_NAME
@@ -146,7 +145,7 @@ def main(country: Country, shadow_labelstudio_id: int):
         )
         logging.info(
             (
-                f" Found {len(shadow_labelstudio_df)} records present "
+                f" Found {len(project_labelstudio_df)} records present "
                 "in country labelstudio project for given time period."
             )
         )
@@ -295,9 +294,10 @@ def main(country: Country, shadow_labelstudio_id: int):
                 updated_record = edit_labelstudio_record_data(
                     row, shadow_result, annotations
                 )
+                logging.info(f"Shadow Result: {shadow_result}")
 
-                logging.debug(
-                    f"Updated record for labelstudio_id {labelstudio_id}:\n {json.dumps(updated_record)}"
+                logging.info(
+                    f"Updated record for labelstudio_id {labelstudio_id}:\n {updated_record}"
                 )
                 key = (
                     f"{bucket_output_folder}/"
@@ -328,11 +328,12 @@ if __name__ == "__main__":
     ray.init(log_to_driver=True)
     logger = getLogger()
     countries: CountryCollection = get_countries(os.getenv("COUNTRY", "france"))
-    shadow_labelstudio_id = os.getenv("SHADOW_LABELSTUDIO_ID")
+    shadow_labelstudio_storage_id = os.getenv("SHADOW_LABELSTUDIO_ID")
+    shadow_labelstudio_id = os.getenv("SHADOW_LABEL_STUDIO_PROJECT")
     for country in countries:
         main(country, shadow_labelstudio_id)
-        if shadow_labelstudio_id:
-            wait_and_sync_label_studio(shadow_labelstudio_id)
+        if shadow_labelstudio_storage_id:
+            wait_and_sync_label_studio(shadow_labelstudio_storage_id)
 
     sentry_close()  # monitoring
     sys.exit(0)
