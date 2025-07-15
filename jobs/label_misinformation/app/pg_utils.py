@@ -254,9 +254,6 @@ def get_keywords_for_a_day_and_channel(
     )
     if ids_to_avoid:
         statement = statement.filter(Keywords.id.notin_(ids_to_avoid))
-    logging.info(
-        f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}"
-    )
     output = session.execute(statement).fetchall()
 
     columns = [
@@ -325,9 +322,6 @@ def get_keywords_for_period_and_channels(
     if ids_to_avoid:
         statement = statement.filter(Keywords.id.notin_(ids_to_avoid))
 
-    logging.info(
-        f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}"
-    )
     output = session.execute(statement).fetchall()
 
     columns = [
@@ -392,9 +386,6 @@ def get_labelstudio_ids(
         )
     )
     try:
-        logging.info(
-            f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}"
-        )
         output = session.execute(statement).fetchall()
     except Exception as e:
         session.rollback()  # ← this resets the transaction
@@ -417,9 +408,10 @@ def get_labelstudio_records_period(
     project_override: Optional[int] = None,
     ids_to_avoid: Optional[int] = None,
 ) -> List[str]:
+    project_id = int(country.label_studio_project) if project_override is None else int(project_override)
     logging.info(
-        f"Getting keywords table from {date_start} to date {date_end}, "
-        f"for country {country.name} (sourcing labelstudio project id: {country.label_studio_project}). "
+        f"Getting labelstudio records from {date_start} to date {date_end}, "
+        f"for country {country.name} (sourcing labelstudio project id: {project_id}). "
         f"Available channels are: \n{', '.join(channels)}"
     )
 
@@ -427,7 +419,6 @@ def get_labelstudio_records_period(
     end_of_period = date_end.replace(
         hour=0, minute=0, second=0, microsecond=0
     ) + timedelta(days=1)
-    project_id = int(country.label_studio_project) if project_override is None else int(project_override)
     statement = (
         select(
             LabelStudioTask.id,
@@ -483,7 +474,7 @@ def get_labelstudio_records_period(
                     literal_column("ARRAY['item','id']")
                 ),
                 Text,
-            ).in_(ids_to_avoid)
+            ).not_in(ids_to_avoid)
         )
     try:
         logging.info(
@@ -514,7 +505,6 @@ def get_labelstudio_records_period(
     ]
     dataframe = pd.DataFrame(output, columns=columns)
 
-    logging.info(f"Found {len(dataframe)} records in labelstudio.")
     return dataframe
 
 
@@ -556,9 +546,6 @@ def get_labelstudio_annotations(
         )
     )
     try:
-        logging.info(
-            f"Executing the following statement: \n{statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})}"
-        )
         output = session.execute(statement).fetchall()
     except Exception as e:
         session.rollback()  # ← this resets the transaction
@@ -588,5 +575,4 @@ def get_labelstudio_annotations(
     ]
     dataframe = pd.DataFrame(output, columns=columns)
 
-    logging.info(f"Found {len(dataframe)} records in labelstudio.")
     return dataframe
