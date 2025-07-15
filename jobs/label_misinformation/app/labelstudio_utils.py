@@ -144,6 +144,8 @@ def convert_nested_timestamps(d):
             d[k] = [convert_nested_timestamps(item) for item in v]
         elif isinstance(v, pd.Timestamp):
             d[k] = v.isoformat()
+        elif pd.isnull(v):
+            d[k] = None
         elif isinstance(v, UUID):
             d[k] = str(v)
     return d
