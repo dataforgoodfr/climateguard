@@ -21,6 +21,7 @@ sys.path.append("./..")
 from prompts import (
     prompt_chat_class_only,
 )
+from chat_templates import climatesafeguards_template
 
 load_dotenv()
 login(token=os.getenv("HF_TOKEN"))
@@ -77,27 +78,38 @@ def print_trainable_parameters(model):
     )
 
 
-def prepare_sample_messages(example, args):
+def prepare_sample_messages(example, tokenizer, args):
     """Prepare the messages from a sample of the dataset."""
-    no_think = "\n\n no_think/" if args.no_think else ""
-    prompt = [
-        {
-            "role": "user",
-            "content": prompt_chat_class_only + example["plaintext"] + no_think,
-        },
-    ]
-    chosen = [
-        {
-            "role": "assistant",
-            "content": f"<misinformation>{example['misinformation']}</misinformation>",
-        },
-    ]
-    rejected = [
-        {
-            "role": "assistant",
-            "content": f"<misinformation>{not example['misinformation']}</misinformation>",
-        },
-    ]
+    prompt = tokenizer.apply_chat_template(
+        [
+            {
+                "role": "user",
+                "content": example["plaintext"],
+            },
+        ],
+        tokenize=False,
+        add_generation_prompt=True,
+    )
+    chosen = tokenizer.apply_chat_template(
+        [
+            {
+                "role": "assistant",
+                "content": f"<misinformation>{example['misinformation']}</misinformation>",
+            },
+        ],
+        tokenize=False,
+        add_generation_prompt=False,
+    )
+    rejected = tokenizer.apply_chat_template(
+        [
+            {
+                "role": "assistant",
+                "content": f"<misinformation>{not example['misinformation']}</misinformation>",
+            },
+        ],
+        tokenize=False,
+        add_generation_prompt=False,
+    )
     return {
         "prompt": prompt,
         "chosen": chosen,
@@ -204,6 +216,8 @@ def run_training(args, train_data, val_data, tokenizer):
 
 def main(args):
     tokenizer = AutoTokenizer.from_pretrained(args.model)
+    tokenizer.chat_template = climatesafeguards_template
+
     train_dataset, eval_dataset = create_datasets(tokenizer, args)
     run_training(args, train_dataset, eval_dataset, tokenizer)
 
