@@ -146,7 +146,7 @@ def create_datasets(tokenizer, args):
     return train_dataset, valid_dataset
 
 
-def run_training(args, train_data: Dataset, val_data: Dataset):
+def run_training(args, train_data: Dataset, val_data: Dataset, tokenizer: AutoTokenizer):
     print("Loading the model")
     device = "cuda" if torch.cuda.is_available() else "cpu"
     device = "mps" if torch.backends.mps.is_available() else device
@@ -212,19 +212,22 @@ def run_training(args, train_data: Dataset, val_data: Dataset):
     trainer.model.train()
     trainer.train()
 
-    print("Saving last checkpoint of the model")
-    trainer.model.save_pretrained("models/" + model_output)
-    trainer.tokenizer.save_pretrained("models/" + model_output)
+    merged_model = trainer.model.merge_and_unload()
 
-    trainer.model.push_to_hub(model_output)
-    trainer.tokenizer.push_to_hub(model_output)
+    print("Saving last checkpoint of the model")
+    merged_model.save_pretrained("models/" + model_output)
+    tokenizer.save_pretrained("models/" + model_output)
+
+    merged_model.push_to_hub(model_output)
+    tokenizer.push_to_hub(model_output)
+
 
 
 def main(args):
     tokenizer = AutoTokenizer.from_pretrained(args.model)
     tokenizer.chat_template = climatesafeguards_template
     train_dataset, eval_dataset = create_datasets(tokenizer, args)
-    run_training(args, train_dataset, eval_dataset)
+    run_training(args, train_dataset, eval_dataset, tokenizer)
 
 
 if __name__ == "__main__":
