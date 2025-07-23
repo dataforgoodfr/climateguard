@@ -217,6 +217,9 @@ def run_training(args, train_data: Dataset, val_data: Dataset, tokenizer: AutoTo
     print("Saving last checkpoint of the model")
     dtype = torch.bfloat16 if args.bf16 else torch.float32
     dtype = torch.float16 if args.fp16 else dtype
+
+    merged_model.to(dtype)
+
     merged_model.save_pretrained("models/" + model_output, torch_dtype=dtype)
     tokenizer.save_pretrained("models/" + model_output)
 
