@@ -37,7 +37,8 @@ async def synth_gen_model_reason(
             model=model, input=prompt_synthetic + record["plaintext"]
         )
         return response.output[0].content[0].text
-    except:
+    except Exception as e:
+        print(e)
         return
 
 
@@ -50,6 +51,8 @@ async def generate_conversation(
     messages = [{"role": "user", "content": prompt_chat + record["plaintext"]}]
     async with semaphore:
         reason = await synth_gen_model_reason(client=client, record=record)
+        messages[0]["content"] = messages[0]["content"] + "/no_think"
+
         if reason is not None:
             str_start = (
                 f"<think>\n{reason}\n</think>\n\n" if args.thinking else f"{reason}\n\n"

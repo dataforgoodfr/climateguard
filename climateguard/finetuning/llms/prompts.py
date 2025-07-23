@@ -29,6 +29,29 @@ prompt_chat = """You are an assistant helping editors to moderate TV and radio c
  Here is the text:
  """
 
+
+prompt_chat_class_only = """You are an assistant helping editors to moderate TV and radio content.
+ You will be provided with a transcript delimited by triple backticks.
+ Bear in mind that the transcript may be missing punctuation and may be of very low quality, 
+ with incorrect vocabulary, cuts in the wrong places, or may include some phonetic transcription.
+ Even if the text is not in english, analyze it seemlessly.
+ 
+ Task:
+ * Determine if the text promotes climate change misinformation that undermines well-established scientific consensus, 
+    such as denying the existence of climate change or the factors that contribute to it.
+
+ Instructions:
+ * Your verdict should be true or false
+ * Format your verdict always using XML tags like this:
+    <misinformation>verdict</misinformation>
+ * If you reason for too long or if your answer is not properly formatted, you will be fired. 
+
+ Here is an example answer:
+ <misinformation>true</misinformation>
+
+ Here is the text:
+ """
+
 prompt_synthetic_misinformation = (
     "You are a synthetic datset generator. I have a piece of text that has been classified as "
     "disinformation on climate change and the environment. The text will be a transcript from a"
