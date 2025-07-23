@@ -123,7 +123,7 @@ def create_datasets(tokenizer, args):
         split=args.split,
         num_proc=args.num_workers,
     )
-    dataset = dataset.map(lambda x: prepare_sample_messages(x, args))
+    dataset = dataset.map(lambda x: prepare_sample_messages(x, tokenizer, args))
     dataset = dataset.train_test_split(test_size=0.1, seed=args.seed, shuffle=True)
     train_dataset = dataset["train"]
     valid_dataset = dataset["test"]
