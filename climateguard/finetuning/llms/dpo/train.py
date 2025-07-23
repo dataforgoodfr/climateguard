@@ -206,8 +206,13 @@ def run_training(args, train_data, val_data, tokenizer):
     print("\n🔄 Merging LoRA weights...")
     merged_model = lora_model.merge_and_unload()
 
+    dtype = torch.bfloat16 if args.bf16 else torch.float32
+    dtype = torch.float16 if args.fp16 else dtype
+
+    merged_model.to(dtype)
+
     print("Saving last checkpoint of the model")
-    merged_model.save_pretrained("models/" + model_output)
+    merged_model.save_pretrained("models/" + model_output, torch_dtype=dtype)
     tokenizer.save_pretrained("models/" + model_output)
 
     merged_model.push_to_hub(model_output)

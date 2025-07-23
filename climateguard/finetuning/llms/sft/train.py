@@ -54,7 +54,6 @@ def get_args():
     parser.add_argument("--num_warmup_steps", type=int, default=10)
     parser.add_argument("--weight_decay", type=float, default=0.05)
 
-
     parser.add_argument("--local_rank", type=int, default=0)
     parser.add_argument("--fp16", action="store_true", default=False)
     parser.add_argument("--bf16", action="store_true", default=False)
@@ -146,7 +145,9 @@ def create_datasets(tokenizer, args):
     return train_dataset, valid_dataset
 
 
-def run_training(args, train_data: Dataset, val_data: Dataset, tokenizer: AutoTokenizer):
+def run_training(
+    args, train_data: Dataset, val_data: Dataset, tokenizer: AutoTokenizer
+):
     print("Loading the model")
     device = "cuda" if torch.cuda.is_available() else "cpu"
     device = "mps" if torch.backends.mps.is_available() else device
@@ -225,7 +226,6 @@ def run_training(args, train_data: Dataset, val_data: Dataset, tokenizer: AutoTo
 
     merged_model.push_to_hub(model_output)
     tokenizer.push_to_hub(model_output)
-
 
 
 def main(args):
