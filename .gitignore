@@ -81,7 +81,6 @@ notebooks/**/.ipynb_checkpoints/
 # Large dataset files
 data/raw/
 data
-deployments
 climateguard/finetuning/llms/grpo/data
 climateguard/finetuning/llms/grpo/data_xml
 climateguard/finetuning/llms/grpo/data_messages
