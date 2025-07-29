@@ -59,3 +59,18 @@ variable "labelstudio_user_token" {
 variable "model_name" {
   type = string
 }
+
+variable "job_cron_schedule" {
+  type    = string
+  default = "5 6 * * *"
+}
+
+variable "job_cron_schedule_timezone" {
+  type    = string
+  default = "Europe/Paris"
+}
+
+variable "sentry_dsn" {
+  type = string
+  sensitive = true
+}
