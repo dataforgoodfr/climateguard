@@ -1,11 +1,16 @@
 #! /bin/bash
 
 tofu_cmd() {
-    if [ "$1" == "environments" ]; then
-        source .env && source live/$1/.env.secrets && tofu -chdir=live/$1
-    elif [ "$3" == "common" ]; then
-        source .env && source live/$1/$2/$3/.env.secrets && tofu -chdir=live/$1/$2/$3 $4
+    
+    if [ "$1" == 1 ]; then
+        # if the environments flag is raised
+        source .env && tofu -chdir=live/$2/environments $5
+    elif [ "$4" == "common" ]; then
+        # If working with the common infra, only the common secrets  are retrieved
+        source .env && source live/$2/$3/$4/.env.secrets && tofu -chdir=live/$2/$3/$4 $5
     else
-        source .env && source live/$1/$2/$3/.env.secrets && source live/$1/$2/common/.env.secrets && tofu -chdir=live/$1/$2/$3 $4
-    fi      
+        # If working with the country infra, both the common secrets and the country secrets are retrieved
+        source .env && source live/$2/$3/$4/.env.secrets && source live/$2/$3/common/.env.secrets && tofu -chdir=live/$2/$3/$4 $5
+    fi
+
 }

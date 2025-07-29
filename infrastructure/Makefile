@@ -2,11 +2,12 @@
 subject ?= climate
 env ?= dev
 country ?= common
+environments ?= 0
 
 # Using a recipe macro to improve DRY
 # @bash -c 'source .env && source live/$(subject)/$(env)/$(country)/.env.secrets && tofu -chdir=live/$(subject)/$(env)/$(country) $(1)'
 define TOFU_CMD
-	@bash -c 'source ./bin/tofu_wrapper.sh && tofu_cmd $(subject) $(env) $(country) $(1)'
+	@bash -c 'source ./bin/tofu_wrapper.sh && tofu_cmd $(environments) $(subject) $(env) $(country) $(1)'
 endef
 
 .PHONY: setup tofu-init tofu-plan tofu-apply tofu-fmt tofu-state-pull tofu-state-list tofu-destroy
