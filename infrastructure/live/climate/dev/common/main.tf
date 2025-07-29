@@ -1,6 +1,3 @@
-
-
-
 module "common" {
   source                      = "../../../../modules/common/"
   subject                     = var.subject
@@ -12,4 +9,9 @@ module "common" {
   project_id                  = var.project_id
   project_access_key_id       = var.project_access_key_id
   project_secret_access_key   = var.project_secret_access_key
+}
+
+provider "scaleway" {
+  alias  = "state"
+  region = "fr-par"
 }

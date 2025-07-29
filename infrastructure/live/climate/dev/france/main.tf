@@ -19,3 +19,17 @@ module "france" {
   model_name                    = var.model_name
   sentry_dsn                    = var.sentry_dsn
 }
+
+provider "scaleway" {
+  alias  = "state"
+  region = "fr-par"
+}
+
+provider "scaleway" {
+  alias      = "project"
+  region     = "fr-par"
+  project_id = var.project_id
+  access_key = var.project_access_key_id
+  secret_key = var.project_secret_access_key
+}
+
