@@ -60,7 +60,7 @@
         <Choice value="Incorrect" html="&lt;span style='color:red'&gt;✗&lt;/span&gt; Incorrect, this is not misinformation" hotkey="i"/>
       </Choices>
       <Choices name="Salient choice" toName="table" required="false" showInline="true">
-        <Choice value="Salient" html="&lt;span style='color:orange'&gt;⚠️&lt;/span&gt; (optional) This is a salient misinformation case" hotkey="s"/>
+        <Choice value="Salient" html="&lt;span style='color:orange'&gt;⚠️&lt;/span&gt; (optional) This is a serious misinformation case" hotkey="s"/>
       </Choices>
      </View>
 
