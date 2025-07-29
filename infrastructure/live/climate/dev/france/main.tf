@@ -1,10 +1,12 @@
 module "france" {
   source = "../../../../modules/country"
-  # Defined in terraform.tfvars
-  subject     = var.subject
-  country     = var.country
-  environment = var.environment
-  # Defined in .env
+  # variables
+  subject                    = "climate"
+  environment                = "dev"
+  country                    = "france"
+  job_cron_schedule          = "5 6 * * *"
+  job_cron_schedule_timezone = "Europe/Paris"
+  # Defined as secrets
   project_secret_access_key     = var.project_secret_access_key
   project_access_key_id         = var.project_access_key_id
   project_id                    = var.project_id
@@ -15,4 +17,5 @@ module "france" {
   labelstudio_admin_password    = var.labelstudio_admin_password
   labelstudio_user_token        = var.labelstudio_user_token
   model_name                    = var.model_name
+  sentry_dsn                    = var.sentry_dsn
 }

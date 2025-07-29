@@ -7,8 +7,8 @@ resource "scaleway_job_definition" "main" {
   project_id   = data.scaleway_account_project.project.id
 
   cron {
-    schedule = "5 6 * * *"
-    timezone = "Europe/Paris"
+    schedule = var.job_cron_schedule
+    timezone = var.job_cron_schedule_timezone
   }
 
   env = {
@@ -37,7 +37,7 @@ resource "scaleway_job_definition" "main" {
     "POSTGRES_PORT"           = data.scaleway_rdb_instance.barometre_rdb.endpoint_port
     "POSTGRES_USER"           = "barometreclimat"
     "RAY_COLOR_PREFIX"        = 1
-    "SENTRY_DSN"              = "https://59b6ac362c8725c76e725438483ae87d@o4506785184612352.ingest.us.sentry.io/4508846066630656"
+    "SENTRY_DSN"              = var.sentry_dsn
 
   }
   # From module specific secrets

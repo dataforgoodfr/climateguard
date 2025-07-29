@@ -59,3 +59,8 @@ variable "labelstudio_user_token" {
 variable "model_name" {
   type = string
 }
+
+variable "sentry_dsn" {
+  type        = string
+  sensitive = true
+}
