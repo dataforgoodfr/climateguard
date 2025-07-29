@@ -22,7 +22,16 @@
   
   <!-- CARDS Section -->
   <View style="padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 20px; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-    <Header value="CARDS - Computer Assisted Recognition of Denial and Skepticism" size="small"/>
+    <Header 
+            value="Narrative Assessment (CARDS)" 
+            size="small" 
+    />
+    <HyperText 
+		clickableLinks="true" 
+		name="link"
+		target="_blank"
+		value="More on CARDS &lt;a href=https://quotaclimat.org/app/uploads/2025/04/Desinformation-climatique_avril2025_UK_NEW_DEF-1.pdf#page=24>here&lt;/a>" 
+	/>
     
     <View style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;">
     <Labels name="cards" toName="table" showInline="true">
@@ -56,16 +65,29 @@
     
      <View style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
       <Choices name="choice" toName="table" required="true" showInline="true">
-        <Choice value="Correct" html="&lt;span style='color:green'&gt;✓&lt;/span&gt; Correct, this is misinformation" hotkey="c"/>
-        <Choice value="Incorrect" html="&lt;span style='color:red'&gt;✗&lt;/span&gt; Incorrect, this is not misinformation" hotkey="i"/>
+        <Choice value="Correct" html="&lt;span style='color:green'&gt;✓&lt;/span&gt; Misinformation" hotkey="m"/>
+        <Choice value="Incorrect" html="&lt;span style='color:red'&gt;✗&lt;/span&gt; Not Misinformation" hotkey="n"/>
       </Choices>
       <Choices name="Salient choice" toName="table" required="false" showInline="true">
-        <Choice value="Salient" html="&lt;span style='color:orange'&gt;⚠️&lt;/span&gt; (optional) This is a serious misinformation case" hotkey="s"/>
+        <Choice value="Salient" html="&lt;span style='color:orange'&gt;⚠️&lt;/span&gt; (optional) This is an important misinformation case" hotkey="s"/>
+      </Choices>
+     </View>
+     
+     <Text name="speaker_title" value="Who is disinforming ?" granularity="word"/>
+
+     <View style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+      <Choices name="speaker_choice" toName="table" required="false" showInline="true">
+        <Choice value="Journalist" html="Journalist" hotkey="j"/>
+        <Choice value="Commentator" html="Commentator" hotkey="c"/>
+        <Choice value="Guest" html="Guest" hotkey="g"/>
+        <Choice value="Politician" html="Politician" hotkey="p"/>
+        <Choice value="Audience" html="Listener/Viewer" hotkey="l"/>
       </Choices>
      </View>
 
-
 	<TextArea name="explanation" toName="table" placeholder="Explain your assessment (why this is misinformation or not)..." style="width: 100%; border-radius: 4px; border: 1px solid #ddd; padding: 8px; margin-bottom: 10px;" rows="3" maxSubmissions="1" editable="true" required="false"/>
+    <Text name="claim_header" value="Claims:" granularity="word"/>
+    <TextArea name="claim" toName="table" placeholder="Write down the claims that you have identified." style="width: 100%; border-radius: 4px; border: 1px solid #ddd; padding: 8px; margin-bottom: 10px;" rows="3" maxSubmissions="1" editable="true" required="false"/>
 	
     <View style="display: flex;">
       <!-- Left side -->
@@ -80,8 +102,6 @@
       </View>
     </View>  </View>
    
-  
-  
   <!-- legacy 1870 and 1 868 Added Case Relevancy -->
   <View style="display: none;">  
     <Choices name="Case relevancy (optional)" toName="table" required="false" showInline="true">
