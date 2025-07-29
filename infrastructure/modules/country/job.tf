@@ -17,7 +17,7 @@ resource "scaleway_job_definition" "main" {
     "AWS_DEFAULT_REGION" = "fr-par"
 
     "BUCKET_INPUT"         = "mediatree"
-    "BUCKET_OUTPUT"        = scaleway_object_bucket.source_bucket.name
+    "BUCKET_OUTPUT"        = scaleway_object_bucket.bucket.name
     "BUCKET_OUTPUT_FOLDER" = "label-misinformation-input"
     "COUNTRY"              = var.country
 

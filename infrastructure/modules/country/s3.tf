@@ -8,16 +8,16 @@ data "scaleway_iam_user" "user" {
 }
 
 ################################################################################
-resource "scaleway_object_bucket" "source_bucket" {
+resource "scaleway_object_bucket" "bucket" {
   provider   = scaleway.project
-  name       = "safeguards-source-${var.subject}-${var.country}-${var.environment}"
+  name       = "safeguards-${var.subject}-${var.country}-${var.environment}"
   project_id = data.scaleway_account_project.project.id
 }
 
-resource "scaleway_object_bucket_policy" "source_bucket_policy" {
+resource "scaleway_object_bucket_policy" "bucket_policy" {
   project_id = data.scaleway_account_project.project.id
   provider   = scaleway.project
-  bucket     = scaleway_object_bucket.source_bucket.name
+  bucket     = scaleway_object_bucket.bucket.name
   policy = jsonencode({
     Version = "2023-04-17",
     Id      = "ApplicationAccessPolicy",
@@ -27,8 +27,8 @@ resource "scaleway_object_bucket_policy" "source_bucket_policy" {
         Action    = ["s3:*"]
         Principal = { SCW = "application_id:${scaleway_iam_application.project_application.id}" }
         Resource = [
-          scaleway_object_bucket.source_bucket.name,
-          "${scaleway_object_bucket.source_bucket.name}/*",
+          scaleway_object_bucket.bucket.name,
+          "${scaleway_object_bucket.bucket.name}/*",
         ]
       },
       ## TEMP
@@ -38,8 +38,8 @@ resource "scaleway_object_bucket_policy" "source_bucket_policy" {
         Action    = ["s3:*"]
         Principal = { SCW = "user_id:${data.scaleway_iam_user.user.id}" }
         Resource = [
-          scaleway_object_bucket.source_bucket.name,
-          "${scaleway_object_bucket.source_bucket.name}/*",
+          scaleway_object_bucket.bucket.name,
+          "${scaleway_object_bucket.bucket.name}/*",
         ]
       },
       ################################################################################
