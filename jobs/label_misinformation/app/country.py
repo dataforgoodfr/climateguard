@@ -171,9 +171,9 @@ POLAND_COUNTRY = Country(
         # "tvp",
         # "polsat",
         # "tvn",
-        "polskieradio",
+        "polskie-radio",
         # "tofkm",
-        "radiozet",
+        "radio-zet",
         "eska",
     ],
 )
