@@ -1,0 +1,2 @@
+subject     = "climate"
+environment = "prod"
