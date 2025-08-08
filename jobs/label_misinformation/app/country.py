@@ -167,11 +167,12 @@ POLAND_COUNTRY = Country(
     label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID", 1),  
     label_studio_project=os.getenv("LABEL_STUDIO_PROJECT", 1),
     channels=[
-        "tvp",
-        "polsat",
-        "tvn",
+        # Deploying only first three chains, rest will be deployed after the summer
+        # "tvp",
+        # "polsat",
+        # "tvn",
         "polskieradio",
-        "tofkm",
+        # "tofkm",
         "radiozet",
         "eska",
     ],
