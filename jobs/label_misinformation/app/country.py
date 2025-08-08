@@ -100,19 +100,96 @@ GERMANY_COUNTRY = Country(
     label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID_GERMANY", 14),  # pass as getenv
     label_studio_project=os.getenv("LABEL_STUDIO_PROJECT_GERMANY", 19),
     channels=[
-        "daserste", 
-        "zdf", 
-        "rtl-television", 
-        "sat1", 
-        "prosieben", 
+        "daserste",
+        "zdf",
+        "rtl-television",
+        "sat1",
+        "prosieben",
         "kabel-eins",
+    ],
+)
+
+
+# SPAIN_CODE: SpainCode="esp"
+# SPAIN_CHANNELS=[
+#     "antenna3",
+#     "rtvela1",
+#     "rtve24h",
+#     "lasextanews",
+#     "telecinconews",
+#     "cuatronews",
+# ]
+# SPAIN_TZ = "Europe/Madrid"
+# SPAIN_LANGUAGE = "spanish"
+# SPAIN = CountryMediaTree(code=SPAIN_CODE,channels=SPAIN_CHANNELS, timezone=SPAIN_TZ, language=SPAIN_LANGUAGE, programs=channels_programs_spain, titles=channel_titles_spain)
+
+# POLAND_CODE: SpainCode="esp"
+# POLAND_CHANNELS=[
+#     "tvp",
+#     "polsat",
+#     "tvn",
+#     "polskieradio",
+#     "tofkm",
+#     "radiozet",
+#     "eska",
+# ]
+# POLAND_TZ = "Europe/Warsaw"
+# POLAND_LANGUAGE = "polish"
+# POLAND = CountryMediaTree(code=POLAND_CODE,channels=POLAND_CHANNELS, timezone=POLAND_TZ, language=POLAND_LANGUAGE, programs=channels_programs_poland, titles=channel_titles_poland)
+
+
+SPAIN_COUNTRY = Country(
+    code="esp",
+    name="spain",
+    language="spanish",
+    bucket=os.getenv("BUCKET_OUTPUT", "safeguards-climate-spain-prod"),
+    model=get_secret_docker("MODEL_NAME", "gpt-4o-mini"),  # add as get env
+    prompt_version=get_secret_docker("PROMPT_VERSION", "0.0.1"),
+    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID", 1),  # pass as getenv
+    label_studio_project=os.getenv("LABEL_STUDIO_PROJECT", 1),
+    channels=[
+        "antenna3",
+        "rtvela1",
+        "rtve24h",
+        "lasextanews",
+        "telecinconews",
+        "cuatronews",
+    ],
+)
+
+POLAND_COUNTRY = Country(
+    code="pol",
+    name="poland",
+    language="polish",
+    bucket=os.getenv("BUCKET_OUTPUT", "safeguards-climate-poland-prod"),
+    model=get_secret_docker("MODEL_NAME", "gpt-4o-mini"), 
+    prompt_version=get_secret_docker("PROMPT_VERSION", "0.0.1"),
+    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID", 1),  
+    label_studio_project=os.getenv("LABEL_STUDIO_PROJECT", 1),
+    channels=[
+        # Deploying only first three chains, rest will be deployed after the summer
+        # "tvp",
+        # "polsat",
+        # "tvn",
+        "polskieradio",
+        # "tofkm",
+        "radiozet",
+        "eska",
     ],
 )
 
 
 def get_all_countries():
     return sorted(
-        [FRANCE_COUNTRY, BELGIUM_COUNTRY, BRAZIL_COUNTRY, GERMANY_COUNTRY], key=lambda x: x.name
+        [
+            FRANCE_COUNTRY,
+            BELGIUM_COUNTRY,
+            BRAZIL_COUNTRY,
+            GERMANY_COUNTRY,
+            SPAIN_COUNTRY,
+            POLAND_COUNTRY,
+        ],
+        key=lambda x: x.name,
     )
 
 
@@ -146,9 +223,7 @@ class CountryCollection:
         )
 
 
-ALL_COUNTRIES = CountryCollection(
-    name="all", countries=get_all_countries()
-)
+ALL_COUNTRIES = CountryCollection(name="all", countries=get_all_countries())
 LEGACY_COUNTRIES = CountryCollection(
     name="legacy",
     code="None",
@@ -156,7 +231,10 @@ LEGACY_COUNTRIES = CountryCollection(
     countries=[BELGIUM_COUNTRY, FRANCE_COUNTRY],
 )
 PROD_COUNTRIES = CountryCollection(
-    name="prod", code="None", language="all", countries=[BRAZIL_COUNTRY, FRANCE_COUNTRY, GERMANY_COUNTRY]
+    name="prod",
+    code="None",
+    language="all",
+    countries=[BRAZIL_COUNTRY, FRANCE_COUNTRY, GERMANY_COUNTRY],
 )
 
 
