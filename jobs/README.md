@@ -73,6 +73,9 @@ This can be done manually by clicking on UI, but if you set this it will be done
 * env varuable : LABEL_STUDIO_PROJECT_BRAZIL = Project ID for the brazil project
 * env variable : API_LABEL_STUDIO_KEY = label studio API key
 
+### To reparse
+* env variable : LABEL_MISINFORMATION_OVERWRITE = Boolean. If activated the job will reparse any extract that has not been included in labelstudio already and add save it to s3.
+
 ## Deployment
 
 App image is pushed on the Scaleway Container Registry, and then deployed on the Scaleway Serverless service.
