@@ -155,7 +155,7 @@ def main(country: Country):
                             bucket=bucket_output,
                             root_folder=bucket_output_folder,
                             country=country,
-                        ) or not bool(os.getenv("LABEL_MISINFORMATION_OVERWRITE", False)):
+                        ) and not bool(os.getenv("LABEL_MISINFORMATION_OVERWRITE", False)):
                             logging.info(
                                 f"Skipping as already saved before: {channel} inside bucket {bucket_output} folder {bucket_output_folder}"
                             )
