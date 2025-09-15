@@ -109,51 +109,22 @@ GERMANY_COUNTRY = Country(
     ],
 )
 
-
-# SPAIN_CODE: SpainCode="esp"
-# SPAIN_CHANNELS=[
-#     "antenna3",
-#     "rtvela1",
-#     "rtve24h",
-#     "lasextanews",
-#     "telecinconews",
-#     "cuatronews",
-# ]
-# SPAIN_TZ = "Europe/Madrid"
-# SPAIN_LANGUAGE = "spanish"
-# SPAIN = CountryMediaTree(code=SPAIN_CODE,channels=SPAIN_CHANNELS, timezone=SPAIN_TZ, language=SPAIN_LANGUAGE, programs=channels_programs_spain, titles=channel_titles_spain)
-
-# POLAND_CODE: SpainCode="esp"
-# POLAND_CHANNELS=[
-#     "tvp",
-#     "polsat",
-#     "tvn",
-#     "polskieradio",
-#     "tofkm",
-#     "radiozet",
-#     "eska",
-# ]
-# POLAND_TZ = "Europe/Warsaw"
-# POLAND_LANGUAGE = "polish"
-# POLAND = CountryMediaTree(code=POLAND_CODE,channels=POLAND_CHANNELS, timezone=POLAND_TZ, language=POLAND_LANGUAGE, programs=channels_programs_poland, titles=channel_titles_poland)
-
-
 SPAIN_COUNTRY = Country(
     code="esp",
     name="spain",
     language="spanish",
-    bucket=os.getenv("BUCKET_OUTPUT", "safeguards-climate-spain-prod"),
+    bucket=os.getenv("BUCKET_OUTPUT", "safeguards-climate-spain-dev"),
     model=get_secret_docker("MODEL_NAME", "gpt-4o-mini"),  # add as get env
     prompt_version=get_secret_docker("PROMPT_VERSION", "0.0.1"),
     label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID", 1),  # pass as getenv
     label_studio_project=os.getenv("LABEL_STUDIO_PROJECT", 1),
     channels=[
-        "antenna3",
-        "rtvela1",
-        "rtve24h",
-        "lasextanews",
-        "telecinconews",
-        "cuatronews",
+        "antenna-3",
+        "rtve-24h",
+        "rtve-la-1",
+        "lasexta-news",
+        "telecinco-news",
+        "cuatro-news",
     ],
 )
 
@@ -161,20 +132,19 @@ POLAND_COUNTRY = Country(
     code="pol",
     name="poland",
     language="polish",
-    bucket=os.getenv("BUCKET_OUTPUT", "safeguards-climate-poland-prod"),
+    bucket=os.getenv("BUCKET_OUTPUT", "safeguards-climate-poland-dev"),
     model=get_secret_docker("MODEL_NAME", "gpt-4o-mini"), 
     prompt_version=get_secret_docker("PROMPT_VERSION", "0.0.1"),
     label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID", 1),  
     label_studio_project=os.getenv("LABEL_STUDIO_PROJECT", 1),
     channels=[
         # Deploying only first three chains, rest will be deployed after the summer
-        # "tvp",
-        # "polsat",
-        # "tvn",
         "polskie-radio",
-        # "tofkm",
         "radio-zet",
         "eska",
+        "polsat",
+        "tvn",
+        "tvp",
     ],
 )
 
