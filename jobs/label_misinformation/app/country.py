@@ -145,6 +145,7 @@ POLAND_COUNTRY = Country(
         "polsat",
         "tvn",
         "tvp",
+        "tokfm",
     ],
 )
 
