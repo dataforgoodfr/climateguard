@@ -72,6 +72,8 @@ def get_response_single_export_api(single_export_api):
 def fetch_video_url(row, token):
     """Fetches a single video URL based on a DataFrame row."""
     try:
+        if row["channel_name"] in ("daserste", "zdf"):
+            return None # plaintext will be used in those cases as it is already high quality.
         if not pd.isna(row["start"]) and not pd.isna(row["channel_name"]):
             logging.info(f"fetch_video_url for : {row}")
             start, end = get_start_and_end_of_chunk(row["start"])
