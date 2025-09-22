@@ -81,6 +81,7 @@ BRAZIL_COUNTRY = Country(
     label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID_BRAZIL", 5),  # pass as getenv
     label_studio_project=os.getenv("LABEL_STUDIO_PROJECT_BRAZIL", 5),
     channels=[
+        "tvbrasil",
         "tvglobo",
         "tvrecord",
         "sbt",
