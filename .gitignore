@@ -99,3 +99,5 @@ data/processed
 notebooks/experiments/data
 notebooks/experiments/*.csv
 
+credentials.txt
+
