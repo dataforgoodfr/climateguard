@@ -1,6 +1,7 @@
 #!/bin/bash
 # This script is used to install the environment on a linux computer or server
 # Should work on macOS as well. 
+# Do not run as root, when logging into a server run `su ubuntu` first.
 
 set -e
 
