@@ -205,7 +205,7 @@ Voici la transcription :
                 {
                     "role": "assistant",
                     "content": generate_negative_example(
-                        example, model, tokenizer, max_new_tokens=512, device=device
+                        example, base_model, tokenizer, max_new_tokens=512, device=device
                     ),
                 },
             ],
