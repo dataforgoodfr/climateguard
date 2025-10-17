@@ -187,7 +187,7 @@ Voici la transcription :
         }
     )
     train_dataset = dataset["train"].train_test_split(test_size=0.15)
-    test_dataset = dataset["test"].select(range(10))
+    test_dataset = dataset["test"]
 
     logger.info(f"\n📝 Single Sample: {train_dataset['train'][0]['messages']}")
 
