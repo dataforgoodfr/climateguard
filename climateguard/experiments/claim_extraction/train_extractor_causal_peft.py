@@ -1,3 +1,4 @@
+import argparse
 import logging
 import os
 from datetime import datetime
@@ -122,7 +123,7 @@ def test_model(model, tokenizer, prompt, max_new_tokens, device="cpu"):
             input_text,
             return_tensors="pt",
             truncation=True,
-            max_length=MAX_LENGTH - max_new_tokens,
+            max_length=args.max_length - max_new_tokens,
         ).to(device)
         with torch.no_grad():
             output_tokens = model.generate(**inputs, max_new_tokens=max_new_tokens)
@@ -135,17 +136,21 @@ def test_model(model, tokenizer, prompt, max_new_tokens, device="cpu"):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--max-length", type=int, default=4096)
+    parser.add_argument("--learning-rate", type=float, default=5e-5)
+    parser.add_argument("--train-batch-size", type=int, default=8)
+    parser.add_argument("--eval-batch-size", type=int, default=8)
+    parser.add_argument("--weight-decay", type=float, default=0.01)
+    parser.add_argument("--epochs", type=int, default=10)
+    parser.add_argument("--checkpoint", type=str, default="kurakurai/Luth-LFM2-350M")
+
+    args = parser.parse_args()
+
     rouge = evaluate.load("rouge")
-    checkpoint = "kurakurai/Luth-LFM2-350M"
     OUTPUT_DIR = os.path.join(
         os.path.dirname(os.path.abspath(__file__)), "climateguard_claim_extraction"
     )
-    MAX_LENGTH = 4096
-    LEARNING_RATE = 2e-5
-    TRAIN_BATCH_SIZE = 4
-    EVAL_BATCH_SIZE = 4
-    WEIGHT_DECAY = 0.01
-    EPOCHS = 1
     prompt = """
 À partir d'une transcription d'une émission médiatique, vous devez extraire l'argument principal du texte,
 dans le but d'identifier les affirmations qui ont été présentées comme des faits. 
@@ -165,7 +170,7 @@ Voici la transcription :
     logging.info(f"Using device: {device}")
     logging.info(f"bfloat available:: {torch.cuda.is_bf16_supported()}")
 
-    tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+    tokenizer = AutoTokenizer.from_pretrained(args.checkpoint)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
@@ -184,7 +189,7 @@ Voici la transcription :
     logger.info(f"\n📝 Single Sample: {train_dataset['train'][0]['messages']}")
 
     base_model = AutoModelForCausalLM.from_pretrained(
-        checkpoint, torch_dtype=torch.float16, device_map="auto"
+        args.checkpoint, torch_dtype=torch.float16, device_map="auto"
     )
     logger.info("Evaluating base model...")
     # test_model(base_model, tokenizer, prompt, max_new_tokens=512)
@@ -193,12 +198,12 @@ Voici la transcription :
     training_args = SFTConfig(
         output_dir=OUTPUT_DIR,
         eval_strategy="steps",
-        learning_rate=LEARNING_RATE,
-        per_device_train_batch_size=TRAIN_BATCH_SIZE,
-        per_device_eval_batch_size=EVAL_BATCH_SIZE,
-        weight_decay=WEIGHT_DECAY,
+        learning_rate=args.learning_rate,
+        per_device_train_batch_size=args.train_batch_size,
+        per_device_eval_batch_size=args.eval_batch_size,
+        weight_decay=args.weight_decay,
         save_total_limit=3,
-        max_steps=EPOCHS * int(np.ceil(len(train_dataset["train"]) / TRAIN_BATCH_SIZE)),
+        max_steps=args.epochs * int(np.ceil(len(train_dataset["train"]) / args.train_batch_size)),
         logging_strategy="steps",
         logging_steps=10,
         eval_steps=len(train_dataset["train"]) // 10,
@@ -243,10 +248,10 @@ Voici la transcription :
 
     logger.info("🚀 Pushing merged model to Hugging Face Hub...")
     model_merged.push_to_hub(
-        f"gmguarino/climateguard-{checkpoint.split('/')[1]}-claim-extraction"
+        f"gmguarino/climateguard-{args.checkpoint.split('/')[1]}-claim-extraction"
     )
     tokenizer.push_to_hub(
-        f"gmguarino/climateguard-{checkpoint.split('/')[1]}-claim-extraction"
+        f"gmguarino/climateguard-{args.checkpoint.split('/')[1]}-claim-extraction"
     )
 
     test_model(model_merged, tokenizer, prompt, max_new_tokens=512, device=device)
