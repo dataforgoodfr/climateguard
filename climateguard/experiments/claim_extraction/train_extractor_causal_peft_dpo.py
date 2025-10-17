@@ -192,6 +192,10 @@ Voici la transcription :
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
+    base_model = AutoModelForCausalLM.from_pretrained(
+        args.checkpoint, torch_dtype=torch.float16, device_map="auto"
+    )
+    
     dataset = get_data()
     dataset = dataset.map(
         lambda example: {
@@ -219,9 +223,6 @@ Voici la transcription :
     logger.info(f"chosen: {train_dataset['train'][0]['chosen']}")
     logger.info(f"rejected: {train_dataset['train'][0]['rejected']}")
 
-    base_model = AutoModelForCausalLM.from_pretrained(
-        args.checkpoint, torch_dtype=torch.float16, device_map="auto"
-    )
     logger.info("Evaluating base model...")
     # test_model(test_dataset, base_model, tokenizer, max_new_tokens=512, device=device)
     model = create_lora_model(base_model=base_model)
