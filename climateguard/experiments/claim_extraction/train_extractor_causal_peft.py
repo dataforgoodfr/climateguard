@@ -195,7 +195,7 @@ Voici la transcription :
         args.checkpoint, torch_dtype=torch.float16, device_map="auto"
     )
     logger.info("Evaluating base model...")
-    # test_model(base_model, tokenizer, prompt, max_new_tokens=512)
+    # test_model(base_model, tokenizer, max_new_tokens=512, device=device)
     model = create_lora_model(base_model=base_model)
 
     training_args = SFTConfig(
@@ -258,4 +258,4 @@ Voici la transcription :
         f"gmguarino/climateguard-{args.checkpoint.split('/')[1]}-claim-extraction"
     )
 
-    test_model(model_merged, tokenizer, prompt, max_new_tokens=512, device=device)
+    test_model(model_merged, tokenizer, max_new_tokens=512, device=device)
