@@ -142,7 +142,7 @@ def test_model(test_dataset, model, tokenizer, max_new_tokens, device="cpu"):
     model.eval()
     results = []
     for example in tqdm(test_dataset):
-        input_conv = [example["messages"][0]]
+        input_conv = [example["chosen"][0]]
         prediction = predict_conversation(
             input_conv, model, tokenizer, max_new_tokens, device
         )
