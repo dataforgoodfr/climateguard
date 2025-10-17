@@ -130,7 +130,7 @@ def predict_conversation(input_conv, model, tokenizer, max_new_tokens, device):
 
 
 def generate_negative_example(example, model, tokenizer, max_new_tokens, device):
-    input_conv = {"role": "user", "content": prompt.format(transcript=example["text"])}
+    input_conv =[{"role": "user", "content": prompt.format(transcript=example["text"])}]
     prediction = predict_conversation(
         input_conv, model, tokenizer, max_new_tokens, device
     )
@@ -195,7 +195,7 @@ Voici la transcription :
     base_model = AutoModelForCausalLM.from_pretrained(
         args.checkpoint, torch_dtype=torch.float16, device_map="auto"
     )
-    
+
     dataset = get_data()
     dataset = dataset.map(
         lambda example: {
