@@ -112,22 +112,24 @@ def compute_metrics(eval_pred, tokenizer, rouge):
 
     return {k: round(v, 4) for k, v in result.items()}
 
-
-def test_model(model, tokenizer, prompt, max_new_tokens, device="cpu"):
+def test_model(model, tokenizer, max_new_tokens, device="cpu"):
     logger.info("Evaluating model on test set...")
     model.eval()
     results = []
     for example in tqdm(test_dataset):
-        input_text = prompt.format(transcript=example["text"])
-        inputs = tokenizer(
-            input_text,
+        input_conv = [example["messages"][0]]
+        inputs = tokenizer.apply_chat_template(
+            input_conv,
             return_tensors="pt",
             truncation=True,
             max_length=args.max_length - max_new_tokens,
+            add_generation_prompt=True,
         ).to(device)
         with torch.no_grad():
             output_tokens = model.generate(**inputs, max_new_tokens=max_new_tokens)
-        prediction = tokenizer.decode(output_tokens[0][len(inputs["input_ids"]):], skip_special_tokens=True)
+        prediction = tokenizer.decode(
+            output_tokens[0][len(inputs["input_ids"]) :], skip_special_tokens=True
+        )
         results.append((prediction, example["summary"]))
 
     preds, refs = zip(*results)
@@ -203,7 +205,8 @@ Voici la transcription :
         per_device_eval_batch_size=args.eval_batch_size,
         weight_decay=args.weight_decay,
         save_total_limit=3,
-        max_steps=args.epochs * int(np.ceil(len(train_dataset["train"]) / args.train_batch_size)),
+        max_steps=args.epochs
+        * int(np.ceil(len(train_dataset["train"]) / args.train_batch_size)),
         logging_strategy="steps",
         logging_steps=10,
         eval_steps=len(train_dataset["train"]) // 10,
