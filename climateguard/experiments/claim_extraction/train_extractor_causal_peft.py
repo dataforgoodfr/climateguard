@@ -153,11 +153,10 @@ Gardez à l'esprit que le texte peut être désordonné et manquer de ponctuatio
 Votre tâche consiste à comprendre le message principal qui est véhiculé.
 N'oubliez pas de mentionner les personnes ou entités qui ont été mentionnées dans l'affirmation.
 Soyez précis et concis. 
-Répondez par une seule phrase courte par transcription, 
-rédigez l'affirmation comme si vous la formuliez vous-même de façon très synthètique.
+L'affirmation doit être vérifiable, rédigez-la comme si vous la formuliez vous-même.
 
 Voici la transcription :
-{transcript}hehehe
+{transcript}
 """
     device = "cuda" if torch.cuda.is_available() else None
     if not device:
