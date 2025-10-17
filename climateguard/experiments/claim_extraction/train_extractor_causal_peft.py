@@ -68,7 +68,7 @@ def create_lora_model(base_model):
     GLU_MODULES = ["w1", "w2", "w3"]
     MHA_MODULES = ["q_proj", "k_proj", "v_proj"]
     CONV_MODULES = ["in_proj", "out_proj"]
-    target_modules = MHA_MODULES  + CONV_MODULES + GLU_MODULES
+    target_modules = MHA_MODULES + CONV_MODULES + GLU_MODULES
     # Create LoRA configuration
     lora_config = LoraConfig(
         r=8,
