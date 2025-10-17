@@ -1,0 +1,247 @@
+import logging
+import os
+from datetime import datetime
+from functools import partial
+
+import evaluate
+import numpy as np
+import torch
+from datasets import Dataset, DatasetDict, load_dataset
+from dotenv import load_dotenv
+from huggingface_hub import login
+from peft import LoraConfig, PeftModel, TaskType, get_peft_model
+from tqdm import tqdm
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    DataCollatorForLanguageModeling,
+    Trainer,
+    TrainingArguments,
+)
+from trl import SFTConfig, SFTTrainer
+
+
+def setup_logging():
+    # Create logs directory if it doesn't exist
+    os.makedirs("logs", exist_ok=True)
+
+    # Configure logging
+    log_filename = f"logs/training_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        handlers=[
+            # logging.FileHandler(log_filename),
+            logging.StreamHandler(),  # Also log to console
+        ],
+    )
+
+    return logging.getLogger(__name__)
+
+
+logger = setup_logging()
+
+
+load_dotenv()
+login(token=os.getenv("HF_TOKEN"))
+
+
+def get_data():
+    dataset = load_dataset("DataForGood/climateguard")
+
+    dataset = dataset.filter(lambda example: example["claims"] != [])
+    dataset = dataset.map(
+        lambda example: {
+            "text": example["plaintext"],
+            "summary": ". ".join(example["claims"]),
+        }
+    )
+    dataset = dataset.select_columns(["id", "text", "summary"])
+    return dataset
+
+
+def create_lora_model(base_model):
+    # Load base model
+
+    # GLU_MODULES = ["w1", "w2", "w3"]
+    MHA_MODULES = ["q_proj", "k_proj", "v_proj"]
+    CONV_MODULES = ["in_proj", "out_proj"]
+    target_modules = MHA_MODULES  # + CONV_MODULES  # + GLU_MODULES
+    # Create LoRA configuration
+    lora_config = LoraConfig(
+        r=8,
+        lora_alpha=32,
+        target_modules=target_modules,
+        lora_dropout=0.05,
+        bias="none",
+        task_type=TaskType.CAUSAL_LM,
+    )
+
+    # Apply LoRA to model
+    model = get_peft_model(base_model, lora_config)
+    model.print_trainable_parameters()
+
+    return model
+
+
+def preprocess_logits_for_metrics(logits, labels):
+    if isinstance(logits, tuple):
+        logits = logits[0]
+    return logits.argmax(dim=-1)
+
+
+def compute_metrics(eval_pred, tokenizer, rouge):
+    predictions, labels = eval_pred
+    if isinstance(predictions, tuple):
+        predictions = predictions[0]
+
+    decoded_preds = tokenizer.batch_decode(predictions, skip_special_tokens=True)
+    labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
+    decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
+
+    result = rouge.compute(
+        predictions=decoded_preds, references=decoded_labels, use_stemmer=True
+    )
+
+    prediction_lens = [
+        np.count_nonzero(pred != tokenizer.pad_token_id) for pred in predictions
+    ]
+    result["gen_len"] = np.mean(prediction_lens)
+
+    return {k: round(v, 4) for k, v in result.items()}
+
+
+def test_model(model, tokenizer, prompt, max_new_tokens):
+    logger.info("Evaluating model on test set...")
+    model.eval()
+    results = []
+    for example in tqdm(test_dataset):
+        input_text = prompt.format(transcript=example["text"])
+        inputs = tokenizer(
+            input_text,
+            return_tensors="pt",
+            truncation=True,
+            max_length=MAX_LENGTH - max_new_tokens,
+        ).to("mps")
+        with torch.no_grad():
+            output_tokens = model.generate(**inputs, max_new_tokens=max_new_tokens)
+        prediction = tokenizer.decode(output_tokens[0], skip_special_tokens=True)
+        results.append((prediction, example["summary"]))
+
+    preds, refs = zip(*results)
+    rouge_scores = rouge.compute(predictions=preds, references=refs)
+    logger.info(f"ROUGE scores on test set: {rouge_scores}")
+
+
+if __name__ == "__main__":
+    rouge = evaluate.load("rouge")
+    checkpoint = "kurakurai/Luth-LFM2-350M"
+    OUTPUT_DIR = "climateguard_claim_extraction"
+    MAX_LENGTH = 4096
+    LEARNING_RATE = 2e-5
+    TRAIN_BATCH_SIZE = 4
+    EVAL_BATCH_SIZE = 4
+    WEIGHT_DECAY = 0.01
+    EPOCHS = 1
+    prompt = """
+À partir d'une transcription d'une émission médiatique, vous devez extraire l'argument principal du texte,
+dans le but d'identifier les affirmations qui ont été présentées comme des faits. 
+Gardez à l'esprit que le texte peut être désordonné et manquer de ponctuation. 
+Votre tâche consiste à comprendre le message principal qui est véhiculé.
+N'oubliez pas de mentionner les personnes ou entités qui ont été mentionnées dans l'affirmation.
+Soyez précis et concis. 
+Répondez par une seule phrase courte par transcription, 
+rédigez l'affirmation comme si vous la formuliez vous-même de façon très synthètique.
+
+Voici la transcription :
+{transcript}hehehe
+"""
+
+    tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
+    dataset = get_data()
+    dataset = dataset.map(
+        lambda example: {
+            "messages": [
+                {"role": "user", "content": prompt.format(transcript=example["text"])},
+                {"role": "assistant", "content": example["summary"]},
+            ]
+        }
+    )
+    train_dataset = dataset["train"].train_test_split(test_size=0.15)
+    test_dataset = dataset["test"]
+
+    logger.info(f"\n📝 Single Sample: {train_dataset['train'][0]['messages']}")
+
+    base_model = AutoModelForCausalLM.from_pretrained(
+        checkpoint, torch_dtype=torch.float16, device_map="auto"
+    )
+    logger.info("Evaluating base model...")
+    test_model(base_model, tokenizer, prompt, max_new_tokens=512)
+    model = create_lora_model(base_model=base_model, device="auto")
+
+    training_args = SFTConfig(
+        output_dir=OUTPUT_DIR,
+        eval_strategy="steps",
+        learning_rate=LEARNING_RATE,
+        per_device_train_batch_size=TRAIN_BATCH_SIZE,
+        per_device_eval_batch_size=EVAL_BATCH_SIZE,
+        weight_decay=WEIGHT_DECAY,
+        save_total_limit=3,
+        max_steps=EPOCHS * len(train_dataset["train"]),
+        logging_strategy="steps",
+        logging_steps=10,
+        eval_steps=len(train_dataset["train"]) // 10,
+        optim="stable_adamw",
+        lr_scheduler_type="linear",
+        max_grad_norm=0.5,  # Set clipping threshold
+        fp16=False,  # Enable mixed precision training
+        report_to=None,  # Disable wandb if not needed
+        remove_unused_columns=False,
+        dataloader_num_workers=4,
+        warmup_steps=10,
+        gradient_checkpointing=True,  # Save memory
+    )
+    compute_metrics_fn = partial(compute_metrics, tokenizer=tokenizer, rouge=rouge)
+
+    trainer = SFTTrainer(
+        model=model,
+        args=training_args,
+        train_dataset=train_dataset["train"],
+        eval_dataset=train_dataset["test"],
+        processing_class=tokenizer,
+        # max_seq_length=MAX_LENGTH,
+        # compute_metrics=compute_metrics_fn,
+        # preprocess_logits_for_metrics=preprocess_logits_for_metrics,
+        # callbacks=[EarlyStoppingCallback(early_stopping_patience=10)]
+        # callbacks=[compute_metrics]
+    )
+    trainer.train()
+
+    # --- SAVE LoRA ADAPTER ---
+    model.save_pretrained(OUTPUT_DIR)
+    tokenizer.save_pretrained(OUTPUT_DIR)
+
+    # --- MERGE LoRA + BASE MODEL ---
+    logger.info("🔄 Merging LoRA adapter with base model...")
+    model_merged = PeftModel.from_pretrained(base_model, OUTPUT_DIR)
+    model_merged = model_merged.merge_and_unload()
+
+    merged_dir = os.path.join(OUTPUT_DIR, "merged")
+    os.makedirs(merged_dir, exist_ok=True)
+    model_merged.save_pretrained(merged_dir)
+    tokenizer.save_pretrained(merged_dir)
+    logger.info(f"✅ Merged model saved to {merged_dir}")
+
+    logger.info("🚀 Pushing merged model to Hugging Face Hub...")
+    model_merged.push_to_hub(
+        f"gmguarino/climateguard-{checkpoint.split('/')[1]}-claim-extraction"
+    )
+    tokenizer.push_to_hub(
+        f"gmguarino/climateguard-{checkpoint.split('/')[1]}-claim-extraction"
+    )
+
+    test_model(model_merged, tokenizer, prompt, max_new_tokens=512)
