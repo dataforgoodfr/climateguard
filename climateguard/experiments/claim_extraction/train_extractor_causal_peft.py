@@ -127,7 +127,7 @@ def test_model(model, tokenizer, prompt, max_new_tokens, device="cpu"):
         ).to(device)
         with torch.no_grad():
             output_tokens = model.generate(**inputs, max_new_tokens=max_new_tokens)
-        prediction = tokenizer.decode(output_tokens[0], skip_special_tokens=True)
+        prediction = tokenizer.decode(output_tokens[0][len(inputs["input_ids"]):], skip_special_tokens=True)
         results.append((prediction, example["summary"]))
 
     preds, refs = zip(*results)
