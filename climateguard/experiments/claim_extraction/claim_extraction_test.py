@@ -1,13 +1,13 @@
 import asyncio
 import re
 
+import evaluate
 import pandas as pd
 import torch
 from datasets import load_dataset
 from dotenv import load_dotenv
 from ollama import AsyncClient, Client
 from openai import AsyncOpenAI
-from rouge_score import rouge_scorer
 from tqdm import tqdm
 from tqdm.asyncio import tqdm as atqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -217,17 +217,7 @@ with open("targets.txt", "w") as f:
         f.write(ref)
         f.write("\n")
 
-scorer = rouge_scorer.RougeScorer(["rouge1"], use_stemmer=False, split_summaries=True)
 
-rouge_scores = []
-for pred, gt in zip(predictions, reference):
-    scores = scorer.score(prediction=pred, target=gt)
-    score_dict = {
-        "precision": scores["rouge1"].precision,
-        "recall": scores["rouge1"].recall,
-        "fmeasure": scores["rouge1"].fmeasure,
-    }
-    rouge_scores.append(score_dict)
-
-scores_df = pd.DataFrame.from_records(rouge_scores)
-print(scores_df.describe())
+rouge = evaluate.load("rouge")
+rouge_scores = rouge.compute(predictions=predictions, references=reference)
+print(f"ROUGE scores on test set: {rouge_scores}")
