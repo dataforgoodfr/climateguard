@@ -195,26 +195,31 @@ Voici la transcription :
     base_model = AutoModelForCausalLM.from_pretrained(
         args.checkpoint, torch_dtype=torch.float16, device_map="auto"
     )
-
-    dataset = get_data()
-    dataset = dataset.map(
-        lambda example: {
-            "prompt": prompt.format(transcript=example["text"]),
-            "chosen": [
-                {"role": "user", "content": prompt.format(transcript=example["text"])},
-                {"role": "assistant", "content": example["summary"]},
-            ],
-            "rejected": [
-                {"role": "user", "content": prompt.format(transcript=example["text"])},
-                {
-                    "role": "assistant",
-                    "content": generate_negative_example(
-                        example, base_model, tokenizer, max_new_tokens=512, device=device
-                    ),
-                },
-            ],
-        }
-    )
+    
+    os.makedirs(os.path.join(OUTPUT_DIR, "cache", ), exist_ok=True)
+    if os.path.exists(os.path.join(OUTPUT_DIR, "cache", "dpo_dataset.json")):
+        dataset = Dataset.from_json(os.path.join(OUTPUT_DIR, "cache", "dpo_dataset.json"))
+    else:
+        dataset = get_data()
+        dataset = dataset.map(
+            lambda example: {
+                "prompt": prompt.format(transcript=example["text"]),
+                "chosen": [
+                    {"role": "user", "content": prompt.format(transcript=example["text"])},
+                    {"role": "assistant", "content": example["summary"]},
+                ],
+                "rejected": [
+                    {"role": "user", "content": prompt.format(transcript=example["text"])},
+                    {
+                        "role": "assistant",
+                        "content": generate_negative_example(
+                            example, base_model, tokenizer, max_new_tokens=512, device=device
+                        ),
+                    },
+                ],
+            }
+        )
+        dataset.to_json(os.path.join(OUTPUT_DIR, "cache", "dpo_dataset.json"))
     train_dataset = dataset["train"].train_test_split(test_size=0.15)
     test_dataset = dataset["test"]
 
