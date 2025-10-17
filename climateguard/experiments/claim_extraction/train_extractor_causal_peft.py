@@ -163,6 +163,9 @@ Voici la transcription :
     if not device:
         device = "mps" if torch.backends.mps.is_available() else "cpu"
 
+    logging.info(f"Using device: {device}")
+    logging.info(f"bfloat available:: {torch.cuda.is_bf16_supported()}")
+
     tokenizer = AutoTokenizer.from_pretrained(checkpoint)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
@@ -247,4 +250,4 @@ Voici la transcription :
         f"gmguarino/climateguard-{checkpoint.split('/')[1]}-claim-extraction"
     )
 
-    test_model(model_merged, tokenizer, prompt, max_new_tokens=512)
+    test_model(model_merged, tokenizer, prompt, max_new_tokens=512, device=device)

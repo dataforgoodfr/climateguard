@@ -32,7 +32,7 @@ def call_causal_model(prompt: str, model_name: str):
     - str: The generated text by the model, following the given prompt.
     """
     # load the tokenizer and the model
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
     model = AutoModelForCausalLM.from_pretrained(
         model_name, dtype="auto", device_map="auto"
     )
@@ -140,8 +140,8 @@ async def get_responses(prompts, max_concurrent=5, function=fetch_response_opena
     return results
 
 
-# engine = "transformers"
-engine = "ollama"
+engine = "transformers"
+# engine = "ollama"
 # engine = "openai"
 
 prompt = """
@@ -179,7 +179,7 @@ predictions = []
 reference = []
 
 if engine == "transformers":
-    model_id = "LiquidAI/LFM2-1.2B"
+    model_id = "gmguarino/climateguard-Luth-LFM2-350M-claim-extraction"
 
     for example in tqdm(dataset):
         output = call_causal_model(
