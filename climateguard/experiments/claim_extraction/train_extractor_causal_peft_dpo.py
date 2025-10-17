@@ -156,7 +156,7 @@ def test_model(test_dataset, model, tokenizer, max_new_tokens, device="cpu"):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--max-length", type=int, default=4096)
-    parser.add_argument("--learning-rate", type=float, default=5e-5)
+    parser.add_argument("--learning-rate", type=float, default=1e-6)
     parser.add_argument("--train-batch-size", type=int, default=8)
     parser.add_argument("--eval-batch-size", type=int, default=8)
     parser.add_argument("--weight-decay", type=float, default=0.01)
