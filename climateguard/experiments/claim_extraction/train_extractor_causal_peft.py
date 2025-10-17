@@ -65,10 +65,10 @@ def get_data():
 def create_lora_model(base_model):
     # Load base model
 
-    # GLU_MODULES = ["w1", "w2", "w3"]
+    GLU_MODULES = ["w1", "w2", "w3"]
     MHA_MODULES = ["q_proj", "k_proj", "v_proj"]
     CONV_MODULES = ["in_proj", "out_proj"]
-    target_modules = MHA_MODULES  # + CONV_MODULES  # + GLU_MODULES
+    target_modules = MHA_MODULES  + CONV_MODULES + GLU_MODULES
     # Create LoRA configuration
     lora_config = LoraConfig(
         r=8,
@@ -111,6 +111,7 @@ def compute_metrics(eval_pred, tokenizer, rouge):
     result["gen_len"] = np.mean(prediction_lens)
 
     return {k: round(v, 4) for k, v in result.items()}
+
 
 def test_model(model, tokenizer, max_new_tokens, device="cpu"):
     logger.info("Evaluating model on test set...")
