@@ -198,7 +198,7 @@ Voici la transcription :
         per_device_eval_batch_size=EVAL_BATCH_SIZE,
         weight_decay=WEIGHT_DECAY,
         save_total_limit=3,
-        max_steps=EPOCHS * np.ceil(len(train_dataset["train"]) / TRAIN_BATCH_SIZE),
+        max_steps=EPOCHS * int(np.ceil(len(train_dataset["train"]) / TRAIN_BATCH_SIZE)),
         logging_strategy="steps",
         logging_steps=10,
         eval_steps=len(train_dataset["train"]) // 10,
