@@ -241,8 +241,7 @@ Voici la transcription :
 
     # --- MERGE LoRA + BASE MODEL ---
     logger.info("🔄 Merging LoRA adapter with base model...")
-    model_merged = PeftModel.from_pretrained(base_model, OUTPUT_DIR)
-    model_merged = model_merged.merge_and_unload()
+    model_merged = model.merge_and_unload()
 
     merged_dir = os.path.join(OUTPUT_DIR, "merged")
     os.makedirs(merged_dir, exist_ok=True)
