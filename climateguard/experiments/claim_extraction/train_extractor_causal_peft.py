@@ -127,9 +127,9 @@ def test_model(model, tokenizer, max_new_tokens, device="cpu"):
             add_generation_prompt=True,
         ).to(device)
         with torch.no_grad():
-            output_tokens = model.generate(**inputs, max_new_tokens=max_new_tokens)
+            output_tokens = model.generate(inputs, max_new_tokens=max_new_tokens)
         prediction = tokenizer.decode(
-            output_tokens[0][len(inputs["input_ids"]) :], skip_special_tokens=True
+            output_tokens[0][len(inputs) :], skip_special_tokens=True
         )
         results.append((prediction, example["summary"]))
 
@@ -187,7 +187,7 @@ Voici la transcription :
         }
     )
     train_dataset = dataset["train"].train_test_split(test_size=0.15)
-    test_dataset = dataset["test"]
+    test_dataset = dataset["test"].select(range(10))
 
     logger.info(f"\n📝 Single Sample: {train_dataset['train'][0]['messages']}")
 
