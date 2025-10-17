@@ -101,3 +101,4 @@ notebooks/experiments/*.csv
 
 credentials.txt
 logs
+climateguard/experiments/claim_extraction/climateguard_claim_extraction

@@ -26,7 +26,7 @@ def setup_logging():
     os.makedirs("logs", exist_ok=True)
 
     # Configure logging
-    log_filename = f"logs/training_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+    # log_filename = f"logs/training_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
 
     logging.basicConfig(
         level=logging.INFO,
@@ -112,7 +112,7 @@ def compute_metrics(eval_pred, tokenizer, rouge):
     return {k: round(v, 4) for k, v in result.items()}
 
 
-def test_model(model, tokenizer, prompt, max_new_tokens):
+def test_model(model, tokenizer, prompt, max_new_tokens, device="cpu"):
     logger.info("Evaluating model on test set...")
     model.eval()
     results = []
@@ -123,7 +123,7 @@ def test_model(model, tokenizer, prompt, max_new_tokens):
             return_tensors="pt",
             truncation=True,
             max_length=MAX_LENGTH - max_new_tokens,
-        ).to("mps")
+        ).to(device)
         with torch.no_grad():
             output_tokens = model.generate(**inputs, max_new_tokens=max_new_tokens)
         prediction = tokenizer.decode(output_tokens[0], skip_special_tokens=True)
@@ -137,7 +137,9 @@ def test_model(model, tokenizer, prompt, max_new_tokens):
 if __name__ == "__main__":
     rouge = evaluate.load("rouge")
     checkpoint = "kurakurai/Luth-LFM2-350M"
-    OUTPUT_DIR = "climateguard_claim_extraction"
+    OUTPUT_DIR = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "climateguard_claim_extraction"
+    )
     MAX_LENGTH = 4096
     LEARNING_RATE = 2e-5
     TRAIN_BATCH_SIZE = 4
@@ -157,6 +159,9 @@ rédigez l'affirmation comme si vous la formuliez vous-même de façon très syn
 Voici la transcription :
 {transcript}hehehe
 """
+    device = "cuda" if torch.cuda.is_available() else None
+    if not device:
+        device = "mps" if torch.backends.mps.is_available() else "cpu"
 
     tokenizer = AutoTokenizer.from_pretrained(checkpoint)
     if tokenizer.pad_token is None:
@@ -180,8 +185,8 @@ Voici la transcription :
         checkpoint, torch_dtype=torch.float16, device_map="auto"
     )
     logger.info("Evaluating base model...")
-    test_model(base_model, tokenizer, prompt, max_new_tokens=512)
-    model = create_lora_model(base_model=base_model, device="auto")
+    # test_model(base_model, tokenizer, prompt, max_new_tokens=512)
+    model = create_lora_model(base_model=base_model)
 
     training_args = SFTConfig(
         output_dir=OUTPUT_DIR,
@@ -198,10 +203,13 @@ Voici la transcription :
         optim="stable_adamw",
         lr_scheduler_type="linear",
         max_grad_norm=0.5,  # Set clipping threshold
-        fp16=False,  # Enable mixed precision training
+        fp16=torch.cuda.is_available()
+        and not torch.cuda.is_bf16_supported,  # Enable mixed precision training
+        bf16=torch.cuda.is_available()
+        and torch.cuda.is_bf16_supported(),  # Enable mixed precision training
         report_to=None,  # Disable wandb if not needed
         remove_unused_columns=False,
-        dataloader_num_workers=4,
+        dataloader_num_workers=0,
         warmup_steps=10,
         gradient_checkpointing=True,  # Save memory
     )
@@ -213,11 +221,6 @@ Voici la transcription :
         train_dataset=train_dataset["train"],
         eval_dataset=train_dataset["test"],
         processing_class=tokenizer,
-        # max_seq_length=MAX_LENGTH,
-        # compute_metrics=compute_metrics_fn,
-        # preprocess_logits_for_metrics=preprocess_logits_for_metrics,
-        # callbacks=[EarlyStoppingCallback(early_stopping_patience=10)]
-        # callbacks=[compute_metrics]
     )
     trainer.train()
 
