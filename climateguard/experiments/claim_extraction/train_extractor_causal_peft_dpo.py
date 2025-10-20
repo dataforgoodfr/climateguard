@@ -198,7 +198,12 @@ Voici la transcription :
     
     os.makedirs(os.path.join(OUTPUT_DIR, "cache", ), exist_ok=True)
     if os.path.exists(os.path.join(OUTPUT_DIR, "cache", "dpo_dataset.json")):
-        dataset = Dataset.from_json(os.path.join(OUTPUT_DIR, "cache", "dpo_dataset.json"))
+        dataset = DatasetDict(
+            {
+                "train": Dataset.from_json(os.path.join(OUTPUT_DIR, "cache", "dpo_dataset_train.json")),
+                "test": Dataset.from_json(os.path.join(OUTPUT_DIR, "cache", "dpo_dataset_test.json")),
+            }
+        )
     else:
         dataset = get_data()
         dataset = dataset.map(
@@ -219,7 +224,8 @@ Voici la transcription :
                 ],
             }
         )
-        dataset.to_json(os.path.join(OUTPUT_DIR, "cache", "dpo_dataset.json"))
+        dataset["train"].to_json(os.path.join(OUTPUT_DIR, "cache", "dpo_dataset_train.json"))
+        dataset["test"].to_json(os.path.join(OUTPUT_DIR, "cache", "dpo_dataset_test.json"))
     train_dataset = dataset["train"].train_test_split(test_size=0.15)
     test_dataset = dataset["test"]
 
