@@ -160,6 +160,7 @@ def test_model(test_dataset, model, tokenizer, max_new_tokens, device="cpu"):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--max-length", type=int, default=4096)
+    parser.add_argument("--max-new-tokens", type=int, default=512)
     parser.add_argument("--learning-rate", type=float, default=1e-6)
     parser.add_argument("--train-batch-size", type=int, default=8)
     parser.add_argument("--eval-batch-size", type=int, default=8)
@@ -248,7 +249,7 @@ Voici la transcription :
                             example,
                             base_model,
                             tokenizer,
-                            max_new_tokens=512,
+                            max_new_tokens=args.max_new_tokens,
                             device=device,
                         ),
                     },
@@ -270,7 +271,7 @@ Voici la transcription :
     logger.info(f"rejected: {train_dataset['train'][0]['rejected']}")
 
     logger.info("Evaluating base model...")
-    # test_model(test_dataset, base_model, tokenizer, max_new_tokens=512, device=device)
+    test_model(test_dataset, base_model, tokenizer, max_new_tokens=args.max_new_tokens, device=device)
     model = create_lora_model(base_model=base_model)
 
     training_args = DPOConfig(
@@ -342,4 +343,4 @@ Voici la transcription :
         f"gmguarino/climateguard-{args.checkpoint.split('/')[1]}-claim-extraction-dpo"
     )
 
-    test_model(test_dataset, model_merged, tokenizer, max_new_tokens=512, device=device)
+    test_model(test_dataset, model_merged, tokenizer, max_new_tokens=args.max_new_tokens, device=device)
