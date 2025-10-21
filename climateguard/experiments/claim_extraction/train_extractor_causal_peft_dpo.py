@@ -298,6 +298,7 @@ Voici la transcription :
         dataloader_num_workers=0,
         warmup_steps=10,
         gradient_checkpointing=True,  # Save memory
+        gradient_checkpointing_kwargs = {"use_reentrant": False},
     )
     compute_metrics_fn = partial(compute_metrics, tokenizer=tokenizer, rouge=rouge)
 
