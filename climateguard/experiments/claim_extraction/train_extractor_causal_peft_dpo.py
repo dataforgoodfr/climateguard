@@ -153,6 +153,10 @@ def test_model(test_dataset, model, tokenizer, max_new_tokens, device="cpu"):
         results.append((prediction, example["summary"]))
 
     preds, refs = zip(*results)
+    with open("predictions.txt", "w") as f:
+        for pred in preds:
+            f.write(pred)
+            f.write("\n")
     rouge_scores = rouge.compute(predictions=preds, references=refs)
     logger.info(f"ROUGE scores on test set: {rouge_scores}")
 
@@ -336,11 +340,11 @@ Voici la transcription :
     logger.info(f"✅ Merged model saved to {merged_dir}")
 
     logger.info("🚀 Pushing merged model to Hugging Face Hub...")
-    model_merged.push_to_hub(
+    model.push_to_hub(
         f"gmguarino/climateguard-{args.checkpoint.split('/')[1]}-claim-extraction-dpo"
     )
     tokenizer.push_to_hub(
         f"gmguarino/climateguard-{args.checkpoint.split('/')[1]}-claim-extraction-dpo"
     )
 
-    test_model(test_dataset, model_merged, tokenizer, max_new_tokens=args.max_new_tokens, device=device)
+    test_model(test_dataset, model, tokenizer, max_new_tokens=args.max_new_tokens, device=device)
