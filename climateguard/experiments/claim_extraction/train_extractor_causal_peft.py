@@ -136,6 +136,10 @@ def test_model(model, tokenizer, max_new_tokens, device="cpu"):
         results.append((prediction, example["summary"]))
 
     preds, refs = zip(*results)
+    with open("predictions.txt", "w") as f:
+        for pred in preds:
+            f.write(pred)
+            f.write("\n")
     rouge_scores = rouge.compute(predictions=preds, references=refs)
     logger.info(f"ROUGE scores on test set: {rouge_scores}")
 
