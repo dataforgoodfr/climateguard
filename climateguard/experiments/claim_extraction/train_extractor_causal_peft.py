@@ -115,7 +115,7 @@ def compute_metrics(eval_pred, tokenizer, rouge):
     return {k: round(v, 4) for k, v in result.items()}
 
 
-def test_model(model, tokenizer, max_new_tokens, device="cpu"):
+def test_model(test_dataset, model, tokenizer, max_new_tokens, device="cpu"):
     logger.info("Evaluating model on test set...")
     model.eval()
     results = []
@@ -207,7 +207,7 @@ Voici la transcription :
         args.checkpoint, torch_dtype=torch.float16, device_map="auto"
     )
     logger.info("Evaluating base model...")
-    test_model(base_model, tokenizer, max_new_tokens=args.max_new_tokens, device=device)
+    test_model(test_dataset, base_model, tokenizer, max_new_tokens=args.max_new_tokens, device=device)
     model = create_lora_model(base_model=base_model)
 
     training_args = SFTConfig(
