@@ -15,7 +15,6 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 load_dotenv()
 
 # Initialize client
-client = AsyncOpenAI()
 client_ollama = AsyncClient()
 ollama_model_id = "hf.co/kurakurai/Luth-LFM2-350M-GGUF:latest"
 
@@ -192,6 +191,7 @@ if engine == "transformers":
         reference.append(". ".join(example["claims"]))
 
 elif engine == "openai":
+    client = AsyncOpenAI()
     prompts = []
     for example in tqdm(dataset):
         prompts.append(prompt.format(transcript=example["plaintext"]))
