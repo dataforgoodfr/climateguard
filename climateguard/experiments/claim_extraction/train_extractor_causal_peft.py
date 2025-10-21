@@ -167,9 +167,13 @@ if __name__ == "__main__":
         os.path.dirname(os.path.abspath(__file__)), "climateguard_claim_extraction"
     )
     prompt = """
-À partir d'une transcription d'une émission médiatique, 
-identifiez les affirmations qui ont été présentées comme des faits. 
+À partir d'une transcription d'une émission médiatique, vous devez extraire l'argument principal du texte,
+dans le but d'identifier les affirmations qui ont été présentées comme des faits. 
 Gardez à l'esprit que le texte peut être désordonné et manquer de ponctuation. 
+Votre tâche consiste à comprendre le message principal qui est véhiculé.
+N'oubliez pas de mentionner les personnes ou entités qui ont été mentionnées dans l'affirmation.
+Soyez précis et concis. 
+L'affirmation doit être vérifiable, rédigez-la comme si vous la formuliez vous-même.
 
 Voici la transcription :
 {transcript}
@@ -232,7 +236,7 @@ Voici la transcription :
         warmup_steps=10,
         gradient_checkpointing=True,  # Save memory
         gradient_checkpointing_kwargs={"use_reentrant": False},
-        assistant_only_loss=True,
+        assistant_only_loss=True
     )
     compute_metrics_fn = partial(compute_metrics, tokenizer=tokenizer, rouge=rouge)
 
