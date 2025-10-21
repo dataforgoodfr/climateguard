@@ -232,6 +232,7 @@ Voici la transcription :
         warmup_steps=10,
         gradient_checkpointing=True,  # Save memory
         gradient_checkpointing_kwargs={"use_reentrant": False},
+        assistant_only_loss=True,
     )
     compute_metrics_fn = partial(compute_metrics, tokenizer=tokenizer, rouge=rouge)
 
