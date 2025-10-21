@@ -266,13 +266,13 @@ Voici la transcription :
         dataset["test"].to_json(
             os.path.join(OUTPUT_DIR, "cache", "dpo_dataset_test.json")
         )
-    train_dataset = dataset["train"].train_test_split(test_size=0.15)
+    train_dataset = dataset["train"].train_test_split(test_size=0.15, shuffle=True, seed=976)
     test_dataset = dataset["test"]
 
     logger.info(f"\n📝 Single Sample:")
     logger.info(f"prompt: {train_dataset['train'][0]['prompt']}")
-    logger.info(f"chosen: {train_dataset['train'][0]['chosen']}")
-    logger.info(f"rejected: {train_dataset['train'][0]['rejected']}")
+    logger.info(f"chosen: {train_dataset['train'][0]['chosen'][-1]}")
+    logger.info(f"rejected: {train_dataset['train'][0]['rejected'][-1]}")
 
     logger.info("Evaluating base model...")
     test_model(test_dataset, base_model, tokenizer, max_new_tokens=args.max_new_tokens, device=device)
