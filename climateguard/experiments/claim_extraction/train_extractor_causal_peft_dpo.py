@@ -3,6 +3,7 @@ import logging
 import os
 from datetime import datetime
 from functools import partial
+import wandb
 
 import evaluate
 import numpy as np
@@ -44,9 +45,9 @@ def setup_logging():
 logger = setup_logging()
 
 
-load_dotenv()
+loaded = load_dotenv()
+print(loaded)
 login(token=os.getenv("HF_TOKEN"))
-
 
 def get_data():
     dataset = load_dataset("DataForGood/climateguard")
@@ -164,8 +165,14 @@ if __name__ == "__main__":
     parser.add_argument("--weight-decay", type=float, default=0.01)
     parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--checkpoint", type=str, default="kurakurai/Luth-LFM2-350M")
+    parser.add_argument('--wandb', action=argparse.BooleanOptionalAction)
 
     args = parser.parse_args()
+
+    if args.wandb:
+        logger.info("reporting to wandb")
+        wandb.login(key=os.getenv("WANDB_KEY"))
+
 
     rouge = evaluate.load("rouge")
     OUTPUT_DIR = os.path.join(
@@ -286,13 +293,22 @@ Voici la transcription :
         and not torch.cuda.is_bf16_supported,  # Enable mixed precision training
         bf16=torch.cuda.is_available()
         and torch.cuda.is_bf16_supported(),  # Enable mixed precision training
-        report_to=None,  # Disable wandb if not needed
+        report_to="wandb" if args.wandb else None,  # Disable wandb if not needed
         remove_unused_columns=False,
         dataloader_num_workers=0,
         warmup_steps=10,
         gradient_checkpointing=True,  # Save memory
     )
     compute_metrics_fn = partial(compute_metrics, tokenizer=tokenizer, rouge=rouge)
+
+    if args.wandb:
+        run = wandb.init(
+            entity=os.getenv("WANDB_ENTITY", "gmguarino"),
+            project="claim_extraction",
+            config=training_args.to_dict(),
+            name=f"gmguarino/climateguard-{args.checkpoint.split('/')[1]}-claim-extraction-dpo"
+        )
+
 
     trainer = DPOTrainer(
         model=model,
