@@ -272,11 +272,11 @@ Voici la transcription :
     logger.info(f"✅ Merged model saved to {merged_dir}")
 
     logger.info("🚀 Pushing merged model to Hugging Face Hub...")
-    model.push_to_hub(
+    model_merged.push_to_hub(
         f"gmguarino/climateguard-{args.checkpoint.split('/')[1]}-claim-extraction-sft"
     )
     tokenizer.push_to_hub(
         f"gmguarino/climateguard-{args.checkpoint.split('/')[1]}-claim-extraction-sft"
     )
 
-    test_model(test_dataset, model, tokenizer, max_new_tokens=args.max_new_tokens, device=device)
+    test_model(test_dataset, model_merged, tokenizer, max_new_tokens=args.max_new_tokens, device=device)
