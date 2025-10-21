@@ -46,8 +46,7 @@ def setup_logging():
 logger = setup_logging()
 
 
-loaded = load_dotenv()
-print(loaded)
+load_dotenv()
 login(token=os.getenv("HF_TOKEN"))
 
 
