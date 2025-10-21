@@ -201,6 +201,9 @@ Voici la transcription :
     tokenizer = AutoTokenizer.from_pretrained(args.checkpoint)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.chat_template = open(
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "chat_template.jinja")
+    ).read()
 
     base_model = AutoModelForCausalLM.from_pretrained(
         args.checkpoint, torch_dtype=torch.float16, device_map="auto"
@@ -262,7 +265,9 @@ Voici la transcription :
         dataset["test"].to_json(
             os.path.join(OUTPUT_DIR, "cache", "dpo_dataset_test.json")
         )
-    train_dataset = dataset["train"].train_test_split(test_size=0.15, shuffle=True, seed=976)
+    train_dataset = dataset["train"].train_test_split(
+        test_size=0.15, shuffle=True, seed=976
+    )
     test_dataset = dataset["test"]
 
     logger.info(f"\n📝 Single Sample:")
@@ -271,7 +276,13 @@ Voici la transcription :
     logger.info(f"rejected: {train_dataset['train'][0]['rejected'][-1]}")
 
     logger.info("Evaluating base model...")
-    test_model(test_dataset, base_model, tokenizer, max_new_tokens=args.max_new_tokens, device=device)
+    test_model(
+        test_dataset,
+        base_model,
+        tokenizer,
+        max_new_tokens=args.max_new_tokens,
+        device=device,
+    )
     model = create_lora_model(base_model=base_model)
 
     training_args = DPOConfig(
@@ -343,4 +354,10 @@ Voici la transcription :
         f"gmguarino/climateguard-{args.checkpoint.split('/')[1]}-claim-extraction-dpo"
     )
 
-    test_model(test_dataset, model, tokenizer, max_new_tokens=args.max_new_tokens, device=device)
+    test_model(
+        test_dataset,
+        model,
+        tokenizer,
+        max_new_tokens=args.max_new_tokens,
+        device=device,
+    )
