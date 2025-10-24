@@ -17,6 +17,7 @@ dependencies = [
     "pandas>=2.3.2",
     "peft>=0.17.1",
     "protobuf>=6.32.1",
+    "psutil>=7.1.0",
     "pydantic>=2.11.9",
     "python-dotenv>=1.1.1",
     "requests>=2.32.5",
