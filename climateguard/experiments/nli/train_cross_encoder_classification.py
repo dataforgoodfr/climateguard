@@ -87,11 +87,6 @@ def collate_fn(batch):
 def get_scheduler(
     optimizer,
     args,
-    start_factor=0.1,
-    end_factor=1,
-    total_iters=20,
-    T_max=80,
-    eta_min=3e-5,
 ):
     if args.lr_scheduler == "decay":
         scheduler = torch.optim.lr_scheduler.ExponentialLR(
@@ -119,6 +114,15 @@ def get_scheduler(
     return scheduler
 
 
+def get_grad_norm(model):
+    with torch.no_grad():
+        for p in model.parameters():
+            param_norm = p.grad.data.norm(2)
+            total_norm += param_norm.item() ** 2
+        total_norm = total_norm ** (1. / 2)
+    return total_norm
+
+
 def train_batch(
     model,
     batch,
@@ -128,8 +132,11 @@ def train_batch(
     scheduler,
     running_loss=0.0,
     gradient_accumulation_steps=4,
+    gradient_clipping=True,
+    max_grad_norm=1.0,
     logging_steps=10,
     epoch_idx=None,
+    run=None,
 ):
     batch = batch.to(device)
     label = label.to(device)
@@ -139,19 +146,31 @@ def train_batch(
     loss.backward()
     running_loss += loss.item()
     del batch, label, out
-    if (batch_idx + 1) % logging_steps == 0:
+    if ((batch_idx + 1)) % logging_steps == 0:
         tqdm.write(
             (
                 f"Epoch: {epoch_idx}; "
-                f"Train Loss: {running_loss}; "
+                f"Train Loss: {loss}; "
                 f"LR: {scheduler.get_lr()}; "
+                f"Grad Norm: {get_grad_norm(model)}%"
                 f"Memory usage: {psutil.virtual_memory().percent}%"
             )
         )
+        if run:
+            run.log(
+                {
+                    "train/epoch": epoch_idx,
+                    "train/loss": loss,
+                    "train/lr": scheduler.get_lr(),
+                    "train/grad_norm": get_grad_norm(model),
+                }
+            )
 
     if ((batch_idx + 1) % gradient_accumulation_steps == 0) or (
         batch_idx + 1 == len(train_dataloader)
     ):
+        if gradient_clipping:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
         optimizer.step()
         optimizer.zero_grad()
         running_loss = 0.0
@@ -187,6 +206,17 @@ def test_model(model, dataloader, loss_fn, phase="eval"):
         torch.mps.empty_cache()
         return stats
 
+def log_eval_stats(run, stats, epoch_idx):
+    run.log(
+        {
+            "eval/epoch": epoch_idx,
+            "train/loss": stats["eval_loss"],
+            "train/precision": stats["weighted avg"]["precision"],
+            "train/recall": stats["weighted avg"]["recall"],
+            "train/f1": stats["weighted avg"]["f1-score"],
+        }
+    )
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -204,6 +234,8 @@ if __name__ == "__main__":
     parser.add_argument("--gradient-accumulation-steps", type=int, default=4)
     parser.add_argument("--validation-steps", type=int, default=10)
     parser.add_argument("--logging-steps", type=int, default=5)
+    parser.add_argument("--no-grad-norm-clip", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--max-grad-norm", type=float, default=1.0)
 
     parser.add_argument(
         "--checkpoint", type=str, default="cross-encoder/nli-deberta-v3-base"
@@ -229,6 +261,13 @@ if __name__ == "__main__":
     if args.wandb:
         print("reporting to wandb")
         wandb.login(key=os.getenv("WANDB_KEY"))
+        run = wandb.init(
+            entity=os.getenv("WANDB_ENTITY", "gmguarino"),
+            project="climatecheck",
+            config=args.__dict__,
+            name=f"gmguarino/{args.checkpoint.split('/')[1]}-climatecheck"
+            + str(uuid.uuid4()).split("-")[0],
+        )
 
     train_dataset, val_dataset, test_dataset = get_data()
 
@@ -280,8 +319,11 @@ if __name__ == "__main__":
                 scheduler,
                 running_loss=running_loss,
                 gradient_accumulation_steps=args.gradient_accumulation_steps,
+                gradient_clipping=not args.no_grad_norm_clip,
+                max_grad_norm=args.max_grad_norm,
                 logging_steps=args.logging_steps,
                 epoch_idx=epoch_idx,
+                run=run,
             )
             if (batch_idx + 1) % args.validation_steps == 0:
                 val_stats = test_model(model, val_dataloader, loss_fn, phase="eval")
@@ -292,6 +334,7 @@ if __name__ == "__main__":
         f"Post training metrics on test set:\n{json.dumps(test_stats, indent=2)}"
     )
 
+run.finish()
 
 # # Load a model to train/finetune
 
