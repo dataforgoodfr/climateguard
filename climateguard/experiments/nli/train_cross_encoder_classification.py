@@ -116,10 +116,11 @@ def get_scheduler(
 
 def get_grad_norm(model):
     with torch.no_grad():
+        total_norm = 0
         for p in model.parameters():
             param_norm = p.grad.data.norm(2)
             total_norm += param_norm.item() ** 2
-        total_norm = total_norm ** (1. / 2)
+        total_norm = total_norm ** (1.0 / 2)
     return total_norm
 
 
@@ -142,17 +143,16 @@ def train_batch(
     label = label.to(device)
     out = model(**batch)
     loss = loss_fn(out.logits, label)
-    loss = loss / gradient_accumulation_steps
     loss.backward()
-    running_loss += loss.item()
+    running_loss += loss.item() / gradient_accumulation_steps
     del batch, label, out
-    if ((batch_idx + 1)) % logging_steps == 0:
+    if (batch_idx + 1) % logging_steps == 0:
         tqdm.write(
             (
                 f"Epoch: {epoch_idx}; "
                 f"Train Loss: {loss}; "
-                f"LR: {scheduler.get_lr()}; "
-                f"Grad Norm: {get_grad_norm(model)}%"
+                f"LR: {scheduler.get_lr()[0]}; "
+                f"Grad Norm: {get_grad_norm(model)}; "
                 f"Memory usage: {psutil.virtual_memory().percent}%"
             )
         )
@@ -161,7 +161,7 @@ def train_batch(
                 {
                     "train/epoch": epoch_idx,
                     "train/loss": loss,
-                    "train/lr": scheduler.get_lr(),
+                    "train/lr": scheduler.get_lr()[0],
                     "train/grad_norm": get_grad_norm(model),
                 }
             )
@@ -200,20 +200,23 @@ def test_model(model, dataloader, loss_fn, phase="eval"):
             "memory_usage": f"{psutil.virtual_memory().percent}%",
         }
         stats.update(
-            classification_report(testing_labels, predictions, output_dict=True)
+            classification_report(testing_labels, predictions, output_dict=True)[
+                "weighted avg"
+            ]
         )
         tqdm.write(str(stats))
         torch.mps.empty_cache()
         return stats
 
+
 def log_eval_stats(run, stats, epoch_idx):
     run.log(
         {
             "eval/epoch": epoch_idx,
-            "train/loss": stats["eval_loss"],
-            "train/precision": stats["weighted avg"]["precision"],
-            "train/recall": stats["weighted avg"]["recall"],
-            "train/f1": stats["weighted avg"]["f1-score"],
+            "eval/loss": stats["eval_loss"],
+            "eval/precision": stats["precision"],
+            "eval/recall": stats["recall"],
+            "eval/f1": stats["f1-score"],
         }
     )
 
@@ -265,9 +268,11 @@ if __name__ == "__main__":
             entity=os.getenv("WANDB_ENTITY", "gmguarino"),
             project="climatecheck",
             config=args.__dict__,
-            name=f"gmguarino/{args.checkpoint.split('/')[1]}-climatecheck"
+            name=f"gmguarino/{args.checkpoint.split('/')[1]}-climatecheck-"
             + str(uuid.uuid4()).split("-")[0],
         )
+    else:
+        run = None
 
     train_dataset, val_dataset, test_dataset = get_data()
 
@@ -307,8 +312,9 @@ if __name__ == "__main__":
     )
 
     running_loss = 0.0
+    pbar = tqdm(total=args.epochs * len(train_dataloader))
     for epoch in range(args.epochs):
-        for batch_idx, (batch, label) in enumerate(tqdm(train_dataloader)):
+        for batch_idx, (batch, label) in enumerate(train_dataloader):
             epoch_idx = epoch + batch_idx / len(train_dataloader)
             running_loss = train_batch(
                 model,
@@ -327,75 +333,13 @@ if __name__ == "__main__":
             )
             if (batch_idx + 1) % args.validation_steps == 0:
                 val_stats = test_model(model, val_dataloader, loss_fn, phase="eval")
-        scheduler.step()
+                if run:
+                    log_eval_stats(run, val_stats, epoch_idx)
+            pbar.update()
 
     test_stats = test_model(model, test_dataloader, loss_fn, phase="test")
     logging.info(
         f"Post training metrics on test set:\n{json.dumps(test_stats, indent=2)}"
     )
 
-run.finish()
-
-# # Load a model to train/finetune
-
-# # Initialize the MultipleNegativesRankingLoss
-# # This loss requires pairs of related texts or triplets
-# loss = CrossEntropyLoss(model)
-
-# dev_cls_evaluator = CrossEncoderClassificationEvaluator(
-#     sentence_pairs=list(zip(val_dataset["claim"], val_dataset["abstract"])),
-#     labels=val_dataset["label"],
-#     name="climatecheck-dev",
-# )
-# dev_cls_evaluator(model)
-
-# # 5. Define the training arguments
-# short_model_name = model_name if "/" not in model_name else model_name.split("/")[-1]
-# run_name = f"classify-{short_model_name}-claims"
-# output_dir = "output/" + run_name + datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-# train_batch_size = 4
-# args = CrossEncoderTrainingArguments(
-#     # Required parameter:
-#     output_dir=output_dir,
-#     # Optional training parameters:
-#     num_train_epochs=5,
-#     per_device_train_batch_size=train_batch_size,
-#     per_device_eval_batch_size=train_batch_size,
-#     warmup_ratio=0.1,
-#     fp16=False,  # Set to False if you get an error that your GPU can't run on FP16
-#     bf16=False,  # Set to True if you have a GPU that supports BF16
-#     # Optional tracking/debugging parameters:
-#     eval_strategy="steps",
-#     eval_steps=20,
-#     save_strategy="steps",
-#     save_steps=500,
-#     save_total_limit=2,
-#     logging_steps=10,
-#     run_name=run_name,  # Will be used in W&B if `wandb` is installed
-# )
-
-# if WANDB:
-#     run = wandb.init(
-#         entity=os.getenv("WANDB_ENTITY", "gmguarino"),
-#         project="claim_extraction",
-#         config=args.to_dict(),
-#         name=f"gmguarino/climateguard-{short_model_name}-claim-extraction-sft"
-#         + str(uuid.uuid4()).split("-")[0],
-#     )
-
-# trainer = CrossEncoderTrainer(
-#     model=model,
-#     args=args,
-#     train_dataset=train_dataset,
-#     eval_dataset=val_dataset,
-#     loss=loss,
-#     evaluator=dev_cls_evaluator,
-# )
-# trainer.train()
-
-# test_cls_evaluator = CrossEncoderClassificationEvaluator(
-#     list(zip(test_dataset["claim"], test_dataset["abstract"])),
-#     test_dataset["label"],
-#     name="climatecheck-test",
-# )
-# print(test_cls_evaluator(model))
+    run.finish()
