@@ -217,8 +217,8 @@ text: {transcript}"""
             gradient_accumulation_steps=args.gradient_accumulation_steps,
             weight_decay=args.weight_decay,
             warmup_steps=5,
-            max_steps=args.epochs
-            * int(np.ceil(len(train_dataset["train"]) / args.train_batch_size)),
+            max_steps=4,#args.epochs
+            #* int(np.ceil(len(train_dataset["train"]) / args.train_batch_size)),
             logging_strategy="steps",
             logging_steps=10,
             eval_steps=len(train_dataset["train"]) // 10,
