@@ -232,6 +232,7 @@ text: {transcript}"""
         model=model,
         tokenizer=tokenizer,
         train_dataset=train_dataset['train'],
+        eval_dataset=train_dataset['test'],
         dataset_text_field="chat",
         max_seq_length=args.max_length,
         packing=False, 
