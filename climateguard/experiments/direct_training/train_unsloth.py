@@ -267,12 +267,12 @@ text: {transcript}"""
     model.save_pretrained_merged(
         f"{OUTPUT_DIR}/model",
         tokenizer,
-        save_method="merged_4bit",
+        save_method="merged_4bit_forced",
     )
 
     model.push_to_hub_merged(
         f"gmguarino/{args.checkpoint.split('/')[1]}-climateguard",
         tokenizer,
-        save_method="merged_4bit",
+        save_method="merged_4bit_forced",
         token=os.getenv("HF_TOKEN")
     )
