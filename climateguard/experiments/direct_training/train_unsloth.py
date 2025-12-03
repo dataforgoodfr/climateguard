@@ -110,7 +110,7 @@ def test_model(args, test_dataset, model, tokenizer, max_new_tokens, device="cud
     logger.info(f"Classification on test set: \n{report}")
 
 def formatting_prompts_func(examples, tokenizer):
-    convos = examples["conversations"]
+    convos = examples["messages"]
     chats = [tokenizer.apply_chat_template(convo, tokenize = False, add_generation_prompt = False) for convo in convos]
     return { "chat" : chats, }
 
