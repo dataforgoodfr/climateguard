@@ -7,6 +7,7 @@ from typing import Optional, Union
 
 import numpy as np
 import torch
+import unsloth
 from datasets import load_dataset
 from dotenv import load_dotenv
 from huggingface_hub import login
