@@ -3,27 +3,17 @@ import logging
 import os
 import re
 import uuid
-from datetime import datetime
-from functools import partial
 from typing import Optional, Union
 
-import evaluate
 import numpy as np
 import torch
-from datasets import Dataset, DatasetDict, load_dataset
+from datasets import load_dataset
 from dotenv import load_dotenv
 from huggingface_hub import login
-from peft import LoraConfig, PeftModel, TaskType, get_peft_model
 from sklearn.metrics import classification_report
 from tqdm import tqdm
-from transformers import (
-    AutoModelForCausalLM,
-    AutoTokenizer,
-    DataCollatorForLanguageModeling,
-    Trainer,
-    TrainingArguments,
-)
 from trl import SFTConfig, SFTTrainer
+from unsloth import FastLanguageModel
 
 import wandb
 
@@ -74,57 +64,6 @@ def get_data():
     return dataset
 
 
-def create_lora_model(base_model):
-    # Load base model
-
-    GLU_MODULES = ["w1", "w2", "w3"]
-    MHA_MODULES = ["q_proj", "k_proj", "v_proj"]
-    CONV_MODULES = ["in_proj", "out_proj"]
-    target_modules = MHA_MODULES + CONV_MODULES + GLU_MODULES
-    # Create LoRA configuration
-    lora_config = LoraConfig(
-        r=8,
-        lora_alpha=32,
-        target_modules=target_modules,
-        lora_dropout=0.05,
-        bias="none",
-        task_type=TaskType.CAUSAL_LM,
-    )
-
-    # Apply LoRA to model
-    model = get_peft_model(base_model, lora_config)
-    model.print_trainable_parameters()
-
-    return model
-
-
-def preprocess_logits_for_metrics(logits, labels):
-    if isinstance(logits, tuple):
-        logits = logits[0]
-    return logits.argmax(dim=-1)
-
-
-def compute_metrics(eval_pred, tokenizer, rouge):
-    predictions, labels = eval_pred
-    if isinstance(predictions, tuple):
-        predictions = predictions[0]
-
-    decoded_preds = tokenizer.batch_decode(predictions, skip_special_tokens=True)
-    labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
-    decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
-
-    result = rouge.compute(
-        predictions=decoded_preds, references=decoded_labels, use_stemmer=True
-    )
-
-    prediction_lens = [
-        np.count_nonzero(pred != tokenizer.pad_token_id) for pred in predictions
-    ]
-    result["gen_len"] = np.mean(prediction_lens)
-
-    return {k: round(v, 4) for k, v in result.items()}
-
-
 def parse_response(response: Optional[Union[int, str]]):
     """Parse response containing only a score."""
     if isinstance(response, int):
@@ -137,7 +76,7 @@ def parse_response(response: Optional[Union[int, str]]):
     return score
 
 
-def test_model(test_dataset, model, tokenizer, max_new_tokens, device="cpu"):
+def test_model(args, test_dataset, model, tokenizer, max_new_tokens, device="cuda"):
     logger.info("Evaluating model on test set...")
     model.eval()
     results = []
@@ -169,6 +108,11 @@ def test_model(test_dataset, model, tokenizer, max_new_tokens, device="cpu"):
     )
     logger.info(f"Classification on test set: \n{report}")
 
+def formatting_prompts_func(examples, tokenizer):
+    convos = examples["conversations"]
+    chats = [tokenizer.apply_chat_template(convo, tokenize = False, add_generation_prompt = False) for convo in convos]
+    return { "chat" : chats, }
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -177,9 +121,16 @@ if __name__ == "__main__":
     parser.add_argument("--learning-rate", type=float, default=5e-5)
     parser.add_argument("--train-batch-size", type=int, default=8)
     parser.add_argument("--eval-batch-size", type=int, default=8)
+    parser.add_argument("--lora-r", type=int, default=16)
+    parser.add_argument("--lora-alpha", type=int, default=16)
     parser.add_argument("--weight-decay", type=float, default=0.01)
+    parser.add_argument("--max-grad-norm", type=float, default=0.1)
     parser.add_argument("--epochs", type=int, default=10)
-    parser.add_argument("--checkpoint", type=str, default="kurakurai/Luth-LFM2-350M")
+    parser.add_argument(
+        "--checkpoint",
+        type=str,
+        default="unsloth/Mistral-Small-3.2-24B-Instruct-2506-bnb-4bit",
+    )
     parser.add_argument("--wandb", action=argparse.BooleanOptionalAction)
 
     args = parser.parse_args()
@@ -188,7 +139,6 @@ if __name__ == "__main__":
         logger.info("reporting to wandb")
         wandb.login(key=os.getenv("WANDB_KEY"))
 
-    rouge = evaluate.load("rouge")
     OUTPUT_DIR = os.path.join(
         os.path.dirname(os.path.abspath(__file__)), "climateguard_train"
     )
@@ -201,6 +151,7 @@ Does the text promote climate change misinformation that undermines well-establi
 Answer just a number on a scale of 0 - does not promote - to 10 - certainly promotes.
 
 text: {transcript}"""
+
     device = "cuda" if torch.cuda.is_available() else None
     if not device:
         device = "mps" if torch.backends.mps.is_available() else "cpu"
@@ -208,16 +159,34 @@ text: {transcript}"""
     logging.info(f"Using device: {device}")
     logging.info(f"bfloat available:: {torch.cuda.is_bf16_supported()}")
 
-    tokenizer = AutoTokenizer.from_pretrained(args.checkpoint)
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
-    tokenizer.chat_template = open(
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), "chat_template.jinja")
-    ).read()
+    model, tokenizer = FastLanguageModel.from_pretrained(
+        model_name=args.checkpoint,
+        max_seq_length=args.max_length,
+        dtype=None,
+        load_in_4bit=True,
+    )
 
+    model = FastLanguageModel.get_peft_model(
+        model,
+        r=args.lora_r,
+        target_modules=[
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj",
+        ],
+        lora_alpha=args.lora_alpha,
+        lora_dropout=0,
+        bias="none",
+        use_gradient_checkpointing="unsloth",
+        random_state=3407,
+        use_rslora=False,
+        loftq_config=None,
+    )
     dataset = get_data()
-    logger.info(dataset)
-    logger.info(dataset["test"].to_pandas().value.unique())
     dataset = dataset.map(
         lambda example: {
             "messages": [
@@ -226,98 +195,79 @@ text: {transcript}"""
             ]
         }
     )
+
+    dataset = dataset.map(
+        lambda examples: formatting_prompts_func(examples, tokenizer),
+        batched=True,
+    )
     train_dataset = dataset["train"].train_test_split(test_size=0.15)
     test_dataset = dataset["test"]
 
     logger.info(f"\n📝 Single Sample: {train_dataset['train'][0]['messages']}")
 
-    base_model = AutoModelForCausalLM.from_pretrained(
-        args.checkpoint, torch_dtype=torch.float16, device_map="auto"
+    training_args = (
+        SFTConfig(
+            eval_strategy="steps",
+            learning_rate=args.learning_rate,
+            per_device_train_batch_size=args.train_batch_size,
+            per_device_eval_batch_size=args.eval_batch_size,
+            weight_decay=args.weight_decay,
+            warmup_steps=5,
+            max_steps=args.epochs
+            * int(np.ceil(len(train_dataset["train"]) / args.train_batch_size)),
+            logging_strategy="steps",
+            logging_steps=10,
+            eval_steps=len(train_dataset["train"]) // 10,
+            optim="adamw_8bit",
+            lr_scheduler_type="linear",
+            max_grad_norm=args.max_grad_norm,  
+            output_dir=OUTPUT_DIR,
+            report_to="wandb" if args.wandb else None,
+        ),
     )
-    logger.info("Evaluating base model...")
-    test_model(
-        test_dataset,
-        base_model,
-        tokenizer,
-        max_new_tokens=args.max_new_tokens,
-        device=device,
-    )
-    model = create_lora_model(base_model=base_model)
 
-    training_args = SFTConfig(
-        output_dir=OUTPUT_DIR,
-        eval_strategy="steps",
-        learning_rate=args.learning_rate,
-        per_device_train_batch_size=args.train_batch_size,
-        per_device_eval_batch_size=args.eval_batch_size,
-        weight_decay=args.weight_decay,
-        save_total_limit=3,
-        max_steps=args.epochs
-        * int(np.ceil(len(train_dataset["train"]) / args.train_batch_size)),
-        logging_strategy="steps",
-        logging_steps=10,
-        eval_steps=len(train_dataset["train"]) // 10,
-        optim="stable_adamw",
-        lr_scheduler_type="linear",
-        max_grad_norm=0.5,  # Set clipping threshold
-        fp16=torch.cuda.is_available()
-        and not torch.cuda.is_bf16_supported,  # Enable mixed precision training
-        bf16=torch.cuda.is_available()
-        and torch.cuda.is_bf16_supported(),  # Enable mixed precision training
-        report_to="wandb" if args.wandb else None,  # Disable wandb if not needed
-        remove_unused_columns=False,
-        dataloader_num_workers=0,
-        warmup_steps=10,
-        gradient_checkpointing=True,  # Save memory
-        gradient_checkpointing_kwargs={"use_reentrant": False},
-        assistant_only_loss=True,
+    trainer = SFTTrainer(
+        model=model,
+        tokenizer=tokenizer,
+        train_dataset=dataset,
+        dataset_text_field="chat",
+        max_seq_length=args.max_length,
+        packing=False, 
+        args=training_args,
     )
-    compute_metrics_fn = partial(compute_metrics, tokenizer=tokenizer, rouge=rouge)
 
     if args.wandb:
         run = wandb.init(
             entity=os.getenv("WANDB_ENTITY", "gmguarino"),
             project="classification",
             config=training_args.to_dict(),
-            name=f"gmguarino/climateguard-{args.checkpoint.split('/')[1]}-classification-sft"
+            name=f"gmguarino/{args.checkpoint.split('/')[1]}-climateguard"
             + str(uuid.uuid4()).split("-")[0],
         )
+    trainer_stats = trainer.train()
 
-    trainer = SFTTrainer(
-        model=model,
-        args=training_args,
-        train_dataset=train_dataset["train"],
-        eval_dataset=train_dataset["test"],
-        processing_class=tokenizer,
-    )
-    trainer.train()
-
-    # --- SAVE LoRA ADAPTER ---
-    model.save_pretrained(OUTPUT_DIR)
-    tokenizer.save_pretrained(OUTPUT_DIR)
-
-    # --- MERGE LoRA + BASE MODEL ---
-    logger.info("🔄 Merging LoRA adapter with base model...")
-    model_merged = model.merge_and_unload()
-
-    merged_dir = os.path.join(OUTPUT_DIR, "merged")
-    os.makedirs(merged_dir, exist_ok=True)
-    model_merged.save_pretrained(merged_dir)
-    tokenizer.save_pretrained(merged_dir)
-    logger.info(f"✅ Merged model saved to {merged_dir}")
-
-    logger.info("🚀 Pushing merged model to Hugging Face Hub...")
-    model_merged.push_to_hub(
-        f"gmguarino/climateguard-{args.checkpoint.split('/')[1]}-classification-sft"
-    )
-    tokenizer.push_to_hub(
-        f"gmguarino/climateguard-{args.checkpoint.split('/')[1]}-classification-sft"
-    )
+    FastLanguageModel.for_inference(model)  # Enable native 2x faster inference
 
     test_model(
         test_dataset,
-        model_merged,
+        model,
         tokenizer,
         max_new_tokens=args.max_new_tokens,
         device=device,
+    )
+    model.save_pretrained("lora_model")  
+    tokenizer.save_pretrained("lora_model")
+    # model.push_to_hub("your_name/lora_model", token = "...") # Online saving
+    # tokenizer.push_to_hub("your_name/lora_model", token = "...") # Online saving
+
+    model.save_pretrained_merged(
+        f"{OUTPUT_DIR}/model",
+        tokenizer,
+        save_method="merged_4bit",
+    )
+
+    model.push_to_hub_merged(
+        f"gmguarino/{args.checkpoint.split('/')[1]}-climateguard",
+        tokenizer,
+        save_method="merged_4bit",
     )
