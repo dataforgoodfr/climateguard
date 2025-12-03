@@ -165,6 +165,7 @@ text: {transcript}"""
         max_seq_length=args.max_length,
         dtype=None,
         load_in_4bit=True,
+        token=os.getenv("HF_TOKEN"),
     )
 
     model = FastLanguageModel.get_peft_model(
@@ -271,4 +272,5 @@ text: {transcript}"""
         f"gmguarino/{args.checkpoint.split('/')[1]}-climateguard",
         tokenizer,
         save_method="merged_4bit",
+        token=os.getenv("HF_TOKEN")
     )
