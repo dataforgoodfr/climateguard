@@ -252,6 +252,7 @@ text: {transcript}"""
     FastLanguageModel.for_inference(model)  # Enable native 2x faster inference
 
     test_model(
+        args,
         test_dataset,
         model,
         tokenizer,
