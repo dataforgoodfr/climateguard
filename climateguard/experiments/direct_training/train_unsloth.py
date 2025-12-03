@@ -253,7 +253,7 @@ text: {transcript}"""
 
     test_model(
         args,
-        test_dataset.sample(range(3)),
+        test_dataset.select(range(3)),
         model,
         tokenizer,
         max_new_tokens=args.max_new_tokens,
