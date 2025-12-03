@@ -208,26 +208,24 @@ text: {transcript}"""
 
     logger.info(f"\n📝 Single Sample: {train_dataset['train'][0]['messages']}")
 
-    training_args = (
-        SFTConfig(
-            eval_strategy="steps",
-            learning_rate=args.learning_rate,
-            per_device_train_batch_size=args.train_batch_size,
-            per_device_eval_batch_size=args.eval_batch_size,
-            gradient_accumulation_steps=args.gradient_accumulation_steps,
-            weight_decay=args.weight_decay,
-            warmup_steps=5,
-            max_steps=4,#args.epochs
-            #* int(np.ceil(len(train_dataset["train"]) / args.train_batch_size)),
-            logging_strategy="steps",
-            logging_steps=10,
-            eval_steps=len(train_dataset["train"]) // 10,
-            optim="adamw_8bit",
-            lr_scheduler_type="linear",
-            max_grad_norm=args.max_grad_norm,  
-            output_dir=OUTPUT_DIR,
-            report_to="wandb" if args.wandb else None,
-        ),
+    training_args = SFTConfig(
+        eval_strategy="steps",
+        learning_rate=args.learning_rate,
+        per_device_train_batch_size=args.train_batch_size,
+        per_device_eval_batch_size=args.eval_batch_size,
+        gradient_accumulation_steps=args.gradient_accumulation_steps,
+        weight_decay=args.weight_decay,
+        warmup_steps=5,
+        max_steps=4,#args.epochs
+        #* int(np.ceil(len(train_dataset["train"]) / args.train_batch_size)),
+        logging_strategy="steps",
+        logging_steps=10,
+        eval_steps=len(train_dataset["train"]) // 10,
+        optim="adamw_8bit",
+        lr_scheduler_type="linear",
+        max_grad_norm=args.max_grad_norm,  
+        output_dir=OUTPUT_DIR,
+        report_to="wandb" if args.wandb else None,
     )
 
     trainer = SFTTrainer(
