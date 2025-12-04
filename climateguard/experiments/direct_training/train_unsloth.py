@@ -202,8 +202,8 @@ text: {transcript}"""
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         weight_decay=args.weight_decay,
         warmup_steps=5,
-        max_steps=4,  # args.epochs
-        # * int(np.ceil(len(train_dataset["train"]) / args.train_batch_size)),
+        max_steps=args.epochs
+        * int(np.ceil(len(train_dataset["train"]) / args.train_batch_size)),
         logging_strategy="steps",
         logging_steps=10,
         eval_steps=len(train_dataset["train"]) // 10,
@@ -246,9 +246,15 @@ text: {transcript}"""
         device=device,
     )
     model.save_pretrained(f"{OUTPUT_DIR}/adapter")
-    tokenizer.save_pretrained(f"{OUTPUT_DIR}/model")
-    # model.push_to_hub("your_name/lora_model", token = "...") # Online saving
-    # tokenizer.push_to_hub("your_name/lora_model", token = "...") # Online saving
+    tokenizer.save_pretrained(f"{OUTPUT_DIR}/adapter")
+    model.push_to_hub(
+        f"gmguarino/{args.checkpoint.split('/')[1]}-climateguard-lora",
+        token=os.getenv("HF_TOKEN"),
+    )
+    tokenizer.push_to_hub(
+        f"gmguarino/{args.checkpoint.split('/')[1]}-climateguard-lora",
+        token=os.getenv("HF_TOKEN"),
+    )
 
     model.save_pretrained_merged(
         f"{OUTPUT_DIR}/model",
@@ -256,9 +262,9 @@ text: {transcript}"""
         save_method="merged_4bit_forced",
     )
 
-    # model.push_to_hub_merged(
-    #     f"gmguarino/{args.checkpoint.split('/')[1]}-climateguard",
-    #     tokenizer,
-    #     save_method="merged_4bit_forced",
-    #     token=os.getenv("HF_TOKEN")
-    # )
+    model.push_to_hub_merged(
+        f"gmguarino/{args.checkpoint.split('/')[1]}-climateguard",
+        tokenizer,
+        save_method="merged_4bit_forced",
+        token=os.getenv("HF_TOKEN"),
+    )
