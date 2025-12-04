@@ -18,6 +18,7 @@ from unsloth import FastLanguageModel
 
 import wandb
 
+os.environ["UNSLOTH_ENABLE_LOGGING"] = "1"
 
 def setup_logging():
     # Create logs directory if it doesn't exist
@@ -30,8 +31,7 @@ def setup_logging():
         level=logging.INFO,
         format="%(asctime)s - %(levelname)s - %(message)s",
         handlers=[
-            # logging.FileHandler(log_filename),
-            logging.StreamHandler(),  # Also log to console
+            logging.StreamHandler(), 
         ],
     )
 
