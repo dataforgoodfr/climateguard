@@ -18,29 +18,6 @@ from unsloth import FastLanguageModel
 
 import wandb
 
-os.environ["UNSLOTH_ENABLE_LOGGING"] = "1"
-
-def setup_logging():
-    # Create logs directory if it doesn't exist
-    os.makedirs("logs", exist_ok=True)
-
-    # Configure logging
-    # log_filename = f"logs/training_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(message)s",
-        handlers=[
-            logging.StreamHandler(), 
-        ],
-    )
-
-    return logging.getLogger(__name__)
-
-
-logger = setup_logging()
-
-
 load_dotenv()
 login(token=os.getenv("HF_TOKEN"))
 
@@ -78,7 +55,7 @@ def parse_response(response: Optional[Union[int, str]]):
 
 
 def test_model(args, test_dataset, model, tokenizer, max_new_tokens, device="cuda"):
-    logger.info("Evaluating model on test set...")
+    print("Evaluating model on test set...")
     model.eval()
     results = []
     for example in tqdm(test_dataset):
@@ -107,12 +84,20 @@ def test_model(args, test_dataset, model, tokenizer, max_new_tokens, device="cud
         test_dataset.to_pandas()["value"].astype(int),
         results,
     )
-    logger.info(f"Classification on test set: \n{report}")
+    print(f"Classification on test set: \n{report}")
+
 
 def formatting_prompts_func(examples, tokenizer):
     convos = examples["messages"]
-    chats = [tokenizer.apply_chat_template(convo, tokenize = False, add_generation_prompt = False) for convo in convos]
-    return { "chat" : chats, }
+    chats = [
+        tokenizer.apply_chat_template(
+            convo, tokenize=False, add_generation_prompt=False
+        )
+        for convo in convos
+    ]
+    return {
+        "chat": chats,
+    }
 
 
 if __name__ == "__main__":
@@ -136,9 +121,10 @@ if __name__ == "__main__":
     parser.add_argument("--wandb", action=argparse.BooleanOptionalAction)
 
     args = parser.parse_args()
+    print(args)
 
     if args.wandb:
-        logger.info("reporting to wandb")
+        print("reporting to wandb")
         wandb.login(key=os.getenv("WANDB_KEY"))
 
     OUTPUT_DIR = os.path.join(
@@ -206,7 +192,7 @@ text: {transcript}"""
     train_dataset = dataset["train"].train_test_split(test_size=0.15)
     test_dataset = dataset["test"]
 
-    logger.info(f"\n📝 Single Sample: {train_dataset['train'][0]['messages']}")
+    print(f"\n📝 Single Sample: {train_dataset['train'][0]['messages']}")
 
     training_args = SFTConfig(
         eval_strategy="steps",
@@ -216,14 +202,14 @@ text: {transcript}"""
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         weight_decay=args.weight_decay,
         warmup_steps=5,
-        max_steps=4,#args.epochs
-        #* int(np.ceil(len(train_dataset["train"]) / args.train_batch_size)),
+        max_steps=4,  # args.epochs
+        # * int(np.ceil(len(train_dataset["train"]) / args.train_batch_size)),
         logging_strategy="steps",
         logging_steps=10,
         eval_steps=len(train_dataset["train"]) // 10,
         optim="adamw_8bit",
         lr_scheduler_type="linear",
-        max_grad_norm=args.max_grad_norm,  
+        max_grad_norm=args.max_grad_norm,
         output_dir=OUTPUT_DIR,
         report_to="wandb" if args.wandb else None,
     )
@@ -231,11 +217,11 @@ text: {transcript}"""
     trainer = SFTTrainer(
         model=model,
         tokenizer=tokenizer,
-        train_dataset=train_dataset['train'],
-        eval_dataset=train_dataset['test'],
+        train_dataset=train_dataset["train"],
+        eval_dataset=train_dataset["test"],
         dataset_text_field="chat",
         max_seq_length=args.max_length,
-        packing=False, 
+        packing=False,
         args=training_args,
     )
 
@@ -259,7 +245,7 @@ text: {transcript}"""
         max_new_tokens=args.max_new_tokens,
         device=device,
     )
-    model.save_pretrained(f"{OUTPUT_DIR}/adapter")  
+    model.save_pretrained(f"{OUTPUT_DIR}/adapter")
     tokenizer.save_pretrained(f"{OUTPUT_DIR}/model")
     # model.push_to_hub("your_name/lora_model", token = "...") # Online saving
     # tokenizer.push_to_hub("your_name/lora_model", token = "...") # Online saving
