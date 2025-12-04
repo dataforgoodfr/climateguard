@@ -259,8 +259,8 @@ text: {transcript}"""
         max_new_tokens=args.max_new_tokens,
         device=device,
     )
-    model.save_pretrained("lora_model")  
-    tokenizer.save_pretrained("lora_model")
+    model.save_pretrained(f"{OUTPUT_DIR}/adapter")  
+    tokenizer.save_pretrained(f"{OUTPUT_DIR}/model")
     # model.push_to_hub("your_name/lora_model", token = "...") # Online saving
     # tokenizer.push_to_hub("your_name/lora_model", token = "...") # Online saving
 
@@ -270,9 +270,9 @@ text: {transcript}"""
         save_method="merged_4bit_forced",
     )
 
-    model.push_to_hub_merged(
-        f"gmguarino/{args.checkpoint.split('/')[1]}-climateguard",
-        tokenizer,
-        save_method="merged_4bit_forced",
-        token=os.getenv("HF_TOKEN")
-    )
+    # model.push_to_hub_merged(
+    #     f"gmguarino/{args.checkpoint.split('/')[1]}-climateguard",
+    #     tokenizer,
+    #     save_method="merged_4bit_forced",
+    #     token=os.getenv("HF_TOKEN")
+    # )
