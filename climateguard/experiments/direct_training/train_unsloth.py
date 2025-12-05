@@ -60,17 +60,18 @@ def test_model(args, test_dataset, model, tokenizer, max_new_tokens, device="cud
     model.eval()
     results = []
     for example in tqdm(test_dataset):
-        input_conv = [
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": example["messages"][0],
-                    },
-                ],
-            },
-        ]
+        input_conv = example["messages"][0]
+        # [
+        #     {
+        #         "role": "user",
+        #         "content": [
+        #             {
+        #                 "type": "text",
+        #                 "text": example["messages"][0],
+        #             },
+        #         ],
+        #     },
+        # ]
 
         inputs = tokenizer.apply_chat_template(
             input_conv,
@@ -78,7 +79,7 @@ def test_model(args, test_dataset, model, tokenizer, max_new_tokens, device="cud
             max_length=args.max_length - max_new_tokens,
             add_generation_prompt=True,
         )
-        inputs = tokenizer(inputs)
+        inputs = tokenizer(text=inputs)
         inputs = inputs.to(device)
         with torch.no_grad():
             output_tokens = model.generate(inputs, max_new_tokens=max_new_tokens)
@@ -168,7 +169,6 @@ text: {transcript}"""
         load_in_4bit=True,
         token=os.getenv("HF_TOKEN"),
     )
-    print(help(tokenizer))
     if args.chat_template != "default":
         tokenizer.chat_template = open(
             os.path.join(
