@@ -215,6 +215,7 @@ text: {transcript}"""
         output_dir=OUTPUT_DIR,
         report_to="wandb" if args.wandb else None,
     )
+    print(len(train_dataset["train"].select(range(8))))
 
     trainer = SFTTrainer(
         model=model,
