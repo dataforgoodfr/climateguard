@@ -29,13 +29,8 @@
     {%- elif message['role'] == 'system' %}
         {{- '[SYSTEM_PROMPT]' + message['content'] + '[/SYSTEM_PROMPT]' }}
 
-        
-
     {%- elif message['role'] == 'assistant' %}
         {{- message['content'] }}
-
-
-    {%- 
 
     {%- else %}
         {{- raise_exception('Only user, system and assistant roles are supported in the custom template made by Data For Good') }}
