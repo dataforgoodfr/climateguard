@@ -80,6 +80,7 @@ def test_model(args, test_dataset, model, tokenizer, max_new_tokens, device="cud
         )
         inputs = tokenizer(inputs)
         inputs = inputs.to(device)
+        print(help(model.generate))
         with torch.no_grad():
             output_tokens = model.generate(inputs, max_new_tokens=max_new_tokens)
         prediction = tokenizer.decode(
