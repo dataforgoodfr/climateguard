@@ -64,7 +64,6 @@ def test_model(args, test_dataset, model, tokenizer, max_new_tokens, device="cud
         inputs = tokenizer.apply_chat_template(
             input_conv,
             return_tensors="pt",
-            truncation=True,
             max_length=args.max_length - max_new_tokens,
             add_generation_prompt=True,
             tokenize=True,
@@ -158,6 +157,7 @@ text: {transcript}"""
         load_in_4bit=True,
         token=os.getenv("HF_TOKEN"),
     )
+    print(tokenizer.chat_template)
     # tokenizer = get_chat_template(
     #     tokenizer,
     #     chat_template = "mistral", 
