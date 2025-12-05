@@ -60,7 +60,7 @@ def test_model(args, test_dataset, model, tokenizer, max_new_tokens, device="cud
     model.eval()
     results = []
     for example in tqdm(test_dataset):
-        input_conv = example["messages"][0]
+        input_conv = [example["messages"][0]]
         # [
         #     {
         #         "role": "user",
