@@ -66,7 +66,9 @@ def test_model(args, test_dataset, model, tokenizer, max_new_tokens, device="cud
             truncation=True,
             max_length=args.max_length - max_new_tokens,
             add_generation_prompt=True,
-        ).to(device)
+        )
+        print(inputs)
+        inputs = inputs.to(device)
         with torch.no_grad():
             output_tokens = model.generate(inputs, max_new_tokens=max_new_tokens)
         prediction = tokenizer.decode(
@@ -217,8 +219,8 @@ text: {transcript}"""
     trainer = SFTTrainer(
         model=model,
         tokenizer=tokenizer,
-        train_dataset=train_dataset["train"],
-        eval_dataset=train_dataset["test"],
+        train_dataset=train_dataset["train"].select(range(8)),
+        eval_dataset=train_dataset["test"].select(range(8)),
         dataset_text_field="chat",
         max_seq_length=args.max_length,
         packing=False,
