@@ -61,17 +61,6 @@ def test_model(args, test_dataset, model, tokenizer, max_new_tokens, device="cud
     results = []
     for example in tqdm(test_dataset):
         input_conv = [example["messages"][0]]
-        # [
-        #     {
-        #         "role": "user",
-        #         "content": [
-        #             {
-        #                 "type": "text",
-        #                 "text": example["messages"][0],
-        #             },
-        #         ],
-        #     },
-        # ]
 
         inputs = tokenizer.apply_chat_template(
             input_conv,
@@ -84,24 +73,17 @@ def test_model(args, test_dataset, model, tokenizer, max_new_tokens, device="cud
         )
         inputs = inputs.to(device)
         with torch.no_grad():
-            output_tokens = model.generate(inputs, max_new_tokens=max_new_tokens)
+            output_tokens = model.generate(**inputs, max_new_tokens=max_new_tokens)
         prediction = tokenizer.decode(
-            output_tokens[0][inputs.size(1) :], skip_special_tokens=True
+            output_tokens[0][inputs["input_ids"].size(1) :], skip_special_tokens=True
         )
         results.append(parse_response(prediction) >= 8)
 
-    # preds, refs = zip(*results)
-    # with open("predictions.txt", "w") as f:
-    #     for pred in preds:
-    #         f.write(pred)
-    #         f.write("\n")
-    # rouge_scores = rouge.compute(predictions=preds, references=refs)
     report = classification_report(
         test_dataset.to_pandas()["value"].astype(int),
         results,
     )
     print(f"Classification on test set: \n{report}")
-
 
 def formatting_prompts_func(examples, tokenizer):
     convos = examples["messages"]
