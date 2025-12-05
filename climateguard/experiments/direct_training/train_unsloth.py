@@ -66,6 +66,7 @@ def test_model(args, test_dataset, model, tokenizer, max_new_tokens, device="cud
             return_tensors="pt",
             max_length=args.max_length - max_new_tokens,
             add_generation_prompt=True,
+            add_special_tokens=False,
         )
         inputs = tokenizer(inputs)
         inputs = inputs.to(device)
