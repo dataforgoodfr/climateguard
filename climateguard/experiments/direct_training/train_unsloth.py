@@ -195,7 +195,8 @@ text: {transcript}"""
     test_dataset = dataset["test"]
 
     print(f"\n📝 Single Sample: {train_dataset['train'][0]['messages']}")
-
+    train_dataset["train"] = train_dataset["train"].select(range(8))
+    train_dataset["test"] = train_dataset["test"].select(range(8))
     training_args = SFTConfig(
         eval_strategy="steps",
         learning_rate=args.learning_rate,
@@ -215,13 +216,12 @@ text: {transcript}"""
         output_dir=OUTPUT_DIR,
         report_to="wandb" if args.wandb else None,
     )
-    print(len(train_dataset["train"].select(range(8))))
 
     trainer = SFTTrainer(
         model=model,
         tokenizer=tokenizer,
-        train_dataset=train_dataset["train"].select(range(8)),
-        eval_dataset=train_dataset["test"].select(range(8)),
+        train_dataset=train_dataset["train"],
+        eval_dataset=train_dataset["test"],
         dataset_text_field="chat",
         max_seq_length=args.max_length,
         packing=False,
