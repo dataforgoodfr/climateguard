@@ -75,11 +75,13 @@ def test_model(args, test_dataset, model, tokenizer, max_new_tokens, device="cud
 
         inputs = tokenizer.apply_chat_template(
             input_conv,
-            return_tensors="pt",
-            max_length=args.max_length - max_new_tokens,
             add_generation_prompt=True,
         )
-        inputs = tokenizer(text=inputs)
+        inputs = tokenizer(
+            text=inputs,
+            return_tensors="pt",
+            max_length=args.max_length - max_new_tokens,
+        )
         inputs = inputs.to(device)
         with torch.no_grad():
             output_tokens = model.generate(inputs, max_new_tokens=max_new_tokens)
