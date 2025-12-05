@@ -158,10 +158,10 @@ text: {transcript}"""
         load_in_4bit=True,
         token=os.getenv("HF_TOKEN"),
     )
-    tokenizer = get_chat_template(
-        tokenizer,
-        chat_template = "mistral", 
-    )
+    # tokenizer = get_chat_template(
+    #     tokenizer,
+    #     chat_template = "mistral", 
+    # )
 
     model = FastLanguageModel.get_peft_model(
         model,
