@@ -66,9 +66,8 @@ def test_model(args, test_dataset, model, tokenizer, max_new_tokens, device="cud
             return_tensors="pt",
             max_length=args.max_length - max_new_tokens,
             add_generation_prompt=True,
-            tokenize=True,
         )
-        print(inputs)
+        inputs = tokenizer(inputs)
         inputs = inputs.to(device)
         with torch.no_grad():
             output_tokens = model.generate(inputs, max_new_tokens=max_new_tokens)
@@ -190,7 +189,7 @@ text: {transcript}"""
     dataset = dataset.map(
         lambda example: {
             "messages": [
-                {"role": "user", "content": prompt.format(transcript=example["text"])},
+                {"role": "user", "content": {prompt.format(transcript=example["text"])}},
                 {"role": "assistant", "content": str(example["value"])},
             ]
         }
