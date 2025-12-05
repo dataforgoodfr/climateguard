@@ -15,6 +15,7 @@ from sklearn.metrics import classification_report
 from tqdm import tqdm
 from trl import SFTConfig, SFTTrainer
 from unsloth import FastLanguageModel
+from unsloth.chat_templates import get_chat_template
 
 import wandb
 
@@ -66,6 +67,7 @@ def test_model(args, test_dataset, model, tokenizer, max_new_tokens, device="cud
             truncation=True,
             max_length=args.max_length - max_new_tokens,
             add_generation_prompt=True,
+            tokenize=True,
         )
         print(inputs)
         inputs = inputs.to(device)
@@ -155,6 +157,10 @@ text: {transcript}"""
         dtype=None,
         load_in_4bit=True,
         token=os.getenv("HF_TOKEN"),
+    )
+    tokenizer = get_chat_template(
+        tokenizer,
+        chat_template = "mistral", 
     )
 
     model = FastLanguageModel.get_peft_model(
