@@ -189,7 +189,7 @@ text: {transcript}"""
     dataset = dataset.map(
         lambda example: {
             "messages": [
-                {"role": "user", "content": {prompt.format(transcript=example["text"])}},
+                {"role": "user", "content": prompt.format(transcript=example["text"])},
                 {"role": "assistant", "content": str(example["value"])},
             ]
         }
