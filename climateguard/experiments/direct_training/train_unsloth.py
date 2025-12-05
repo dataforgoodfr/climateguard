@@ -199,8 +199,7 @@ text: {transcript}"""
     test_dataset = dataset["test"]
 
     print(f"\n📝 Single Sample: {train_dataset['train'][0]['messages']}")
-    train_dataset["train"] = train_dataset["train"].select(range(8))
-    train_dataset["test"] = train_dataset["test"].select(range(8))
+    
     training_args = SFTConfig(
         eval_strategy="steps",
         learning_rate=args.learning_rate,
