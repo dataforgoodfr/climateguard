@@ -121,6 +121,7 @@ if __name__ == "__main__":
         type=str,
         default="unsloth/Mistral-Small-3.2-24B-Instruct-2506-bnb-4bit",
     )
+    parser.add_argument("--chat-template", type=str, default="default")
     parser.add_argument("--wandb", action=argparse.BooleanOptionalAction)
 
     args = parser.parse_args()
@@ -157,11 +158,13 @@ text: {transcript}"""
         load_in_4bit=True,
         token=os.getenv("HF_TOKEN"),
     )
-    print(tokenizer.chat_template)
-    # tokenizer = get_chat_template(
-    #     tokenizer,
-    #     chat_template = "mistral", 
-    # )
+    if args.chat_template != "default":
+        tokenizer.chat_template = open(
+            os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                f"{args.chat_template}_chat_template.jinja",
+            )
+        ).read()
 
     model = FastLanguageModel.get_peft_model(
         model,
