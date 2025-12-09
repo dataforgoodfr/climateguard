@@ -6,6 +6,7 @@ import uuid
 from typing import Optional, Union
 
 import numpy as np
+import pandas as pd
 import torch
 import unsloth
 from datasets import load_dataset
@@ -51,6 +52,7 @@ def parse_response(response: Optional[Union[int, str]]):
     if match:
         score = int(match.group(1))  # Extract score as an integer
     else:
+        print("Could not parse response")
         score = 0
     return score
 
@@ -59,6 +61,7 @@ def test_model(args, test_dataset, model, tokenizer, max_new_tokens, device="cud
     print("Evaluating model on test set...")
     model.eval()
     results = []
+    raw_results = []
     for example in tqdm(test_dataset):
         input_conv = [example["messages"][0]]
 
@@ -77,13 +80,17 @@ def test_model(args, test_dataset, model, tokenizer, max_new_tokens, device="cud
         prediction = tokenizer.decode(
             output_tokens[0][inputs["input_ids"].size(1) :], skip_special_tokens=True
         )
-        results.append(parse_response(prediction) >= 8)
+        raw_results.append(prediction)
+        results.append(10 * int(parse_response(prediction) > 5))
 
     report = classification_report(
         test_dataset.to_pandas()["value"].astype(int),
         results,
     )
     print(f"Classification on test set: \n{report}")
+    df_results = pd.DataFrame({"predictions": results, "labels": test_dataset.to_pandas()["value"].astype(int), "responses": raw_results})
+    print(df_results.head())
+    df_results.to_csv("tests.csv", index=False)
 
 def formatting_prompts_func(examples, tokenizer):
     convos = examples["messages"]
@@ -199,7 +206,7 @@ text: {transcript}"""
     test_dataset = dataset["test"]
 
     print(f"\n📝 Single Sample: {train_dataset['train'][0]['messages']}")
-    
+
     training_args = SFTConfig(
         eval_strategy="steps",
         learning_rate=args.learning_rate,
