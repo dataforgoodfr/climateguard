@@ -1,5 +1,6 @@
 import argparse
 import logging
+import math
 import os
 import re
 import uuid
@@ -9,7 +10,7 @@ import numpy as np
 import pandas as pd
 import torch
 import unsloth
-from datasets import load_dataset
+from datasets import DatasetDict, concatenate_datasets, load_dataset
 from dotenv import load_dotenv
 from huggingface_hub import login
 from sklearn.metrics import classification_report
@@ -28,6 +29,7 @@ def get_data():
     dataset = load_dataset("DataForGood/climateguard")
 
     dataset = dataset.filter(lambda example: example["comments"] == [])
+    dataset = dataset.filter(lambda example: example["year"] == 2025)
     dataset = dataset.filter(
         lambda example: isinstance(example["misinformation"], bool)
     )
@@ -88,9 +90,16 @@ def test_model(args, test_dataset, model, tokenizer, max_new_tokens, device="cud
         results,
     )
     print(f"Classification on test set: \n{report}")
-    df_results = pd.DataFrame({"predictions": results, "labels": test_dataset.to_pandas()["value"].astype(int), "responses": raw_results})
+    df_results = pd.DataFrame(
+        {
+            "predictions": results,
+            "labels": test_dataset.to_pandas()["value"].astype(int),
+            "responses": raw_results,
+        }
+    )
     print(df_results.head())
     df_results.to_csv("tests.csv", index=False)
+
 
 def formatting_prompts_func(examples, tokenizer):
     convos = examples["messages"]
@@ -124,6 +133,7 @@ if __name__ == "__main__":
         default="unsloth/Mistral-Small-3.2-24B-Instruct-2506-bnb-4bit",
     )
     parser.add_argument("--chat-template", type=str, default="default")
+    parser.add_argument("--test-split", type=str, default="default")
     parser.add_argument("--wandb", action=argparse.BooleanOptionalAction)
 
     args = parser.parse_args()
@@ -202,6 +212,28 @@ text: {transcript}"""
         lambda examples: formatting_prompts_func(examples, tokenizer),
         batched=True,
     )
+
+    if args.test_split == "time":
+        concat_dataset = concatenate_datasets([dataset["train"], dataset["test"]])
+        concat_dataset = concat_dataset.sort(["month", "day"])
+        stop_index = math.floor(len(concat_dataset) * 0.80)
+        stop_date = pd.to_datetime(
+            concat_dataset.select([stop_index])["start"][0]
+        ).date()
+        print(f"Setting train data cutoff at {stop_date.strftime('%Y-%m-%d')}")
+        _train_data = concat_dataset.filter(
+            lambda example: pd.to_datetime(example["start"]).date() <= stop_date
+        )
+        _test_data = concat_dataset.filter(
+            lambda example: pd.to_datetime(example["start"]).date() > stop_date
+        )
+        dataset = DatasetDict(
+            {
+                "train": _train_data,
+                "test": _test_data,
+            }
+        )
+
     train_dataset = dataset["train"].train_test_split(test_size=0.15)
     test_dataset = dataset["test"]
 
