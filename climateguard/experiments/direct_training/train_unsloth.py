@@ -25,7 +25,7 @@ load_dotenv()
 login(token=os.getenv("HF_TOKEN"))
 
 
-def get_data():
+def get_data(args):
     dataset = load_dataset("DataForGood/climateguard")
 
     dataset = dataset.filter(lambda example: example["comments"] == [])
@@ -42,6 +42,26 @@ def get_data():
             "value": 10 * int(example["misinformation"]),
         }
     )
+    if args.test_split == "time":
+        concat_dataset = concatenate_datasets([dataset["train"], dataset["test"]])
+        concat_dataset = concat_dataset.sort(["month", "day"])
+        stop_index = math.floor(len(concat_dataset) * 0.80)
+        stop_date = pd.to_datetime(
+            concat_dataset.select([stop_index])["start"][0]
+        ).date()
+        print(f"Setting train data cutoff at {stop_date.strftime('%Y-%m-%d')}")
+        _train_data = concat_dataset.filter(
+            lambda example: pd.to_datetime(example["start"]).date() <= stop_date
+        )
+        _test_data = concat_dataset.filter(
+            lambda example: pd.to_datetime(example["start"]).date() > stop_date
+        )
+        dataset = DatasetDict(
+            {
+                "train": _train_data,
+                "test": _test_data,
+            }
+        )
     dataset = dataset.select_columns(["id", "text", "value"])
     return dataset
 
@@ -198,7 +218,7 @@ text: {transcript}"""
         use_rslora=False,
         loftq_config=None,
     )
-    dataset = get_data()
+    dataset = get_data(args)
     dataset = dataset.map(
         lambda example: {
             "messages": [
@@ -212,27 +232,6 @@ text: {transcript}"""
         lambda examples: formatting_prompts_func(examples, tokenizer),
         batched=True,
     )
-
-    if args.test_split == "time":
-        concat_dataset = concatenate_datasets([dataset["train"], dataset["test"]])
-        concat_dataset = concat_dataset.sort(["month", "day"])
-        stop_index = math.floor(len(concat_dataset) * 0.80)
-        stop_date = pd.to_datetime(
-            concat_dataset.select([stop_index])["start"][0]
-        ).date()
-        print(f"Setting train data cutoff at {stop_date.strftime('%Y-%m-%d')}")
-        _train_data = concat_dataset.filter(
-            lambda example: pd.to_datetime(example["start"]).date() <= stop_date
-        )
-        _test_data = concat_dataset.filter(
-            lambda example: pd.to_datetime(example["start"]).date() > stop_date
-        )
-        dataset = DatasetDict(
-            {
-                "train": _train_data,
-                "test": _test_data,
-            }
-        )
 
     train_dataset = dataset["train"].train_test_split(test_size=0.15)
     test_dataset = dataset["test"]
