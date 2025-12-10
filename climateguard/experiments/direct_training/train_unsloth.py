@@ -158,7 +158,6 @@ if __name__ == "__main__":
     parser.add_argument("--lora-4-bit", action=argparse.BooleanOptionalAction)
     parser.add_argument("--lora-8-bit", action=argparse.BooleanOptionalAction)
     parser.add_argument("--lora-16-bit", action=argparse.BooleanOptionalAction)
-    parser.add_argument("--full-finetuning", action=argparse.BooleanOptionalAction)
 
     args = parser.parse_args()
     print(args)
@@ -187,17 +186,16 @@ text: {transcript}"""
     logging.info(f"Using device: {device}")
     logging.info(f"bfloat available:: {torch.cuda.is_bf16_supported()}")
 
-    if not args.lora_4_bit and not args.lora_8_bit and not args.lora_16_bit and not args.full_finetuning:
+    if not args.lora_4_bit and not args.lora_8_bit and not args.lora_16_bit:
         args.lora_4_bit = True
 
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name=args.checkpoint,
         max_seq_length=args.max_length,
-        dtype=torch.bfloat16 if torch.cuda.is_bf16_supported() else None,
+        dtype=None,
         load_in_4bit=True if args.lora_4_bit else False,
         load_in_fp8=True if args.lora_8_bit else False,
         load_in_16_bit=True if args.lora_16_bit else False,
-        full_finetuning=True if args.full_finetuning else False,
         token=os.getenv("HF_TOKEN"),
     )
     if args.chat_template != "default":
