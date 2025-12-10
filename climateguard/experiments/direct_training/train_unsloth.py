@@ -156,6 +156,7 @@ if __name__ == "__main__":
     parser.add_argument("--test-split", type=str, default="default")
     parser.add_argument("--wandb", action=argparse.BooleanOptionalAction)
     parser.add_argument("--load-4-bit", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--load-8-bit", action=argparse.BooleanOptionalAction)
 
     args = parser.parse_args()
     print(args)
@@ -190,6 +191,7 @@ text: {transcript}"""
         dtype=torch.bfloat16 if torch.cuda.is_bf16_supported() else None,
         load_in_4bit=args.load_4_bit,
         token=os.getenv("HF_TOKEN"),
+        load_in_fp8=args.args.load_8_bit,
     )
     if args.chat_template != "default":
         tokenizer.chat_template = open(
