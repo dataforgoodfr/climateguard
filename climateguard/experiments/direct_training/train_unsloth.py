@@ -161,6 +161,7 @@ if __name__ == "__main__":
     parser.add_argument("--lora-4-bit", action=argparse.BooleanOptionalAction)
     parser.add_argument("--lora-8-bit", action=argparse.BooleanOptionalAction)
     parser.add_argument("--lora-16-bit", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--reasoning-model", action=argparse.BooleanOptionalAction)
 
     args = parser.parse_args()
     print(args)
