@@ -86,11 +86,13 @@ def test_model(args, test_dataset, model, tokenizer, max_new_tokens, device="cud
     raw_results = []
     for example in tqdm(test_dataset):
         input_conv = [example["messages"][0]]
-
-        inputs = tokenizer.apply_chat_template(
-            input_conv,
-            add_generation_prompt=True,
+        chat_args = dict(
+            tokenize=False,
+            add_generation_prompt=False,
         )
+        if args.reasoning_model:
+            chat_args.update(dict(enable_thinking=False))
+        inputs = tokenizer.apply_chat_template(input_conv, **chat_args)
         inputs = tokenizer(
             text=inputs,
             return_tensors="pt",
@@ -121,14 +123,15 @@ def test_model(args, test_dataset, model, tokenizer, max_new_tokens, device="cud
     df_results.to_csv("tests.csv", index=False)
 
 
-def formatting_prompts_func(examples, tokenizer):
+def formatting_prompts_func(examples, tokenizer, args):
     convos = examples["messages"]
-    chats = [
-        tokenizer.apply_chat_template(
-            convo, tokenize=False, add_generation_prompt=False
-        )
-        for convo in convos
-    ]
+    chat_args = dict(
+        tokenize=False,
+        add_generation_prompt=False,
+    )
+    if args.reasoning_model:
+        chat_args.update(dict(enable_thinking=False))
+    chats = [tokenizer.apply_chat_template(convo, **chat_args) for convo in convos]
     return {
         "chat": chats,
     }
@@ -171,7 +174,7 @@ if __name__ == "__main__":
     )
     prompt = """You are an assistant helping editors to moderate TV and radio content.
 You will be provided with a transcript delimited by triple backticks.
-Bear in mind that the transcript may be missing punctuation and may be of very low quality, with incorrect vocabulary, cuts in the wrong places, or may include some phonetic transcription.
+Bare in mind that the transcript may be missing punctuation and may be of very low quality, with incorrect vocabulary, cuts in the wrong places, or may include some phonetic transcription.
 
 Does the text promote climate change misinformation that undermines well-established scientific consensus, such as denying the existence of climate change or the factors that contribute to it ?
 
@@ -195,7 +198,7 @@ text: {transcript}"""
         dtype=None,
         load_in_4bit=True if args.lora_4_bit else False,
         load_in_fp8=True if args.lora_8_bit else False,
-        load_in_16_bit=True if args.lora_16_bit else False,
+        # load_in_16_bit=True if args.lora_16_bit else False,
         token=os.getenv("HF_TOKEN"),
     )
     if args.chat_template != "default":
@@ -237,7 +240,7 @@ text: {transcript}"""
     )
 
     dataset = dataset.map(
-        lambda examples: formatting_prompts_func(examples, tokenizer),
+        lambda examples: formatting_prompts_func(examples, tokenizer, args),
         batched=True,
     )
 
@@ -255,7 +258,12 @@ text: {transcript}"""
         weight_decay=args.weight_decay,
         warmup_steps=5,
         max_steps=args.epochs
-        * int(np.ceil(len(train_dataset["train"]) / args.train_batch_size)),
+        * int(
+            np.ceil(
+                len(train_dataset["train"])
+                / (args.train_batch_size * args.gradient_accumulation_steps)
+            )
+        ),
         logging_strategy="steps",
         logging_steps=10,
         eval_steps=len(train_dataset["train"]) // 10,
