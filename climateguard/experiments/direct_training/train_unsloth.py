@@ -178,7 +178,7 @@ Bare in mind that the transcript may be missing punctuation and may be of very l
 
 Does the text promote climate change misinformation that undermines well-established scientific consensus, such as denying the existence of climate change or the factors that contribute to it ?
 
-Answer just a number on a scale of 0 - does not promote - to 10 - certainly promotes.
+Answer just a number between 0 - does not promote - and 1 - certainly promotes.
 
 text: {transcript}"""
 
