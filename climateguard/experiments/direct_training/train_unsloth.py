@@ -39,7 +39,7 @@ def get_data(args):
     dataset = dataset.map(
         lambda example: {
             "text": example["plaintext"],
-            "value": 10 * int(example["misinformation"]),
+            "value": int(example["misinformation"]),
         }
     )
     if args.test_split == "time":
@@ -105,7 +105,7 @@ def test_model(args, test_dataset, model, tokenizer, max_new_tokens, device="cud
             output_tokens[0][inputs["input_ids"].size(1) :], skip_special_tokens=True
         )
         raw_results.append(prediction)
-        results.append(10 * int(parse_response(prediction) > 5))
+        results.append(int(parse_response(prediction)))
 
     report = classification_report(
         test_dataset.to_pandas()["value"].astype(int),
