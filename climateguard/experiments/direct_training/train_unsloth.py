@@ -64,18 +64,22 @@ def get_data(args):
             }
         )
     if args.balance_data:
-        for split in dataset:
-            positive_cases = dataset[split].filter(
-                lambda example: example["misinformation"]
-            )
-            negative_cases = (
-                dataset[split]
-                .filter(lambda example: not example["misinformation"])
-                .shuffle()
-                .select(range(len(positive_cases)))
-            )
-            dataset[split] = concatenate_datasets([positive_cases, negative_cases])
+        positive_cases = dataset["train"].filter(
+            lambda example: example["misinformation"]
+        )
+        negative_cases = (
+            dataset["train"]
+            .filter(lambda example: not example["misinformation"])
+            .shuffle()
+            .select(range(len(positive_cases)))
+        )
+        dataset["train"] = concatenate_datasets([positive_cases, negative_cases])
     dataset = dataset.select_columns(["id", "text", "value"])
+    # Print dataset stats:
+    print("Train dataset example split:")
+    print(dataset.to_pandas()["train"]["value"].value_counts())
+    print("Test dataset example split:")
+    print(dataset.to_pandas()["test"]["value"].value_counts())
     return dataset
 
 
