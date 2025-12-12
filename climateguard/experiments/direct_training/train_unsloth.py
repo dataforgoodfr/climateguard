@@ -267,7 +267,12 @@ text: {transcript}"""
     test_dataset = dataset["test"]
 
     print(f"\n📝 Single Sample: {train_dataset['train'][0]['messages']}")
-
+    max_steps = args.epochs * int(
+        np.ceil(
+            len(train_dataset["train"])
+            / (args.train_batch_size * args.gradient_accumulation_steps)
+        )
+    )
     training_args = SFTConfig(
         eval_strategy="steps",
         learning_rate=args.learning_rate,
@@ -276,16 +281,10 @@ text: {transcript}"""
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         weight_decay=args.weight_decay,
         warmup_steps=5,
-        max_steps=args.epochs
-        * int(
-            np.ceil(
-                len(train_dataset["train"])
-                / (args.train_batch_size * args.gradient_accumulation_steps)
-            )
-        ),
+        max_steps=max_steps,
         logging_strategy="steps",
-        logging_steps=10,
-        eval_steps=len(train_dataset["train"]) // 10,
+        logging_steps=max_steps // 5,
+        eval_steps=max_steps // 10,
         optim="adamw_8bit",
         lr_scheduler_type="linear",
         max_grad_norm=args.max_grad_norm,
