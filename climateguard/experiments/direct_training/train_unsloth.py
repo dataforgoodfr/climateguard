@@ -283,7 +283,7 @@ text: {transcript}"""
         warmup_steps=5,
         max_steps=max_steps,
         logging_strategy="steps",
-        logging_steps=max_steps // 5,
+        logging_steps=max_steps // 20,
         eval_steps=max_steps // 10,
         optim="adamw_8bit",
         lr_scheduler_type="linear",
