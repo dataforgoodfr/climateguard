@@ -77,9 +77,9 @@ def get_data(args):
     dataset = dataset.select_columns(["id", "text", "value"])
     # Print dataset stats:
     print("Train dataset example split:")
-    print(dataset.to_pandas()["train"]["value"].value_counts())
+    print(dataset["train"].to_pandas()["value"].value_counts())
     print("Test dataset example split:")
-    print(dataset.to_pandas()["test"]["value"].value_counts())
+    print(dataset["test"].to_pandas()["value"].value_counts())
     return dataset
 
 
