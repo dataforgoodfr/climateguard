@@ -44,14 +44,6 @@ def get_data(args):
     )
     if args.test_split == "time":
         concat_dataset = concatenate_datasets([dataset["train"], dataset["test"]])
-        if args.balance_data:
-            positive_cases = concat_dataset.filter(
-                lambda example: example["misinformation"]
-            )
-            negative_cases = concat_dataset.filter(
-                lambda example: not example["misinformation"]
-            ).sample(len(positive_cases))
-            concat_dataset = concatenate_datasets([positive_cases, negative_cases])
 
         concat_dataset = concat_dataset.sort(["month", "day"])
         stop_index = math.floor(len(concat_dataset) * 0.80)
@@ -71,6 +63,18 @@ def get_data(args):
                 "test": _test_data,
             }
         )
+    if args.balance_data:
+        for split in dataset:
+            positive_cases = dataset[split].filter(
+                lambda example: example["misinformation"]
+            )
+            negative_cases = (
+                dataset[split]
+                .filter(lambda example: not example["misinformation"])
+                .shuffle()
+                .select(range(len(positive_cases)))
+            )
+            dataset[split] = concatenate_datasets([positive_cases, negative_cases])
     dataset = dataset.select_columns(["id", "text", "value"])
     return dataset
 
