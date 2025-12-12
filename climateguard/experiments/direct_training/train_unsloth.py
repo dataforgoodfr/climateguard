@@ -44,6 +44,15 @@ def get_data(args):
     )
     if args.test_split == "time":
         concat_dataset = concatenate_datasets([dataset["train"], dataset["test"]])
+        if args.balance_data:
+            positive_cases = concat_dataset.filter(
+                lambda example: example["misinformation"]
+            )
+            negative_cases = concat_dataset.filter(
+                lambda example: not example["misinformation"]
+            ).sample(len(positive_cases))
+            concat_dataset = concatenate_datasets([positive_cases, negative_cases])
+
         concat_dataset = concat_dataset.sort(["month", "day"])
         stop_index = math.floor(len(concat_dataset) * 0.80)
         stop_date = pd.to_datetime(
@@ -157,6 +166,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--chat-template", type=str, default="default")
     parser.add_argument("--test-split", type=str, default="default")
+    parser.add_argument("--balance-data", action=argparse.BooleanOptionalAction)
     parser.add_argument("--wandb", action=argparse.BooleanOptionalAction)
     parser.add_argument("--lora-4-bit", action=argparse.BooleanOptionalAction)
     parser.add_argument("--lora-8-bit", action=argparse.BooleanOptionalAction)
