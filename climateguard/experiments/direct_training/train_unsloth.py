@@ -154,7 +154,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--max-length", type=int, default=4096)
     parser.add_argument("--max-new-tokens", type=int, default=512)
-    parser.add_argument("--learning-rate", type=float, default=5e-5)
+    parser.add_argument("--learning-rate", type=float, default=1e-4)
     parser.add_argument("--train-batch-size", type=int, default=8)
     parser.add_argument("--eval-batch-size", type=int, default=8)
     parser.add_argument("--gradient-accumulation-steps", type=int, default=2)
@@ -162,7 +162,7 @@ if __name__ == "__main__":
     parser.add_argument("--lora-alpha", type=int, default=16)
     parser.add_argument("--weight-decay", type=float, default=0.01)
     parser.add_argument("--max-grad-norm", type=float, default=0.1)
-    parser.add_argument("--epochs", type=int, default=10)
+    parser.add_argument("--epochs", type=int, default="10")
     parser.add_argument(
         "--checkpoint",
         type=str,
@@ -328,18 +328,5 @@ text: {transcript}"""
     )
     tokenizer.push_to_hub(
         f"gmguarino/{args.checkpoint.split('/')[1]}-climateguard-lora",
-        token=os.getenv("HF_TOKEN"),
-    )
-
-    model.save_pretrained_merged(
-        f"{OUTPUT_DIR}/model",
-        tokenizer,
-        save_method="merged_4bit_forced",
-    )
-
-    model.push_to_hub_merged(
-        f"gmguarino/{args.checkpoint.split('/')[1]}-climateguard",
-        tokenizer,
-        save_method="merged_4bit_forced",
         token=os.getenv("HF_TOKEN"),
     )
