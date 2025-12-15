@@ -123,7 +123,6 @@ def request_model(prompt):
     response = requests.post(url, headers=headers, json=payload)
     response.raise_for_status()
 
-    print(response.json()["choices"][0]["message"]["content"])
     return response.json()["choices"][0]["message"]["content"]
 
 
