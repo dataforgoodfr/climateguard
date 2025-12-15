@@ -24,7 +24,7 @@ client = OpenAI(
     base_url=os.getenv("VLLM_HOST"),
 )
 
-prompt = """You are an assistant helping editors to moderate TV and radio content.
+PROMPT = """You are an assistant helping editors to moderate TV and radio content.
 You will be provided with a transcript delimited by triple backticks.
 Bare in mind that the transcript may be missing punctuation and may be of very low quality, with incorrect vocabulary, cuts in the wrong places, or may include some phonetic transcription.
 
@@ -82,23 +82,49 @@ def get_data(args):
     return dataset
 
 
-def get(client, prompt):
+# def get(client, prompt):
 
-    models = client.models.list()
-    model = models.data[0].id
+#     models = client.models.list()
+#     model = models.data[0].id
 
-    messages = [
-        {"role": "user", "content": prompt}
-    ]
-    # Chat Completion API
-    chat_completion = client.chat.completions.create(
-        messages=messages,
-        model=model,
-        temperature=0.0,
-        max_tokens=10,
-    )
-    print(chat_completion)
-    return chat_completion
+#     messages = [
+#         {"role": "user", "content": prompt}
+#     ]
+#     # Chat Completion API
+#     chat_completion = client.chat.completions.create(
+#         messages=messages,
+#         model=model,
+#         temperature=0.0,
+#         max_tokens=10,
+#         chat_template_kwargs=dict(enable_thinking=False)
+#     )
+#     print(chat_completion.choices[0].message.content)
+#     return chat_completion
+
+def request_model(prompt):
+
+    url = os.path.join(os.getenv("VLLM_HOST"), "chat/completions")
+
+    payload = {
+        "model": "climateguard",
+        "messages": [
+            {"role": "user", "content": prompt}
+        ],
+        "temperature": 0.0,
+        "max_tokens": 10,
+        "chat_template_kwargs": {"enable_thinking": False}
+    }
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + os.getenv("VLLM_APIKEY")
+    }
+
+    response = requests.post(url, headers=headers, json=payload)
+    response.raise_for_status()
+
+    print(response.json()["choices"][0]["message"]["content"])
+    return response.json()["choices"][0]["message"]["content"]
 
 
 def parse_response(response: Optional[Union[int, str]]):
@@ -114,25 +140,17 @@ def parse_response(response: Optional[Union[int, str]]):
     return score
 
 
-def test(client, test_dataset):
+def test(test_dataset):
     results = []
     raw_results = []
-    dataset = dataset.map(
-        lambda example: {
-            "messages": [
-                {"role": "user", "content": prompt.format(transcript=example["text"])},
-                {"role": "assistant", "content": str(example["value"])},
-            ]
-        }
-    )
-    t=time()
+    t=time.time()
     for example in tqdm(test_dataset):
-        prompt = prompt.format(transcript=example["text"])
-        prediction = get(client=client, prompt=prompt)
+        prompt = PROMPT.format(transcript=example["text"])
+        prediction = request_model(prompt)
         raw_results.append(prediction)
         results.append(int(parse_response(prediction)))
 
-    t_taken = time() - t
+    t_taken = time.time() - t
     print(f"Time taken: {t_taken}; Time per sample: {t_taken / len(test_dataset): .2f}")
     report = classification_report(
         test_dataset.to_pandas()["value"].astype(int),
@@ -156,9 +174,10 @@ if __name__=="__main__":
     
     args = parser.parse_args()
     print(args)
-    dataset = get_data()
+    dataset = get_data(args)
     test_dataset = dataset["test"]
     for example in test_dataset:
-        response = get(client=client, prompt=prompt.format(transcript=example["text"]))
+        response = request_model(prompt=PROMPT.format(transcript=example["text"]))
         print(response)
         break
+    test(test_dataset)
