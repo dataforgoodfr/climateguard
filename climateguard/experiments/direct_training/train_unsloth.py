@@ -29,7 +29,7 @@ def get_data(args):
     dataset = load_dataset("DataForGood/climateguard")
 
     dataset = dataset.filter(lambda example: example["comments"] == [])
-    dataset = dataset.filter(lambda example: example["year"] == 2025)
+    # dataset = dataset.filter(lambda example: example["year"] == 2025)
     dataset = dataset.filter(
         lambda example: isinstance(example["misinformation"], bool)
     )
@@ -45,7 +45,7 @@ def get_data(args):
     if args.test_split == "time":
         concat_dataset = concatenate_datasets([dataset["train"], dataset["test"]])
 
-        concat_dataset = concat_dataset.sort(["month", "day"])
+        concat_dataset = concat_dataset.sort(["year", "month", "day"])
         stop_index = math.floor(len(concat_dataset) * 0.80)
         stop_date = pd.to_datetime(
             concat_dataset.select([stop_index])["start"][0]
@@ -161,7 +161,7 @@ if __name__ == "__main__":
     parser.add_argument("--learning-rate", type=float, default=1e-4)
     parser.add_argument("--train-batch-size", type=int, default=8)
     parser.add_argument("--eval-batch-size", type=int, default=8)
-    parser.add_argument("--gradient-accumulation-steps", type=int, default=2)
+    parser.add_argument("--gradient-accumulation-steps", type=int, default=1)
     parser.add_argument("--lora-r", type=int, default=16)
     parser.add_argument("--lora-alpha", type=int, default=16)
     parser.add_argument("--weight-decay", type=float, default=0.01)
@@ -224,6 +224,7 @@ text: {transcript}"""
         tokenizer.chat_template = open(
             os.path.join(
                 os.path.dirname(os.path.abspath(__file__)),
+                "chat_templates",
                 f"{args.chat_template}_chat_template.jinja",
             )
         ).read()
