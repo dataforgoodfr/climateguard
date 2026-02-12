@@ -36,14 +36,14 @@
     
     <View>
       <View style="display: flex;font-style: italic; gap: 15px; margin-top: 15px; flex-wrap: wrap;">
-  		<Text name="text_to_review_contains_misinformation" value="Does the above text contain misinformation (unchallenged)?"/>
-       </View>
-     <View style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
-      <Choices name="choice" toName="text_to_review_misinformation" required="true" showInline="false">
-        <Choice value="Correct" html="&lt;span style='color:green'&gt;✓&lt;/span&gt; Contains Misinformation" hotkey="m"/>
-        <Choice value="Incorrect" html="&lt;span style='color:red'&gt;✗&lt;/span&gt; Does Not Contain Misinformation" hotkey="n"/>
-      </Choices>
-     </View>
+  		  <Text name="text_to_review_contains_misinformation" value="Does the above text contain misinformation (unchallenged)?"/>
+      </View>
+      <View style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+        <Choices name="choice" toName="text_to_review_misinformation" required="true" showInline="false">
+          <Choice value="Correct" html="&lt;span style='color:green'&gt;✓&lt;/span&gt; Contains Misinformation" hotkey="m"/>
+          <Choice value="Incorrect" html="&lt;span style='color:red'&gt;✗&lt;/span&gt; Does Not Contain Misinformation" hotkey="n"/>
+        </Choices>
+      </View>
     </View>
     
     <View visibleWhen="choice-selected" whenTagName="choice" whenChoiceValue="Incorrect">
