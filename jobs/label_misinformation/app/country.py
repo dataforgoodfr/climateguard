@@ -151,6 +151,8 @@ POLAND_COUNTRY = Country(
         "radio-maryja",
         "tvs",
         "wpolsce24",
+        "tv-puls",
+        "fokus-tv",
     ],
 )
 
