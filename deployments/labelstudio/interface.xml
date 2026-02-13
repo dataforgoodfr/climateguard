@@ -34,12 +34,29 @@
     
     <Text name="text_to_review_misinformation" value="$item.plaintext_whisper" granularity="word"/>
     
-     <View style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
-      <Choices name="choice" toName="text_to_review_misinformation" required="true" showInline="true">
-        <Choice value="Correct" html="&lt;span style='color:green'&gt;✓&lt;/span&gt; Misinformation" hotkey="m"/>
-        <Choice value="Incorrect" html="&lt;span style='color:red'&gt;✗&lt;/span&gt; Not Misinformation" hotkey="n"/>
-      </Choices>
-     </View>
+    <View>
+      <View style="display: flex;font-style: italic; gap: 15px; margin-top: 15px; flex-wrap: wrap;">
+  		  <Text name="text_to_review_contains_misinformation" value="Does the above text contain misinformation (unchallenged)?"/>
+      </View>
+      <View style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+        <Choices name="choice" toName="text_to_review_misinformation" required="true" showInline="false">
+          <Choice value="Correct" html="&lt;span style='color:green'&gt;✓&lt;/span&gt; Contains Misinformation" hotkey="m"/>
+          <Choice value="Incorrect" html="&lt;span style='color:red'&gt;✗&lt;/span&gt; Does Not Contain Misinformation" hotkey="n"/>
+        </Choices>
+      </View>
+    </View>
+    
+    <View visibleWhen="choice-selected" whenTagName="choice" whenChoiceValue="Incorrect">
+       <View style="display: flex;">
+  		<Text name="misinfo_correction_text" value="Did the text not contain  misinformation or was it challenged ?"/>
+       </View>
+       <View style="display: flex;">
+        <Choices name="Was Misinformation Corrected?" toName="text_to_review_misinformation" required="false" showInline="true">>
+          <Choice value="not_corrected" html="No Misinformation"/>
+          <Choice value="corrected" html="Challenged"/>
+        </Choices>
+       </View>
+    </View>
      
      <Header name="claim_header" value="Claims" granularity="word"/>
      <TextArea name="claim" toName="text_to_review_misinformation" placeholder="Write down the misinformation claim(s) that you have identified." style="width: 100%; border-radius: 4px; border: 1px solid #ddd; padding: 8px; margin-bottom: 10px;" rows="3" maxSubmissions="1" editable="true" required="false"/>
@@ -88,24 +105,14 @@
       </View>
       <!-- Right side -->
       <View style="flex: 30%; margin-left: 1em">
-        <Choices name="Salient choice" toName="text_to_review_misinformation" required="true" showInline="true">>
+        <Choices name="Salient choice" toName="text_to_review_misinformation" required="false" showInline="true">>
           <Choice value="Salient" html="&lt;span style='color:orange'&gt;⚠️&lt;/span&gt; (optional) This is an important misinformation case" hotkey="s"/>
         </Choices>
       </View>
     </View>
     <!-- <View style="display: flex;"> -->
     </View> 
-     <View visibleWhen="choice-selected" whenTagName="choice" whenChoiceValue="Correct">
-       <View style="display: flex;">
-  		<Text name="misinfo_correction_text" value="Misinformation is actively corrected live by expert/journalist (providing context or debunk) ?"/>
-       </View>
-       <View style="display: flex;">
-        <Choices name="Was Misinformation Corrected?" toName="text_to_review_misinformation" required="false" showInline="true">>
-          <Choice value="corrected" html="Yes"/>
-          <Choice value="not_corrected" html="No"/>
-        </Choices>
-       </View>
-    </View>
+
    
   <!-- legacy 1870 and 1 868 Added Case Relevancy -->
   <View style="display: none;">  
