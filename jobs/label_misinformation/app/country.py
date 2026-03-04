@@ -19,7 +19,7 @@ class Country:
         field()
     )  # ID for Label Studio project (visible on the web UI url)
     channels: List[str] = field()
-    channels_no_whisper: List[str] = []
+    channels_no_whisper: List[str] = field(default_factory=lambda: [])
 
     def verify_code(self, code: str):
         return code.lower() == self.code
