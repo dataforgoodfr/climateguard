@@ -19,6 +19,7 @@ class Country:
         field()
     )  # ID for Label Studio project (visible on the web UI url)
     channels: List[str] = field()
+    channels_no_whisper: List[str] = field(default_factory=lambda: [])
 
     def verify_code(self, code: str):
         return code.lower() == self.code
@@ -64,13 +65,55 @@ BELGIUM_COUNTRY = Country(
     code="bel",
     name="belgium",
     language="french",
-    bucket=os.getenv("BUCKET_OUTPUT_BELGIUM", "climateguard-belgium"),
+    bucket=os.getenv("BUCKET_OUTPUT_BELGIUM", "safeguards-climate-belgium-dev"),
     model=get_secret_docker("MODEL_NAME", "gpt-4o-mini"),
     prompt_version=get_secret_docker("PROMPT_VERSION", "0.0.1"),
-    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID_BELGIUM", 12),
-    label_studio_project=os.getenv("LABEL_STUDIO_PROJECT_BELGIUM", 17),
-    channels=["CANALZ", "LAUNE", "LN24", "RTL", "LATROIS"],
+    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID_BELGIUM", 1),
+    label_studio_project=os.getenv("LABEL_STUDIO_PROJECT_BELGIUM", 1),
+    channels=[
+        "CANALZ",
+        "RTL",
+        "LAUNE",
+        "LN24",
+        "LATROIS",
+        "ACTV",
+        "CANALC",
+        "BX1",
+        "CANALZOOM",
+        "MATELE",
+        "NOTELE",
+        "RTC",
+        "TELEMB",
+        "TELESAMBRE",
+        "TVCOM",
+        "TVLUX",
+        "VEDIA",
+        "la-premiere",
+        "bel-rtl",
+        "vivacite",
+        "ln-radio",
+    ],
+    channels_no_whisper=[
+        "CANALZ",
+        "RTL",
+        "LAUNE",
+        "LN24",
+        "LATROIS",
+        "ACTV",
+        "CANALC",
+        "BX1",
+        "CANALZOOM",
+        "MATELE",
+        "NOTELE",
+        "RTC",
+        "TELEMB",
+        "TELESAMBRE",
+        "TVCOM",
+        "TVLUX",
+        "VEDIA",
+    ]
 )
+
 BRAZIL_COUNTRY = Country(
     code="bra",
     name="brazil",
@@ -108,6 +151,7 @@ GERMANY_COUNTRY = Country(
         "prosieben",
         "kabel-eins",
     ],
+    channels_no_whisper=["daserste", "zdf"]
 )
 
 SPAIN_COUNTRY = Country(

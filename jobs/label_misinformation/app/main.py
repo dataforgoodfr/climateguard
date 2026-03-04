@@ -4,7 +4,7 @@ import sys
 
 import modin.pandas as pd
 import ray
-from country import Country, CountryCollection, get_countries, BELGIUM_COUNTRY
+from country import Country, CountryCollection, get_countries
 from date_utils import get_date_range
 from labelstudio_utils import wait_and_sync_label_studio
 from logging_utils import getLogger
@@ -234,7 +234,7 @@ def main(country: Country):
                             )
 
                             if (
-                                country != BELGIUM_COUNTRY
+                                channel not in country.channels_no_whisper
                             ):  # not from mediatree, so cannot get the new audio
                                 logging.info(
                                     "Getting new plaintext from whisper by getting the original audio..."
@@ -249,10 +249,10 @@ def main(country: Country):
                                 )
                             else:
                                 logging.info(
-                                    "Belgium country - no whispering, keeping the original dataframe"
+                                    f"No mediatree source for {channel}, keeping the original dataframe"
                                 )
                                 # empty string for whisper column
-                                misinformation_only_news[WHISPER_COLUMN_NAME] = ""
+                                misinformation_only_news[WHISPER_COLUMN_NAME] = misinformation_only_news["plaintext"]
 
                                 df_whispered = misinformation_only_news
 

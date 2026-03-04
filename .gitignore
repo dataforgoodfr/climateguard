@@ -99,5 +99,7 @@ data/processed
 notebooks/experiments/data
 notebooks/experiments/*.csv
 
+climateguard/experiments/logs
+climateguard/experiments/claim_extraction/climateguard_claim_extraction/
 credentials.txt
 

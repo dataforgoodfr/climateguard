@@ -2,6 +2,7 @@ resource "scaleway_job_definition" "main" {
   name         = "label-misinformation-${var.country}-${var.environment}"
   cpu_limit    = 4000
   memory_limit = 8192
+  local_storage_capacity = 4096
   image_uri    = "rg.fr-par.scw.cloud/misinformation/label-misinformation:latest"
   timeout      = "60m"
   project_id   = data.scaleway_account_project.project.id
