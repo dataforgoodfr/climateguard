@@ -23,7 +23,7 @@ resource "scaleway_container" "labelstudio_container" {
   max_scale      = 1
   memory_limit   = 2048
   cpu_limit      = 1000
-  registry_image = "heartexlabs/label-studio:1.19.0"
+  registry_image = "heartexlabs/label-studio:1.22.0"
   port           = 8080
   deploy         = true
   protocol       = "http1"
