@@ -1,3 +1,3 @@
 subject     = "climate"
-environment = "dev"
+environment = "prod"
 country     = "belgium"

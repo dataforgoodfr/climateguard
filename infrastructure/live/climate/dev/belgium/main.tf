@@ -1,4 +1,4 @@
-module "france" {
+module "belgium" {
   source = "../../../../modules/country"
   # variables
   subject                    = var.subject
