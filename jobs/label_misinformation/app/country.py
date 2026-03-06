@@ -138,11 +138,11 @@ GERMANY_COUNTRY = Country(
     code="deu",
     name="germany",
     language="german",
-    bucket=os.getenv("BUCKET_OUTPUT_GERMANY", "climateguard-germany"),
-    model=get_secret_docker("MODEL_NAME_GERMANY", "gpt-4o-mini"),  # add as get env
+    bucket=os.getenv("BUCKET_OUTPUT", "safeguards-climate-germany-dev"),
+    model=get_secret_docker("MODEL_NAME", "gpt-4o-mini"),  # add as get env
     prompt_version=get_secret_docker("PROMPT_VERSION", "0.0.1"),
-    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID_GERMANY", 14),  # pass as getenv
-    label_studio_project=os.getenv("LABEL_STUDIO_PROJECT_GERMANY", 19),
+    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID", 1),  # pass as getenv
+    label_studio_project=os.getenv("LABEL_STUDIO_PROJECT", 1),
     channels=[
         "daserste",
         "zdf",
