@@ -103,3 +103,5 @@ climateguard/experiments/logs
 climateguard/experiments/claim_extraction/climateguard_claim_extraction/
 credentials.txt
 
+.aws/
+germany_s3_bucket/

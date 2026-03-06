@@ -1,10 +1,10 @@
-module "belgium" {
+module "germany" {
   source = "../../../../modules/country"
   # variables
   subject                    = var.subject
   environment                = var.environment
   country                    = var.country
-  job_cron_schedule          = "47 5 * * *" # setting it to run on jan 1st as this is a test env and will launch manually
+  job_cron_schedule          = "48 5 * * *" # setting it to run on jan 1st as this is a test env and will launch manually
   job_cron_schedule_timezone = "Europe/Paris"
   # Defined as secrets
   project_secret_access_key     = var.project_secret_access_key
