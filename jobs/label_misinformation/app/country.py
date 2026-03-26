@@ -114,7 +114,7 @@ BELGIUM_COUNTRY = Country(
     ]
 )
 BELGIUM_FLANDERS_COUNTRY = Country(
-    code="bel",
+    code="bel-fla",
     name="belgium-flanders",
     language="dutch",
     bucket=os.getenv("BUCKET_OUTPUT", "safeguards-climate-belgium-flanders-dev"),
