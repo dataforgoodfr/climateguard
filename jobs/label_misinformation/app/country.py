@@ -113,6 +113,26 @@ BELGIUM_COUNTRY = Country(
         "VEDIA",
     ]
 )
+BELGIUM_FLANDERS_COUNTRY = Country(
+    code="bel",
+    name="belgium-flanders",
+    language="dutch",
+    bucket=os.getenv("BUCKET_OUTPUT", "safeguards-climate-belgium-flanders-dev"),
+    model=get_secret_docker("MODEL_NAME", "gpt-4o-mini"),
+    prompt_version=get_secret_docker("PROMPT_VERSION", "0.0.1"),
+    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID", 1),
+    label_studio_project=os.getenv("LABEL_STUDIO_PROJECT", 1),
+    channels=[
+        "canvas",
+        "radio-2",
+        "vtm",
+        "radio-1",
+        "stu-bru",
+        "qmusic",
+        "play",
+        "vrt1",
+    ],
+)
 
 BRAZIL_COUNTRY = Country(
     code="bra",
@@ -206,6 +226,7 @@ def get_all_countries():
         [
             FRANCE_COUNTRY,
             BELGIUM_COUNTRY,
+            BELGIUM_FLANDERS_COUNTRY,
             BRAZIL_COUNTRY,
             GERMANY_COUNTRY,
             SPAIN_COUNTRY,
