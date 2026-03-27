@@ -13,5 +13,6 @@ then
     source ~/.bashrc
 fi
 
+uv venv
 uv sync
 source ./.venv/bin/activate
