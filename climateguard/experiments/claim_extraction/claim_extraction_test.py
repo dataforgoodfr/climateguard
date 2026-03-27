@@ -1,13 +1,13 @@
 import asyncio
 import re
 
+import evaluate
 import pandas as pd
 import torch
 from datasets import load_dataset
 from dotenv import load_dotenv
 from ollama import AsyncClient, Client
 from openai import AsyncOpenAI
-from rouge_score import rouge_scorer
 from tqdm import tqdm
 from tqdm.asyncio import tqdm as atqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -15,7 +15,6 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 load_dotenv()
 
 # Initialize client
-client = AsyncOpenAI()
 client_ollama = AsyncClient()
 ollama_model_id = "hf.co/kurakurai/Luth-LFM2-350M-GGUF:latest"
 
@@ -32,7 +31,9 @@ def call_causal_model(prompt: str, model_name: str):
     - str: The generated text by the model, following the given prompt.
     """
     # load the tokenizer and the model
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_name, torch_dtype=torch.float16, device_map="auto"
+    )
     model = AutoModelForCausalLM.from_pretrained(
         model_name, dtype="auto", device_map="auto"
     )
@@ -140,8 +141,8 @@ async def get_responses(prompts, max_concurrent=5, function=fetch_response_opena
     return results
 
 
-# engine = "transformers"
-engine = "ollama"
+engine = "transformers"
+# engine = "ollama"
 # engine = "openai"
 
 prompt = """
@@ -179,7 +180,7 @@ predictions = []
 reference = []
 
 if engine == "transformers":
-    model_id = "LiquidAI/LFM2-1.2B"
+    model_id = "gmguarino/climateguard-Luth-LFM2-350M-claim-extraction-dpo"
 
     for example in tqdm(dataset):
         output = call_causal_model(
@@ -190,6 +191,7 @@ if engine == "transformers":
         reference.append(". ".join(example["claims"]))
 
 elif engine == "openai":
+    client = AsyncOpenAI()
     prompts = []
     for example in tqdm(dataset):
         prompts.append(prompt.format(transcript=example["plaintext"]))
@@ -217,17 +219,7 @@ with open("targets.txt", "w") as f:
         f.write(ref)
         f.write("\n")
 
-scorer = rouge_scorer.RougeScorer(["rouge1"], use_stemmer=False, split_summaries=True)
 
-rouge_scores = []
-for pred, gt in zip(predictions, reference):
-    scores = scorer.score(prediction=pred, target=gt)
-    score_dict = {
-        "precision": scores["rouge1"].precision,
-        "recall": scores["rouge1"].recall,
-        "fmeasure": scores["rouge1"].fmeasure,
-    }
-    rouge_scores.append(score_dict)
-
-scores_df = pd.DataFrame.from_records(rouge_scores)
-print(scores_df.describe())
+rouge = evaluate.load("rouge")
+rouge_scores = rouge.compute(predictions=predictions, references=reference)
+print(f"ROUGE scores on test set: {rouge_scores}")
