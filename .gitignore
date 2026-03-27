@@ -100,6 +100,11 @@ qdrant
 notebooks/experiments/data
 notebooks/experiments/*.csv
 
+climateguard/experiments/logs
+climateguard/experiments/claim_extraction/climateguard_claim_extraction/
 credentials.txt
 logs
 climateguard/experiments/claim_extraction/climateguard_claim_extraction
+
+.aws/
+germany_s3_bucket/

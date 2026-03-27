@@ -19,6 +19,7 @@ class Country:
         field()
     )  # ID for Label Studio project (visible on the web UI url)
     channels: List[str] = field()
+    channels_no_whisper: List[str] = field(default_factory=lambda: [])
 
     def verify_code(self, code: str):
         return code.lower() == self.code
@@ -64,13 +65,55 @@ BELGIUM_COUNTRY = Country(
     code="bel",
     name="belgium",
     language="french",
-    bucket=os.getenv("BUCKET_OUTPUT_BELGIUM", "climateguard-belgium"),
+    bucket=os.getenv("BUCKET_OUTPUT", "safeguards-climate-belgium-dev"),
     model=get_secret_docker("MODEL_NAME", "gpt-4o-mini"),
     prompt_version=get_secret_docker("PROMPT_VERSION", "0.0.1"),
-    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID_BELGIUM", 12),
-    label_studio_project=os.getenv("LABEL_STUDIO_PROJECT_BELGIUM", 17),
-    channels=["CANALZ", "LAUNE", "LN24", "RTL", "LATROIS"],
+    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID", 1),
+    label_studio_project=os.getenv("LABEL_STUDIO_PROJECT", 1),
+    channels=[
+        "CANALZ",
+        "RTL",
+        "LAUNE",
+        "LN24",
+        "LATROIS",
+        "ACTV",
+        "CANALC",
+        "BX1",
+        "CANALZOOM",
+        "MATELE",
+        "NOTELE",
+        "RTC",
+        "TELEMB",
+        "TELESAMBRE",
+        "TVCOM",
+        "TVLUX",
+        "VEDIA",
+        "la-premiere",
+        "bel-rtl",
+        "vivacite",
+        "ln-radio",
+    ],
+    channels_no_whisper=[
+        "CANALZ",
+        "RTL",
+        "LAUNE",
+        "LN24",
+        "LATROIS",
+        "ACTV",
+        "CANALC",
+        "BX1",
+        "CANALZOOM",
+        "MATELE",
+        "NOTELE",
+        "RTC",
+        "TELEMB",
+        "TELESAMBRE",
+        "TVCOM",
+        "TVLUX",
+        "VEDIA",
+    ]
 )
+
 BRAZIL_COUNTRY = Country(
     code="bra",
     name="brazil",
@@ -95,11 +138,11 @@ GERMANY_COUNTRY = Country(
     code="deu",
     name="germany",
     language="german",
-    bucket=os.getenv("BUCKET_OUTPUT_GERMANY", "climateguard-germany"),
-    model=get_secret_docker("MODEL_NAME_GERMANY", "gpt-4o-mini"),  # add as get env
+    bucket=os.getenv("BUCKET_OUTPUT", "safeguards-climate-germany-dev"),
+    model=get_secret_docker("MODEL_NAME", "gpt-4o-mini"),  # add as get env
     prompt_version=get_secret_docker("PROMPT_VERSION", "0.0.1"),
-    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID_GERMANY", 14),  # pass as getenv
-    label_studio_project=os.getenv("LABEL_STUDIO_PROJECT_GERMANY", 19),
+    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID", 1),  # pass as getenv
+    label_studio_project=os.getenv("LABEL_STUDIO_PROJECT", 1),
     channels=[
         "daserste",
         "zdf",
@@ -108,6 +151,7 @@ GERMANY_COUNTRY = Country(
         "prosieben",
         "kabel-eins",
     ],
+    channels_no_whisper=["daserste", "zdf"]
 )
 
 SPAIN_COUNTRY = Country(
@@ -139,14 +183,20 @@ POLAND_COUNTRY = Country(
     label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID", 1),  
     label_studio_project=os.getenv("LABEL_STUDIO_PROJECT", 1),
     channels=[
-        # Deploying only first three chains, rest will be deployed after the summer
-        "polskie-radio",
-        "radio-zet",
-        "eska",
+        "tvp",
         "polsat",
         "tvn",
-        "tvp",
+        "polskie-radio",
         "tokfm",
+        "radio-zet",
+        "eska",
+        "tv-republika",
+        "tv-trwam",
+        "radio-maryja",
+        "tvs",
+        "wpolsce24",
+        "tv-puls",
+        "fokus-tv",
     ],
 )
 

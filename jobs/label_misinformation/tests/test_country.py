@@ -61,3 +61,10 @@ def test_get_country_or_collection_from_name():
         ALL_COUNTRIES,
     ):
         assert get_country_or_collection_from_name(entity.name) == entity
+
+
+def test_no_whisper_channels():
+    country = BELGIUM_COUNTRY
+    assert "CANALC" in country.channels_no_whisper
+    country = GERMANY_COUNTRY
+    assert "daserste" in country.channels_no_whisper
