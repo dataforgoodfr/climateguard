@@ -105,3 +105,4 @@ credentials.txt
 
 .aws/
 germany_s3_bucket/
+.gcloud
