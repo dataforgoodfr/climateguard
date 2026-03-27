@@ -77,10 +77,14 @@ notebooks/**/.ipynb_checkpoints/
 
 # Keep test files
 !data/test_claims_detection/
+!data/*.ipynb
 
 # Large dataset files
 data/raw/
-data
+data/benchmark
+data/annotated
+data/processed
+
 climateguard/finetuning/llms/grpo/data
 climateguard/finetuning/llms/grpo/data_xml
 climateguard/finetuning/llms/grpo/data_messages
@@ -93,15 +97,14 @@ models/
 wandb
 notebooks
 qdrant
-data/benchmark
-data/annotated
-data/processed
 notebooks/experiments/data
 notebooks/experiments/*.csv
 
 climateguard/experiments/logs
 climateguard/experiments/claim_extraction/climateguard_claim_extraction/
 credentials.txt
+logs
+climateguard/experiments/claim_extraction/climateguard_claim_extraction
 
 .aws/
 germany_s3_bucket/
