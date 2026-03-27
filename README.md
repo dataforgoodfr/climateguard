@@ -17,22 +17,5 @@ The notebooks used to create the dataset by pulling records from labelstudio and
 ## Models
 Scripts for finetuning models and for experimenting with different techiniques are in the `climateguard` folder under `climateguard/finetuning` and `climateguard/experiments` respectively.
 
-## Legacy 
-### Install the repo 
-
-First install the scrapper dependencies, following the tutorial on the repo: https://github.com/codelucas/newspaper?tab=readme-ov-file#get-it-now
-Only install the OS dependencies, as the package will be installed in a virtual env, below.
-
-Install first the uv package:
-
-```bash
-pip install uv
-```
-
-Then install the repo:
-
-```bash
-uv venv
-uv sync
-```
-
+# Getting started
+Install dependencies with the `setup.sh` script.
