@@ -1,5 +1,6 @@
 google-cloud-storage>=2.0.0
 google-auth>=2.0.0
+google_auth_oauthlib
 google-api-python-client>=2.0.0
 moviepy>=1.0.0
 sqlalchemy>=2.0.0
