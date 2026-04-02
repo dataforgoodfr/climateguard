@@ -1,7 +1,7 @@
 [project]
 name = "climateguard"
 version = "0.1.0"
-description = "Add your description here"
+description = "Climateguard is a tool developed to pull data from the OME database and detect disinformation using an llm."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
