@@ -20,6 +20,8 @@ dependencies = [
     "plotly>=6.5.0",
     "protobuf>=6.32.1",
     "psutil>=7.1.0",
+    "psycopg>=3.3.3",
+    "psycopg2>=2.9.11",
     "pydantic>=2.11.9",
     "python-dotenv>=1.1.1",
     "requests>=2.32.5",
@@ -34,6 +36,7 @@ dependencies = [
     "trl>=0.23.1",
     "wandb>=0.22.2",
     "wordcloud>=1.9.4",
+    "tomli>=2.4.1",
 ]
 
 
