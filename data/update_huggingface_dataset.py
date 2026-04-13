@@ -1,21 +1,21 @@
-from datetime import date, timedelta, datetime
 import os
-from datasets import load_dataset, Dataset, DatasetDict
-from dotenv import load_dotenv
-import pandas as pd
-import psycopg
+from datetime import date, datetime, timedelta
 from typing import List
 
+import pandas as pd
+import psycopg
 import requests
+from datasets import Dataset, DatasetDict, load_dataset
+from dotenv import load_dotenv
 
 load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 
 
-def fetch_articles(columns: List[str]=None) -> pd.DataFrame:
+def fetch_articles(columns: List[str] = None) -> pd.DataFrame:
     conninfo = (
-        f"host={os.getenv['PG_HOST']} port={os.getenv['PG_PORT']} "
-        f"dbname={os.getenv['PG_DATABASE']} user={os.getenv['PG_USER']} "
-        f"password={os.getenv['PG_PASSWORD']}"
+        f"host={os.getenv('PG_HOST', 'localhost')} port={os.getenv('PG_PORT', 5432)} "
+        f"dbname={os.getenv('PG_DATABASE', 'postgres')} user={os.getenv('PG_USER', 'user')} "
+        f"password={os.getenv('PG_PASSWORD', 'supersecret')}"
     )
     columns_str = ", ".join(columns) if columns else "*"
     query = f"""
@@ -30,14 +30,13 @@ def fetch_articles(columns: List[str]=None) -> pd.DataFrame:
 
     return pd.DataFrame(rows, columns=columns)
 
+
 def get_week_number(record):
     format_str = "%Y-%m-%dT%H:%M:%S"
     if len(record["data_item_start"]) > 19:
         format_str = format_str + "%z"
     week_number = (
-        datetime.strptime(record["data_item_start"], format_str)
-        .isocalendar()
-        .week
+        datetime.strptime(record["data_item_start"], format_str).isocalendar().week
     )
     return week_number
 
@@ -50,7 +49,9 @@ def split_df_by_week(df):
 
 
 def generate_hf_dataset(df_train, df_test):
-    df_train.data_item_start = df_train.data_item_start.dt.strftime("%Y-%m-%dT%H:%M:%S%z")
+    df_train.data_item_start = df_train.data_item_start.dt.strftime(
+        "%Y-%m-%dT%H:%M:%S%z"
+    )
     df_test.data_item_start = df_test.data_item_start.dt.strftime("%Y-%m-%dT%H:%M:%S%z")
     dataset = DatasetDict(
         {
@@ -100,10 +101,10 @@ DATASET_COLUMNS = [
     "debunk_references",
     "claims",
     "explanations",
-    "other_comments"
+    "other_comments",
 ]
 
-if __name__=="__main__":
+if __name__ == "__main__":
     df = fetch_articles(DATASET_COLUMNS)
     df_train, df_test = split_df_by_week(df)
     dataset = generate_hf_dataset(df_train, df_test)
