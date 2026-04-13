@@ -40,6 +40,7 @@ def sentry_init():
             # integrations=[ # TODO : https://docs.sentry.io/platforms/python/integrations/ray/
             #     RayIntegration(),
             # ],
+            **logging_kwargs
         )
     else:
         logging.info("Sentry not init - SENTRY_DSN not found")
