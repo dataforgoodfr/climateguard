@@ -108,4 +108,5 @@ climateguard/experiments/claim_extraction/climateguard_claim_extraction
 
 .aws/
 germany_s3_bucket/
+france_s3_bucket/
 .gcloud
