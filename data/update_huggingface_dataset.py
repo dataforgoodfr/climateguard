@@ -2,6 +2,7 @@ import os
 from datetime import date, datetime, timedelta
 from typing import List
 
+import numpy as np
 import pandas as pd
 import psycopg
 import requests
@@ -21,6 +22,7 @@ def fetch_articles(columns: List[str] = None) -> pd.DataFrame:
     query = f"""
         SELECT {columns_str}
         FROM analytics.task_global_completion
+        where task_completion_aggregate_id is not null
     """
     with psycopg.connect(conninfo) as conn:
         with conn.cursor() as cur:
@@ -42,11 +44,34 @@ def get_week_number(record):
 
 
 def split_df_by_week(df):
-    df["week_number"] = df.apply(get_week_number, axis=1)
-    df_train = df.loc[df.week_number % 4]
-    df_test = df.loc[df.week_number % 4 == 0]
+    df["week_number"] = df.data_item_start.dt.isocalendar().week
+    df_train = df.loc[df.week_number % 5 > 0]
+    df_test = df.loc[df.week_number % 5 == 0]
     return df_train, df_test
 
+def cast_to_int_with_nan(col: pd.Series, int_type: str='uint8'):
+    col = col.fillna(-1)
+    col = col.astype(int_type)
+    col[col==-1] = np.nan
+    return col
+
+
+def format_dtypes(df: pd.DataFrame):
+    df.data_item_day = df.data_item_day.astype('f2')
+    df.data_item_month = df.data_item_month.astype('f2')
+    df.data_item_year = df.data_item_year.astype('f2')
+    df.data_item_model_result = df.data_item_model_result.astype('f2')
+    df.mesinfo_correct = df.mesinfo_correct.astype('f2')
+    df.mesinfo_incorrect = df.mesinfo_incorrect.astype('f2')
+    df.speaker_journalist = df.speaker_journalist.astype('f2')
+    df.speaker_commentator = df.speaker_commentator.astype('f2')
+    df.speaker_guest = df.speaker_guest.astype('f2')
+    df.speaker_politician = df.speaker_politician.astype('f2')
+    df.speaker_audience = df.speaker_audience.astype('f2')
+    df.speaker_unknown = df.speaker_unknown.astype('f2')
+    df.mesinfo_corrected_bool = df.mesinfo_corrected_bool.astype('f2')
+    df.mesinfo_corrected = df.mesinfo_corrected.fillna("")
+    return df
 
 def generate_hf_dataset(df_train, df_test):
     df_train.data_item_start = df_train.data_item_start.dt.strftime(
@@ -106,6 +131,7 @@ DATASET_COLUMNS = [
 
 if __name__ == "__main__":
     df = fetch_articles(DATASET_COLUMNS)
+    df = format_dtypes(df)
     df_train, df_test = split_df_by_week(df)
     dataset = generate_hf_dataset(df_train, df_test)
     dataset.push_to_hub("DataForGood/climateguard-training", private=True, token=True)
