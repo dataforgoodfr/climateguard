@@ -1,17 +1,42 @@
 [project]
 name = "climateguard"
 version = "0.1.0"
-description = "Add your description here"
+description = "Climateguard is a tool developed to pull data from the OME database and detect disinformation using an llm."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "accelerate>=1.10.1",
     "datasets>=4.1.1",
     "evaluate>=0.4.6",
+    "ipykernel>=6.30.1",
+    "ipywidgets>=8.1.7",
+    "jupyter>=1.1.1",
+    "keybert>=0.9.0",
     "numpy>=2.3.3",
+    "ollama>=0.6.0",
     "openai>=1.108.1",
     "pandas>=2.3.2",
+    "peft>=0.17.1",
+    "plotly>=6.5.0",
+    "protobuf>=6.32.1",
+    "psutil>=7.1.0",
+    "psycopg>=3.3.3",
+    "psycopg2>=2.9.11",
     "pydantic>=2.11.9",
+    "python-dotenv>=1.1.1",
+    "requests>=2.32.5",
+    "rouge-score>=0.1.2",
+    "ruff>=0.13.1",
+    "scikit-learn>=1.7.2",
     "sentencepiece>=0.2.1",
+    "setfit>=1.1.3",
+    "torch-optimi>=0.3.2",
     "torch>=2.8.0",
     "transformers>=4.56.2",
+    "trl>=0.23.1",
+    "wandb>=0.22.2",
+    "wordcloud>=1.9.4",
+    "tomli>=2.4.1",
 ]
+
+

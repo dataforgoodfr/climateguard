@@ -277,7 +277,7 @@ PROD_COUNTRIES = CountryCollection(
     name="prod",
     code="None",
     language="all",
-    countries=[BRAZIL_COUNTRY, FRANCE_COUNTRY, GERMANY_COUNTRY],
+    countries=[BRAZIL_COUNTRY, FRANCE_COUNTRY],
 )
 
 
