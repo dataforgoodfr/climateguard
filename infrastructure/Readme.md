@@ -116,7 +116,8 @@ When deploying a country for the first time you might need to create passwords f
 openssl rand -base64 16
 ```
 to generate a secure password. 
-To generate the labelstudio token a 40 character string needs to be generated with:
+## LabelStudio Token
+The LabelStudio access token, on the other hand, needs to be 40 characters long and alphanumeric only. Generate it with:
 ```bash
 openssl rand -base64 30 | tr -dc 'A-Za-z0-9' | head -c 40; echo
 ```
