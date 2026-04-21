@@ -4,7 +4,7 @@ module "main" {
   subject                    = var.subject
   environment                = var.environment
   country                    = var.country
-  job_cron_schedule          = "41 5 1 1 *" # setting it to run on jan 1st as this is a test env and will launch manually
+  job_cron_schedule          = "41 5 * * *" # setting it to run on jan 1st as this is a test env and will launch manually
   job_cron_schedule_timezone = "Europe/Paris"
   # Defined as secrets
   project_secret_access_key     = var.project_secret_access_key
