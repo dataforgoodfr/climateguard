@@ -238,7 +238,7 @@ def get_all_countries():
 
 @dataclass
 class CountryCollection:
-    code: str = field(default="None")
+    code: str = field(default="all")
     name: str = field(default="all")
     language: str = field(default="all")
     countries: List[Country] = field(default_factory=get_all_countries)
