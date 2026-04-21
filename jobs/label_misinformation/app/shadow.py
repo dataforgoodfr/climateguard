@@ -301,7 +301,7 @@ def main(country: Country, shadow_labelstudio_id: int):
                 )
                 key = (
                     f"{bucket_output_folder}/"
-                    f"country={country.name}/"
+                    f"country={convert_to_base_country_name(country.name)}/"
                     f"year={updated_record['data']['item']['year']}/"
                     f"month={updated_record['data']['item']['month']:1}/"
                     f"day={updated_record['data']['item']['day']:1}/"

@@ -6,7 +6,7 @@ from labelstudio_utils import get_label_studio_format
 from secret_utils import get_secret_docker
 import shutil
 import json
-from country import Country, LEGACY_COUNTRIES, FRANCE_COUNTRY
+from country import Country, LEGACY_COUNTRIES, FRANCE_COUNTRY, convert_to_base_country_name
 
 
 # Configuration for Scaleway Object Storage
@@ -40,8 +40,8 @@ def get_bucket_key_folder(
 ) -> str:
     (year, month, day) = (date.year, date.month, date.day)
     key = f"year={year}/month={month:1}/day={day:1}/channel={channel}/"
-    if country not in LEGACY_COUNTRIES:
-        key = f"country={country.name}/" + key
+    if country != LEGACY_COUNTRIES:
+        key = f"country={convert_to_base_country_name(country.name)}/" + key
     if root_folder is not None:
         return f"{root_folder}/{key}"
     return key
