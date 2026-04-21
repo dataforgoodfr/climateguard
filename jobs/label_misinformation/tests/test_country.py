@@ -33,17 +33,17 @@ def test_empty_country_collection():
 
 def test_country_collection_presets():
     assert ALL_COUNTRIES == CountryCollection(
-        name="all", countries=[BELGIUM_COUNTRY, BELGIUM_FLANDERS_COUNTRY, BRAZIL_COUNTRY, FRANCE_COUNTRY, GERMANY_COUNTRY, POLAND_COUNTRY, SPAIN_COUNTRY]
+        name="all", code="all", countries=[BELGIUM_COUNTRY, BELGIUM_FLANDERS_COUNTRY, BRAZIL_COUNTRY, FRANCE_COUNTRY, GERMANY_COUNTRY, POLAND_COUNTRY, SPAIN_COUNTRY]
     )
     assert LEGACY_COUNTRIES == CountryCollection(
         name="legacy",
-        code="None",
+        code="legacy",
         language="french",
         countries=[BELGIUM_COUNTRY, FRANCE_COUNTRY],
     )
     assert PROD_COUNTRIES == CountryCollection(
         name="prod",
-        code="None",
+        code="prod",
         language="all",
         countries=[BRAZIL_COUNTRY, FRANCE_COUNTRY],
     )
