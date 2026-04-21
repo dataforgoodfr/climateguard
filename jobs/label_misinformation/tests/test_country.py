@@ -8,6 +8,7 @@ sys.path.append(os.path.abspath("/app"))
 from app.country import (
     ALL_COUNTRIES,
     BELGIUM_COUNTRY,
+    BELGIUM_FLANDERS_COUNTRY,
     BRAZIL_COUNTRY,
     FRANCE_COUNTRY,
     GERMANY_COUNTRY,
@@ -32,7 +33,7 @@ def test_empty_country_collection():
 
 def test_country_collection_presets():
     assert ALL_COUNTRIES == CountryCollection(
-        name="all", countries=[BELGIUM_COUNTRY, BRAZIL_COUNTRY, FRANCE_COUNTRY, GERMANY_COUNTRY, POLAND_COUNTRY, SPAIN_COUNTRY]
+        name="all", countries=[BELGIUM_COUNTRY, BELGIUM_FLANDERS_COUNTRY, BRAZIL_COUNTRY, FRANCE_COUNTRY, GERMANY_COUNTRY, POLAND_COUNTRY, SPAIN_COUNTRY]
     )
     assert LEGACY_COUNTRIES == CountryCollection(
         name="legacy",
