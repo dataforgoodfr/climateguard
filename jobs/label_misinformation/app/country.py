@@ -111,7 +111,7 @@ BELGIUM_COUNTRY = Country(
         "TVCOM",
         "TVLUX",
         "VEDIA",
-    ]
+    ],
 )
 BELGIUM_FLANDERS_COUNTRY = Country(
     code="bel-fla",
@@ -171,7 +171,7 @@ GERMANY_COUNTRY = Country(
         "prosieben",
         "kabel-eins",
     ],
-    channels_no_whisper=["daserste", "zdf"]
+    channels_no_whisper=["daserste", "zdf"],
 )
 
 SPAIN_COUNTRY = Country(
@@ -198,9 +198,9 @@ POLAND_COUNTRY = Country(
     name="poland",
     language="polish",
     bucket=os.getenv("BUCKET_OUTPUT", "safeguards-climate-poland-dev"),
-    model=get_secret_docker("MODEL_NAME", "gpt-4o-mini"), 
+    model=get_secret_docker("MODEL_NAME", "gpt-4o-mini"),
     prompt_version=get_secret_docker("PROMPT_VERSION", "0.0.1"),
-    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID", 1),  
+    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID", 1),
     label_studio_project=os.getenv("LABEL_STUDIO_PROJECT", 1),
     channels=[
         "tvp",
@@ -238,7 +238,7 @@ def get_all_countries():
 
 @dataclass
 class CountryCollection:
-    code: str = field(default="None")
+    code: str = field(default="all")
     name: str = field(default="all")
     language: str = field(default="all")
     countries: List[Country] = field(default_factory=get_all_countries)
@@ -266,19 +266,37 @@ class CountryCollection:
         )
 
 
-ALL_COUNTRIES = CountryCollection(name="all", countries=get_all_countries())
+ALL_COUNTRIES = CountryCollection(name="all", code="all", countries=get_all_countries())
 LEGACY_COUNTRIES = CountryCollection(
     name="legacy",
-    code="None",
+    code="legacy",
     language="french",
     countries=[BELGIUM_COUNTRY, FRANCE_COUNTRY],
 )
 PROD_COUNTRIES = CountryCollection(
     name="prod",
-    code="None",
+    code="prod",
     language="all",
     countries=[BRAZIL_COUNTRY, FRANCE_COUNTRY],
 )
+
+
+def convert_to_base_country_name(name: str):
+    return name.split("-")[0]
+
+
+def get_country_or_collection_from_code(code: str):
+    for entity in [
+        *ALL_COUNTRIES.countries,
+        LEGACY_COUNTRIES,
+        PROD_COUNTRIES,
+        ALL_COUNTRIES,
+    ]:
+        if entity.verify_code(code):
+            return entity
+    raise NotImplementedError(
+        f"Country with code '{code}' not included in setup. Visit app/country.py for more"
+    )
 
 
 def get_country_or_collection_from_name(name: str):
