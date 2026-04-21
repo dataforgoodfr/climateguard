@@ -199,6 +199,7 @@ def is_there_data_for_this_day_safe_guard(
     end_of_day = start_of_day + timedelta(days=1)
     if not country == ALL_COUNTRIES:
         statement = statement.filter(Keywords.country == convert_to_base_country_name(country.name))
+        statement = statement.filter(Keywords.channel_name.in_(country.channels))
     statement = statement.filter(
         and_(Keywords.start >= start_of_day, Keywords.start < end_of_day)
     )
@@ -216,7 +217,7 @@ def get_keywords_for_a_day_and_channel(
     ids_to_avoid: List[str] = [],
 ) -> pd.DataFrame:
     logging.info(
-        f"Getting keywords table from {date} and channel_name : {channel_name}, for country {convert_to_base_country_name(country.name)}"
+        f"Getting keywords table from {date} and channel_name : {channel_name}, for country {country.name}"
     )
 
     statement = (
@@ -239,9 +240,11 @@ def get_keywords_for_a_day_and_channel(
         )
     elif country in LEGACY_COUNTRIES:  # preserve legacy format
         statement = statement.filter(Keywords.country == convert_to_base_country_name(country.name))
+        statement = statement.filter(Keywords.channel_name.in_(country.channels))
         statement = statement.filter(Keywords.number_of_keywords_climat > 0)
     else:
         statement = statement.filter(Keywords.country == convert_to_base_country_name(country.name))
+        statement = statement.filter(Keywords.channel_name.in_(country.channels))
         statement = statement.filter(Keywords.number_of_keywords > 0)
     statement = statement.filter(Keywords.channel_name == channel_name)
 
@@ -304,9 +307,11 @@ def get_keywords_for_period_and_channels(
         )
     elif country in LEGACY_COUNTRIES:  # preserve legacy format
         statement = statement.filter(Keywords.country == convert_to_base_country_name(country.name))
+        statement = statement.filter(Keywords.channel_name.in_(country.channels))
         statement = statement.filter(Keywords.number_of_keywords_climat > 0)
     else:
         statement = statement.filter(Keywords.country == convert_to_base_country_name(country.name))
+        statement = statement.filter(Keywords.channel_name.in_(country.channels))
         statement = statement.filter(Keywords.number_of_keywords > 0)
     statement = statement.filter(Keywords.channel_name.in_(channels))
 
