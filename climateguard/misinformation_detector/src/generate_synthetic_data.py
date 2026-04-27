@@ -75,6 +75,7 @@ dense factual sentences before the label.\
 
 # ── Label logic ───────────────────────────────────────────────────────────────
 
+
 def derive_label(row: dict[str, Any]) -> bool:
     """Return True (MISINFORMATION) or False (CLEAN) from the dataset's counter-intuitive flags."""
     if row["mesinfo_correct"]:
@@ -85,6 +86,7 @@ def derive_label(row: dict[str, Any]) -> bool:
 
 
 # ── Teacher call ──────────────────────────────────────────────────────────────
+
 
 async def generate_trace(
     client: anthropic.AsyncAnthropic,
@@ -150,9 +152,7 @@ Generate the reasoning trace.\
         except anthropic.APIError:
             return None
 
-    trace = next(
-        (block.text for block in response.content if block.type == "text"), ""
-    ).strip()
+    trace = next((block.text for block in response.content if block.type == "text"), "").strip()
 
     if not trace:
         return None
@@ -179,7 +179,99 @@ Generate the reasoning trace.\
     }
 
 
+# ── Validation ───────────────────────────────────────────────────────────────
+
+
+def _extract_predicted_label(trace: str) -> str | None:
+    """Return 'MISINFORMATION', 'CLEAN', or None if neither token is present."""
+    has_misinfo = MISINFO_TOKEN in trace
+    has_clean = CLEAN_TOKEN in trace
+    if has_misinfo and not has_clean:
+        return "MISINFORMATION"
+    if has_clean and not has_misinfo:
+        return "CLEAN"
+    if has_misinfo and has_clean:
+        # Whichever appears last is the model's final verdict.
+        return (
+            "MISINFORMATION" if trace.rfind(MISINFO_TOKEN) > trace.rfind(CLEAN_TOKEN) else "CLEAN"
+        )
+    return None
+
+
+def validate_traces(output_path: Path) -> None:
+    """Parse the generated JSONL and compare model labels to ground truth."""
+    records = []
+    with output_path.open() as f:
+        for line in f:
+            try:
+                records.append(json.loads(line))
+            except json.JSONDecodeError:
+                pass
+
+    if not records:
+        print("Validation: no records found.", file=sys.stderr)
+        return
+
+    if not records[0].get("metadata"):
+        print(
+            "Validation skipped: no metadata in output file. Re-run with --keep-metadata.",
+            file=sys.stderr,
+        )
+        return
+
+    tp = tn = fp = fn = unparseable = 0
+
+    for rec in records:
+        gt_label = rec.get("metadata", {}).get("label")
+        if not gt_label:
+            unparseable += 1
+            continue
+
+        # Extract the assistant turn from the messages list.
+        assistant_text = next(
+            (m["content"] for m in rec.get("messages", []) if m["role"] == "assistant"),
+            "",
+        )
+        pred_label = _extract_predicted_label(assistant_text)
+
+        if pred_label is None:
+            unparseable += 1
+            continue
+
+        if gt_label == "MISINFORMATION" and pred_label == "MISINFORMATION":
+            tp += 1
+        elif gt_label == "CLEAN" and pred_label == "CLEAN":
+            tn += 1
+        elif gt_label == "CLEAN" and pred_label == "MISINFORMATION":
+            fp += 1
+        elif gt_label == "MISINFORMATION" and pred_label == "CLEAN":
+            fn += 1
+
+    total = tp + tn + fp + fn
+    if total == 0:
+        print("Validation: no labelled records to evaluate.")
+        return
+
+    accuracy = (tp + tn) / total
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) > 0 else 0.0
+
+    print("\n── Label validation ─────────────────────────────────")
+    print(f"  Total evaluated : {total}  (unparseable: {unparseable})")
+    print(f"  Accuracy        : {accuracy:.3f}")
+    print(f"  Precision       : {precision:.3f}  (of flagged, how many were real misinfo)")
+    print(f"  Recall          : {recall:.3f}  (of real misinfo, how many were flagged)")
+    print(f"  F1              : {f1:.3f}")
+    print(f"\n  Confusion matrix:")
+    print(f"                     Pred MISINFO   Pred CLEAN")
+    print(f"  GT  MISINFORMATION     {tp:>5}         {fn:>5}")
+    print(f"  GT  CLEAN              {fp:>5}         {tn:>5}")
+    print("─────────────────────────────────────────────────────")
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
+
 
 def push_to_hub(output_path: Path, split: str, repo_id: str, hf_token: str) -> None:
     """Load the generated JSONL and push it to the HuggingFace Hub."""
@@ -232,12 +324,15 @@ async def main(args: argparse.Namespace) -> None:
     ds = load_dataset("DataForGood/climateguard-training")
     split = ds[args.split]
 
+    if args.country:
+        split = split.filter(lambda row: row["country"] == args.country)
+        print(f"Filtered to country='{args.country}': {len(split)} examples")
+
     if args.limit:
         split = split.select(range(min(args.limit, len(split))))
 
     rows = [
-        row for row in split
-        if str(row.get("task_completion_aggregate_id", "")) not in done_ids
+        row for row in split if str(row.get("task_completion_aggregate_id", "")) not in done_ids
     ]
     print(f"Examples to process: {len(rows)}")
 
@@ -248,6 +343,9 @@ async def main(args: argparse.Namespace) -> None:
     total_cache_write = 0
     total_cache_read = 0
     written = 0
+
+    # Validation requires metadata; enable it implicitly.
+    save_metadata = args.keep_metadata or args.validate
 
     mode = "a" if (output_path.exists() and not args.overwrite) else "w"
     with output_path.open(mode) as out_f:
@@ -260,9 +358,8 @@ async def main(args: argparse.Namespace) -> None:
             meta = result.get("metadata", {})
             total_cache_write += meta.get("cache_creation_tokens", 0)
             total_cache_read += meta.get("cache_read_tokens", 0)
-            # Strip metadata before saving (training pipeline only needs messages).
             record = {"messages": result["messages"]}
-            if args.keep_metadata:
+            if save_metadata:
                 record["metadata"] = meta
             out_f.write(json.dumps(record, ensure_ascii=False) + "\n")
             out_f.flush()
@@ -270,6 +367,9 @@ async def main(args: argparse.Namespace) -> None:
 
     print(f"\nDone. Wrote {written} examples to {output_path}")
     print(f"Cache writes: {total_cache_write:,} tokens | Cache reads: {total_cache_read:,} tokens")
+
+    if args.validate:
+        validate_traces(output_path)
 
     if args.push_to_hub:
         hf_token = os.environ.get("HUGGINGFACE_TOKEN") or os.environ.get("HF_TOKEN")
@@ -296,6 +396,11 @@ if __name__ == "__main__":
         help="Dataset split to process (default: train)",
     )
     parser.add_argument(
+        "--country",
+        default="france",
+        help="Filter to a single country value, e.g. france (default: all countries)",
+    )
+    parser.add_argument(
         "--limit",
         type=int,
         default=None,
@@ -316,6 +421,11 @@ if __name__ == "__main__":
         "--keep-metadata",
         action="store_true",
         help="Include metadata (task_id, label, cache stats) alongside messages in output",
+    )
+    parser.add_argument(
+        "--validate",
+        action="store_true",
+        help="After generation, compare model labels to ground truth and print accuracy/F1",
     )
     parser.add_argument(
         "--push-to-hub",

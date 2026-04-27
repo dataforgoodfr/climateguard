@@ -24,6 +24,7 @@ dependencies = [
     "tqdm>=4.66",
     "pandas>=2.0",
     "numpy>=1.24",
+    "ruff>=0.15.12",
 ]
 
 [project.optional-dependencies]
