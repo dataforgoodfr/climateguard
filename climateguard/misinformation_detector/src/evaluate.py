@@ -32,7 +32,7 @@ from peft import PeftModel
 try:
     from unsloth import FastLanguageModel
     UNSLOTH_AVAILABLE = True
-except ImportError:
+except (ImportError, Exception):
     UNSLOTH_AVAILABLE = False
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(levelname)s  %(message)s")

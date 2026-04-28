@@ -273,41 +273,66 @@ def validate_traces(output_path: Path) -> None:
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 
-def push_to_hub(output_path: Path, split: str, repo_id: str, hf_token: str) -> None:
-    """Load the generated JSONL and push it to the HuggingFace Hub."""
-    records = []
+def _jsonl_to_hf_rows(output_path: Path) -> list[dict[str, Any]]:
+    """Read a JSONL file and convert records to HuggingFace-compatible flat dicts."""
+    hf_rows = []
     with output_path.open() as f:
         for line in f:
             try:
-                records.append(json.loads(line))
+                rec = json.loads(line)
             except json.JSONDecodeError:
-                pass
+                continue
+            msgs = rec.get("messages", [])
+            row: dict[str, Any] = {"messages": json.dumps(msgs, ensure_ascii=False)}
+            row.update(rec.get("metadata", {}))
+            hf_rows.append(row)
+    return hf_rows
 
-    if not records:
+
+def push_to_hub(split_paths: dict[str, Path], repo_id: str, hf_token: str) -> None:
+    """Push one or more splits to the HuggingFace Hub as a single DatasetDict.
+
+    Args:
+        split_paths: mapping of split name → output JSONL path, e.g.
+                     {"train": Path("data/train.jsonl"), "test": Path("data/test.jsonl")}
+    """
+    ds_dict: dict[str, Dataset] = {}
+    for split_name, path in split_paths.items():
+        rows = _jsonl_to_hf_rows(path)
+        if not rows:
+            print(f"Warning: no records found for split '{split_name}' in {path}", file=sys.stderr)
+            continue
+        ds_dict[split_name] = Dataset.from_list(rows)
+        print(f"  {split_name}: {len(rows)} examples")
+
+    if not ds_dict:
         print("No records to push.", file=sys.stderr)
         return
 
-    # Flatten messages list to individual string columns for HF compatibility,
-    # keeping the raw messages JSON as a string column too.
-    hf_rows = []
-    for rec in records:
-        msgs = rec.get("messages", [])
-        row: dict[str, Any] = {"messages": json.dumps(msgs, ensure_ascii=False)}
-        meta = rec.get("metadata", {})
-        row.update(meta)
-        hf_rows.append(row)
-
-    ds = Dataset.from_list(hf_rows)
-    ds_dict = DatasetDict({split: ds})
-    ds_dict.push_to_hub(repo_id, token=hf_token)
-    print(f"Pushed {len(hf_rows)} examples to {repo_id} (split: {split})")
+    DatasetDict(ds_dict).push_to_hub(repo_id, token=hf_token)
+    print(f"Pushed {sum(len(d) for d in ds_dict.values())} total examples to {repo_id}")
 
 
-async def main(args: argparse.Namespace) -> None:
-    output_path = Path(args.output)
+def _split_output_path(base: Path, split_name: str) -> Path:
+    """Derive a per-split path from the base output path.
+
+    data/synthetic_traces.jsonl  →  data/synthetic_traces_train.jsonl
+    """
+    return base.with_stem(f"{base.stem}_{split_name}")
+
+
+async def process_split(
+    args: argparse.Namespace,
+    split_name: str,
+    output_path: Path,
+    client: anthropic.AsyncAnthropic,
+    semaphore: asyncio.Semaphore,
+    full_ds,
+) -> None:
+    """Generate traces for one dataset split and write them to output_path."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Determine already-processed IDs to allow resuming.
+    # Resume: collect already-processed task IDs.
     done_ids: set[str] = set()
     if output_path.exists() and not args.overwrite:
         with output_path.open() as f:
@@ -319,39 +344,31 @@ async def main(args: argparse.Namespace) -> None:
                         done_ids.add(tid)
                 except json.JSONDecodeError:
                     pass
-        print(f"Resuming: {len(done_ids)} examples already processed.")
+        if done_ids:
+            print(f"[{split_name}] Resuming: {len(done_ids)} examples already processed.")
 
-    ds = load_dataset("DataForGood/climateguard-training", token=os.environ.get("HUGGINGFACE_TOKEN") or os.environ.get("HF_TOKEN"))
-    split = ds[args.split]
+    split = full_ds[split_name]
 
     if args.country:
         split = split.filter(lambda row: row["country"] == args.country)
-        print(f"Filtered to country='{args.country}': {len(split)} examples")
+        print(f"[{split_name}] Filtered to country='{args.country}': {len(split)} examples")
 
     if args.limit:
         split = split.select(range(min(args.limit, len(split))))
 
     rows = [
-        row for row in split if str(row.get("task_completion_aggregate_id", "")) not in done_ids
+        row for row in split
+        if str(row.get("task_completion_aggregate_id", "")) not in done_ids
     ]
-    print(f"Examples to process: {len(rows)}")
+    print(f"[{split_name}] Examples to process: {len(rows)}")
 
-    client = anthropic.AsyncAnthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-    semaphore = asyncio.Semaphore(args.concurrency)
-
-    # Track cache stats.
-    total_cache_write = 0
-    total_cache_read = 0
-    written = 0
-
-    # Validation requires metadata; enable it implicitly.
     save_metadata = args.keep_metadata or args.validate
+    total_cache_write = total_cache_read = written = 0
 
     mode = "a" if (output_path.exists() and not args.overwrite) else "w"
     with output_path.open(mode) as out_f:
         tasks = [generate_trace(client, row, semaphore) for row in rows]
-
-        for coro in async_tqdm.as_completed(tasks, total=len(tasks)):
+        for coro in async_tqdm.as_completed(tasks, total=len(tasks), desc=split_name):
             result = await coro
             if result is None:
                 continue
@@ -365,21 +382,42 @@ async def main(args: argparse.Namespace) -> None:
             out_f.flush()
             written += 1
 
-    print(f"\nDone. Wrote {written} examples to {output_path}")
-    print(f"Cache writes: {total_cache_write:,} tokens | Cache reads: {total_cache_read:,} tokens")
+    print(f"\n[{split_name}] Done. Wrote {written} examples to {output_path}")
+    print(f"[{split_name}] Cache writes: {total_cache_write:,} tokens | Cache reads: {total_cache_read:,} tokens")
 
     if args.validate:
         validate_traces(output_path)
 
+
+async def main(args: argparse.Namespace) -> None:
+    hf_token = os.environ.get("HUGGINGFACE_TOKEN") or os.environ.get("HF_TOKEN")
+    full_ds = load_dataset("DataForGood/climateguard-training", token=hf_token)
+
+    client = anthropic.AsyncAnthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+    semaphore = asyncio.Semaphore(args.concurrency)
+
+    # Determine which splits to process and their output paths.
+    if args.all_splits:
+        base = Path(args.output)
+        split_paths = {
+            "train": _split_output_path(base, "train"),
+            "test": _split_output_path(base, "test"),
+        }
+    else:
+        split_paths = {args.split: Path(args.output)}
+
+    for split_name, output_path in split_paths.items():
+        await process_split(args, split_name, output_path, client, semaphore, full_ds)
+
     if args.push_to_hub:
-        hf_token = os.environ.get("HUGGINGFACE_TOKEN") or os.environ.get("HF_TOKEN")
         if not hf_token:
             print(
                 "Error: --push-to-hub requires HUGGINGFACE_TOKEN (or HF_TOKEN) in environment.",
                 file=sys.stderr,
             )
             sys.exit(1)
-        push_to_hub(output_path, args.split, args.hub_repo, hf_token)
+        print(f"\nPushing to {args.hub_repo} ...")
+        push_to_hub(split_paths, args.hub_repo, hf_token)
 
 
 if __name__ == "__main__":
@@ -393,7 +431,15 @@ if __name__ == "__main__":
         "--split",
         default="train",
         choices=["train", "test"],
-        help="Dataset split to process (default: train)",
+        help="Dataset split to process (default: train). Ignored when --all-splits is set.",
+    )
+    parser.add_argument(
+        "--all-splits",
+        action="store_true",
+        help=(
+            "Process both train and test splits. Output files are derived from --output by "
+            "injecting the split name: data/traces.jsonl → data/traces_train.jsonl + data/traces_test.jsonl"
+        ),
     )
     parser.add_argument(
         "--country",

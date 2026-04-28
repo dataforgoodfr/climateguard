@@ -5,7 +5,7 @@ description = "Fine-tuned LLM climate misinformation detector with teacher disti
 requires-python = ">=3.11"
 dependencies = [
     "torch>=2.1",
-    "transformers>=4.36",
+    "transformers>=4.51",
     "peft>=0.7",
     "bitsandbytes>=0.41",
     "trl>=0.7",

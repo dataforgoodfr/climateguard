@@ -33,7 +33,7 @@ from trl import SFTConfig, SFTTrainer
 try:
     from unsloth import FastLanguageModel
     UNSLOTH_AVAILABLE = True
-except ImportError:
+except (ImportError):
     UNSLOTH_AVAILABLE = False
 
 logging.basicConfig(
