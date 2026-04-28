@@ -51,6 +51,11 @@ except (ImportError, Exception):
 logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(levelname)s  %(message)s")
 log = logging.getLogger(__name__)
 
+# trafilatura logs a noisy warning ("parsed tree length: 1") for non-HTML pages
+# (PDFs, JavaScript SPAs, bot-detection walls, etc.). These are expected and
+# handled gracefully — silence everything below ERROR from trafilatura.
+logging.getLogger("trafilatura").setLevel(logging.ERROR)
+
 
 # ── Config helpers ────────────────────────────────────────────────────────────
 
@@ -123,18 +128,30 @@ def collect_urls(ds_splits, country: str | None) -> list[str]:
 
 # ── Web fetching & text extraction ────────────────────────────────────────────
 
+_NON_HTML_TYPES = ("application/", "image/", "audio/", "video/")
+
+
 def _fetch_one(url: str) -> str | None:
     """Fetch a URL and extract the main text content using trafilatura."""
     try:
-        downloaded = trafilatura.fetch_url(url)
-        if not downloaded:
+        response = requests.get(
+            url,
+            timeout=20,
+            headers={"User-Agent": "Mozilla/5.0 (compatible; climateguard-cpt/1.0)"},
+            allow_redirects=True,
+        )
+        if not response.ok:
+            return None
+        content_type = response.headers.get("Content-Type", "")
+        if any(content_type.startswith(t) for t in _NON_HTML_TYPES):
             return None
         text = trafilatura.extract(
-            downloaded,
+            response.text,
             include_comments=False,
             include_tables=False,
             no_fallback=False,
             favor_recall=True,
+            url=url,
         )
         return text.strip() if text and len(text.strip()) > 200 else None
     except Exception:
