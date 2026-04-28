@@ -246,7 +246,7 @@ def train(args, dataset: DatasetDict, model, tokenizer, use_unsloth: bool = Fals
         bf16=torch.cuda.is_bf16_supported() if torch.cuda.is_available() else False,
         fp16=False,
         **gc_kwargs,
-        max_seq_length=args.max_seq_len,
+        max_length=args.max_seq_len,
         dataset_text_field="text",
         report_to="wandb" if args.wandb else "none",
         run_name=args.run_name,
