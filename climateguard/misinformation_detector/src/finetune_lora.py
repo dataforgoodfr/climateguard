@@ -252,12 +252,16 @@ def train(args, dataset: DatasetDict, model, tokenizer, use_unsloth: bool = Fals
         run_name=args.run_name,
     )
 
+    import trl
+    _trl_version = tuple(int(x) for x in trl.__version__.split(".")[:2])
+    _tokenizer_kwarg = "processing_class" if _trl_version >= (0, 12) else "tokenizer"
+
     trainer = SFTTrainer(
         model=model,
         args=sft_config,
         train_dataset=dataset["train"],
         eval_dataset=dataset["validation"],
-        processing_class=tokenizer,
+        **{_tokenizer_kwarg: tokenizer},
     )
 
     log.info(
