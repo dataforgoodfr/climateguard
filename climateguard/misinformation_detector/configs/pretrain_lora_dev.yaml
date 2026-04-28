@@ -1,0 +1,42 @@
+# Dev / Mac smoke-test — fetches a small sample, no CUDA
+# Usage: uv run python src/pretrain_lora.py --config configs/pretrain_lora_dev.yaml
+
+# ── Data ──────────────────────────────────────────────────────────────────────
+source_dataset: DataForGood/climateguard-training
+country: france
+include_explanations: false      # skip explanations to keep the dev run fast
+include_ipcc: false              # skip PDF download in dev
+ipcc_cache: data/ipcc_french.jsonl
+cache_file: data/cpt_corpus_dev.jsonl
+fetch_concurrency: 3
+
+# ── Model ─────────────────────────────────────────────────────────────────────
+model: allenai/OLMo-2-0425-1B-Instruct
+load_in_4bit: false              # bitsandbytes requires CUDA
+use_unsloth: false
+
+# ── LoRA ──────────────────────────────────────────────────────────────────────
+lora_rank: 8
+lora_alpha: 8
+lora_dropout: 0.05
+target_modules: q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj
+
+# ── Training ──────────────────────────────────────────────────────────────────
+output_dir: output/olmo2-1b-cpt-dev
+epochs: 1
+batch_size: 1
+grad_accum: 1
+lr: 1.0e-4
+weight_decay: 0.01
+max_grad_norm: 0.3
+max_seq_len: 256
+val_size: 0.1
+eval_steps: 5
+
+# ── Logging / Hub ─────────────────────────────────────────────────────────────
+wandb: false
+run_name: null
+merge: true
+merged_output_dir: output/olmo2-1b-cpt-dev-merged
+push_to_hub: false
+hub_repo: DataForGood/climateguard-olmo2-1b-cpt

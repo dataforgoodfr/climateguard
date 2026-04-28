@@ -1,0 +1,40 @@
+# ── Data ──────────────────────────────────────────────────────────────────────
+source_dataset: DataForGood/climateguard-training
+country: france
+include_explanations: true       # factchecker explanation texts — high-quality domain knowledge
+include_ipcc: true               # IPCC AR5 WG1 summary in French
+ipcc_url: https://archive.ipcc.ch/pdf/assessment-report/ar5/wg1/WG1AR5_SummaryVolume_FINAL_FRENCH.pdf
+ipcc_cache: data/ipcc_french.jsonl
+cache_file: data/cpt_corpus.jsonl
+fetch_concurrency: 5             # polite crawl — increase to 10 on fast servers
+
+# ── Model ─────────────────────────────────────────────────────────────────────
+model: allenai/OLMo-2-0425-1B-Instruct
+load_in_4bit: true
+use_unsloth: null                # auto-detect
+
+# ── LoRA ──────────────────────────────────────────────────────────────────────
+lora_rank: 16
+lora_alpha: 16
+lora_dropout: 0.05
+target_modules: q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj
+
+# ── Training ──────────────────────────────────────────────────────────────────
+output_dir: output/olmo2-1b-cpt
+epochs: 1                        # 1 epoch is standard for CPT — more risks forgetting
+batch_size: 4
+grad_accum: 4
+lr: 1.0e-4                       # lower than SFT to avoid catastrophic forgetting
+weight_decay: 0.01
+max_grad_norm: 0.3
+max_seq_len: 2048
+val_size: 0.05
+eval_steps: 50
+
+# ── Logging / Hub ─────────────────────────────────────────────────────────────
+wandb: false
+run_name: null
+merge: true                      # merge adapter into base weights after training (required for SFT)
+merged_output_dir: output/olmo2-1b-cpt-merged
+push_to_hub: false
+hub_repo: DataForGood/climateguard-olmo2-1b-cpt

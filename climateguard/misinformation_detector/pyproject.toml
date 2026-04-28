@@ -21,6 +21,7 @@ dependencies = [
     "huggingface-hub>=1.12",
     "jsonlines>=4.0",
     "wandb>=0.26",
+    "pypdf>=5.0",
     "tqdm>=4.67",
     "pandas>=3.0",
     "numpy>=2.4",

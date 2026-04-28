@@ -15,9 +15,12 @@ See [`context.md`](context.md) for full design rationale and hardware constraint
 misinformation_detector/
 ├── src/
 │   ├── generate_synthetic_data.py   # Step 1 — teacher generates reasoning traces
+│   ├── pretrain_lora.py             # Step 1b (optional) — LoRA-CPT on reference text
 │   ├── finetune_lora.py             # Step 2 — LoRA fine-tuning on the traces
 │   └── evaluate.py                  # Step 3 — evaluate on the test set
 ├── configs/
+│   ├── pretrain_lora.yaml           # CPT config (production)
+│   ├── pretrain_lora_dev.yaml       # CPT config (Mac / dev)
 │   ├── finetune_lora.yaml           # Production training config (7B, L40S)
 │   ├── finetune_lora_dev.yaml       # Dev / Mac smoke-test config (1.5B, no CUDA)
 │   ├── evaluate.yaml                # Production evaluation config
@@ -103,13 +106,20 @@ WANDB_KEY=...                      # optional, only for --wandb
 ```
 DataForGood/climateguard-training
           │
-          │  generate_synthetic_data.py
-          │  (Claude Sonnet 4.6 teacher)
-          ▼
-  data/synthetic_traces.jsonl
-          │
-          │  finetune_lora.py
-          │  (QLoRA, Qwen 2.5 1.5B / 7B)
+          ├─ pretrain_lora.py (optional) ──────────────────────────────────┐
+          │  1. fetch debunk_references URLs → trafilatura text extraction  │
+          │  2. explanations field texts                                    │
+          │  3. IPCC AR5 FR PDF → split by chapter                         │
+          │  LoRA-CPT (causal LM objective)                                 │
+          │  merge_and_unload() → full bfloat16 model                      │
+          │                                                                 ▼
+          │  generate_synthetic_data.py           output/olmo2-1b-cpt-merged/
+          │  (Claude Sonnet 4.6 teacher)                                    │
+          ▼                                                                 │
+  data/synthetic_traces.jsonl                                              │
+          │                                                                 │
+          │  finetune_lora.py  ◄──────────── --model cpt-merged ───────────┘
+          │  (QLoRA SFT, OLMo-2-1B / Qwen 2.5)
           ▼
   output/lora_adapter/
           │
@@ -117,6 +127,95 @@ DataForGood/climateguard-training
           │  (source dataset test split)
           ▼
      accuracy / F1 / confusion matrix
+```
+
+---
+
+## Step 1b (optional) — LoRA Continued Pre-Training
+
+`src/pretrain_lora.py` adapts the base model to the climate/French domain *before* SFT.
+Recommended when using an English-dominant base model like OLMo-2.
+
+### Corpus sources
+
+Three sources are combined, each independently cached:
+
+| Source | Flag | Cache |
+|---|---|---|
+| Factcheck reference URLs (`debunk_references` field) | always on | `data/cpt_corpus.jsonl` |
+| Factchecker explanation texts (`explanations` field) | `--include-explanations` (default: on) | inline |
+| IPCC AR5 WG1 summary in French (PDF, split by chapter) | `--include-ipcc` (default: on) | `data/ipcc_french.jsonl` |
+
+The IPCC PDF is split into chapters at heading boundaries (`Chapitre N`, `Résumé technique`, etc.) so each chapter is a separate document — chunks never straddle chapter boundaries during packing.
+
+### Merge after training
+
+After CPT, the LoRA adapter is **merged into the base weights** by default (`--merge`, on by default). Merging is required before SFT: `finetune_lora.py` loads a full model checkpoint, not a PEFT adapter directory. The merge reloads the base model in bfloat16 to avoid int4 artefacts from quantised weights.
+
+```
+output/olmo2-1b-cpt/         ← adapter weights (kept for inspection / rollback)
+output/olmo2-1b-cpt-merged/  ← full bfloat16 model (pass to finetune_lora.py)
+```
+
+### Production run
+
+```bash
+uv run python src/pretrain_lora.py --config configs/pretrain_lora.yaml
+```
+
+### Mac smoke test
+
+```bash
+uv run python src/pretrain_lora.py --config configs/pretrain_lora_dev.yaml
+```
+
+### Use the merged model as the base for SFT
+
+```bash
+uv run python src/finetune_lora.py --config configs/finetune_lora.yaml \
+  --model output/olmo2-1b-cpt-merged
+```
+
+### Override individual values
+
+```bash
+# Skip IPCC download, use explanations only
+uv run python src/pretrain_lora.py --config configs/pretrain_lora.yaml --no-ipcc
+
+# Re-fetch all URLs (ignores cache)
+uv run python src/pretrain_lora.py --config configs/pretrain_lora.yaml --overwrite-cache
+
+# Save merged model to a custom path
+uv run python src/pretrain_lora.py --config configs/pretrain_lora.yaml \
+  --merged-output-dir output/my-cpt-merged
+```
+
+### All options
+
+```
+Data
+  --source-dataset        HF dataset to pull from              (default: DataForGood/climateguard-training)
+  --country               Filter by country                    (default: france)
+  --include-explanations  Include explanations field texts     (default: on)
+  --no-explanations       Exclude explanation texts
+  --include-ipcc          Include IPCC AR5 FR PDF              (default: on)
+  --no-ipcc               Exclude IPCC report
+  --ipcc-url              PDF URL                              (default: IPCC AR5 WG1 FR summary)
+  --ipcc-cache            Cache path for extracted chapters    (default: data/ipcc_french.jsonl)
+  --cache-file            JSONL cache for fetched URL texts    (default: data/cpt_corpus.jsonl)
+  --overwrite-cache       Re-fetch all URLs even if cached
+  --fetch-concurrency     Concurrent URL fetches               (default: 5)
+
+Model / LoRA / Training
+  (same flags as finetune_lora.py — see configs/pretrain_lora.yaml for CPT-specific defaults)
+  --lr                    Learning rate — lower than SFT       (default: 1e-4)
+  --epochs                CPT epochs — 1 is usually enough     (default: 1)
+
+Output
+  --merge / --no-merge    Merge adapter into base after training (default: on)
+  --merged-output-dir     Where to save merged model           (default: <output-dir>-merged)
+  --push-to-hub           Push merged model to HuggingFace Hub
+  --hub-repo              Target repo                          (default: DataForGood/climateguard-olmo2-1b-cpt)
 ```
 
 ---
