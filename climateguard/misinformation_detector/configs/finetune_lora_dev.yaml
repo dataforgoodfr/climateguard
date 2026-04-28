@@ -1,0 +1,36 @@
+# Dev / Mac smoke-test config — runs quickly without CUDA
+# Usage: uv run python src/finetune_lora.py --config configs/finetune_lora_dev.yaml
+
+# ── Data ──────────────────────────────────────────────────────────────────────
+data_path: data/test_traces.jsonl
+hf_split: train
+val_size: 0.2
+
+# ── Model ─────────────────────────────────────────────────────────────────────
+model: Qwen/Qwen2.5-1.5B-Instruct
+load_in_4bit: false        # bitsandbytes requires CUDA
+load_in_8bit: false
+use_unsloth: false         # Unsloth requires CUDA
+
+# ── LoRA ──────────────────────────────────────────────────────────────────────
+lora_rank: 8
+lora_alpha: 8
+lora_dropout: 0.05
+target_modules: q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj
+
+# ── Training ──────────────────────────────────────────────────────────────────
+output_dir: output/dev-lora
+epochs: 1
+batch_size: 1
+grad_accum: 1
+lr: 2.0e-4
+weight_decay: 0.01
+max_grad_norm: 0.3
+max_seq_len: 512
+eval_steps: 5
+
+# ── Logging / Hub ─────────────────────────────────────────────────────────────
+wandb: false
+run_name: null
+push_to_hub: false
+hub_repo: DataForGood/climateguard-qwen2.5-7b-lora

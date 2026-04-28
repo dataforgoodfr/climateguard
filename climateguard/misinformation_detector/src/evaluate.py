@@ -20,6 +20,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 import torch
 from datasets import load_dataset
 from dotenv import load_dotenv
@@ -291,20 +293,51 @@ def print_metrics(ground_truths: list[str], predictions: list[str], unparseable:
     print(f"{'─' * 60}")
 
 
+# ── Config helpers ────────────────────────────────────────────────────────────
+
+def _load_config(path: str | None) -> dict:
+    if not path:
+        return {}
+    with open(path) as f:
+        return yaml.safe_load(f) or {}
+
+
+def _apply_config(parser: argparse.ArgumentParser, config: dict) -> None:
+    parser.set_defaults(**{k: v for k, v in config.items() if v is not None})
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Evaluate a fine-tuned misinformation detector.")
+    # Pre-parse to get --config path before building full defaults.
+    pre = argparse.ArgumentParser(add_help=False)
+    pre.add_argument("--config", default=None)
+    pre.add_argument("--env-file", default=".env")
+    pre_args, _ = pre.parse_known_args()
 
-    # Data
-    data_group = parser.add_mutually_exclusive_group(required=True)
-    data_group.add_argument(
+    config = _load_config(pre_args.config)
+
+    parser = argparse.ArgumentParser(
+        description="Evaluate a fine-tuned misinformation detector.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "--config",
+        default=None,
+        help="Path to a YAML config file. CLI args override config values.",
+    )
+
+    # Data — note: mutual exclusion is enforced manually below so that
+    # set_defaults from a config file works correctly.
+    parser.add_argument(
         "--source-dataset",
         action="store_true",
+        default=False,
         help=f"Evaluate on {SOURCE_DATASET} (test split, human-annotated ground truth)",
     )
-    data_group.add_argument(
+    parser.add_argument(
         "--data-path",
+        default=None,
         help="Local JSONL file (--keep-metadata required) or HF generated dataset ID",
     )
     parser.add_argument(
@@ -327,7 +360,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--adapter", default=None,
-        help="Path to LoRA adapter directory or HF repo (optional — omit to evaluate the base model)",
+        help="Path to LoRA adapter directory or HF repo (omit to evaluate the base model)",
     )
     parser.add_argument(
         "--no-4bit", action="store_true",
@@ -353,7 +386,14 @@ if __name__ == "__main__":
     )
     parser.add_argument("--env-file", default=".env")
 
+    _apply_config(parser, config)
     args = parser.parse_args()
+
+    # Validate data source (replaces mutually exclusive group).
+    if args.source_dataset and args.data_path:
+        parser.error("--source-dataset and --data-path are mutually exclusive.")
+    if not args.source_dataset and not args.data_path:
+        parser.error("Provide either --source-dataset or --data-path (or set one in your config file).")
 
     # ── Env ───────────────────────────────────────────────────────────────────
     env_path = Path(args.env_file)

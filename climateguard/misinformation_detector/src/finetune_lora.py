@@ -18,6 +18,7 @@ import os
 import sys
 from pathlib import Path
 
+import yaml
 import torch
 from datasets import Dataset, DatasetDict, load_dataset
 from dotenv import load_dotenv
@@ -269,15 +270,46 @@ def train(args, dataset: DatasetDict, model, tokenizer, use_unsloth: bool = Fals
     return trainer
 
 
+# ── Config helpers ────────────────────────────────────────────────────────────
+
+def _load_config(path: str | None) -> dict:
+    if not path:
+        return {}
+    with open(path) as f:
+        return yaml.safe_load(f) or {}
+
+
+def _apply_config(parser: argparse.ArgumentParser, config: dict) -> None:
+    """Set config values as argparse defaults. CLI args will override these."""
+    # Drop null values so argparse keeps its own defaults for unset keys.
+    parser.set_defaults(**{k: v for k, v in config.items() if v is not None})
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="LoRA fine-tune a causal LLM on reasoning traces.")
+    # Pre-parse to pick up --config before building full defaults.
+    pre = argparse.ArgumentParser(add_help=False)
+    pre.add_argument("--config", default=None)
+    pre.add_argument("--env-file", default=".env")
+    pre_args, _ = pre.parse_known_args()
+
+    config = _load_config(pre_args.config)
+
+    parser = argparse.ArgumentParser(
+        description="LoRA fine-tune a causal LLM on reasoning traces.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "--config",
+        default=None,
+        help="Path to a YAML config file. CLI args override config values.",
+    )
 
     # Data
     parser.add_argument(
         "--data-path",
-        required=True,
+        default=None,
         help="Local JSONL file or HuggingFace dataset ID",
     )
     parser.add_argument(
@@ -376,7 +408,12 @@ if __name__ == "__main__":
     )
     parser.add_argument("--env-file", default=".env", help="Path to .env file (default: .env)")
 
+    # Apply config file as defaults (CLI args will override).
+    _apply_config(parser, config)
     args = parser.parse_args()
+
+    if not args.data_path:
+        parser.error("--data-path is required (or set data_path in your config file)")
 
     # ── Env ───────────────────────────────────────────────────────────────────
     env_path = Path(args.env_file)

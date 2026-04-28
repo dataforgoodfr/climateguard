@@ -17,6 +17,11 @@ misinformation_detector/
 │   ├── generate_synthetic_data.py   # Step 1 — teacher generates reasoning traces
 │   ├── finetune_lora.py             # Step 2 — LoRA fine-tuning on the traces
 │   └── evaluate.py                  # Step 3 — evaluate on the test set
+├── configs/
+│   ├── finetune_lora.yaml           # Production training config (7B, L40S)
+│   ├── finetune_lora_dev.yaml       # Dev / Mac smoke-test config (1.5B, no CUDA)
+│   ├── evaluate.yaml                # Production evaluation config
+│   └── evaluate_dev.yaml            # Dev / Mac evaluation config
 ├── data/                            # Generated JSONL files (git-ignored)
 ├── output/                          # LoRA adapters (git-ignored)
 ├── .env.example                     # API key template
@@ -24,6 +29,40 @@ misinformation_detector/
 ├── pyproject.toml
 └── context.md                       # Design doc
 ```
+
+---
+
+## Configuration files
+
+Both `finetune_lora.py` and `evaluate.py` accept a `--config` flag pointing to a YAML file.
+Values in the config become defaults; any CLI argument overrides them.
+
+```bash
+# Use config as-is
+uv run python src/finetune_lora.py --config configs/finetune_lora.yaml
+
+# Override a single value from the config
+uv run python src/finetune_lora.py --config configs/finetune_lora.yaml --epochs 5
+
+# Override the data path without changing anything else
+uv run python src/finetune_lora.py --config configs/finetune_lora.yaml \
+  --data-path DataForGood/climate-misinformation-RCoT
+```
+
+YAML keys use the same names as the CLI `dest` (underscores, not hyphens):
+
+```yaml
+# configs/finetune_lora.yaml  — excerpt
+model: Qwen/Qwen2.5-7B-Instruct
+lora_rank: 16
+lora_alpha: 16
+epochs: 3
+batch_size: 4
+grad_accum: 4
+lr: 2.0e-4
+```
+
+Set a value to `null` in YAML to let the script's built-in default take over.
 
 ---
 
@@ -231,37 +270,27 @@ modules. Tested on one NVIDIA L40S (48 GB).
 **Unsloth** is auto-enabled when CUDA is available and `unsloth` is installed
 (`uv sync --extra train`). Pass `--no-unsloth` to force the standard transformers path.
 
-### From a local file
+### Production run (7B, L40S)
 
 ```bash
-uv run python src/finetune_lora.py \
-  --data-path data/synthetic_traces_france.jsonl \
-  --model Qwen/Qwen2.5-1.5B-Instruct \
-  --output-dir output/qwen2.5-1.5b-lora
-```
-
-### From HuggingFace
-
-```bash
-uv run python src/finetune_lora.py \
-  --data-path DataForGood/climate-misinformation-RCoT \
-  --hf-split train \
-  --model Qwen/Qwen2.5-1.5B-Instruct \
-  --output-dir output/qwen2.5-1.5b-lora
+uv run python src/finetune_lora.py --config configs/finetune_lora.yaml
 ```
 
 ### Mac smoke test (no CUDA)
 
 ```bash
-uv run python src/finetune_lora.py \
-  --data-path data/test_traces.jsonl \
-  --model Qwen/Qwen2.5-1.5B-Instruct \
-  --no-4bit \
-  --epochs 1 \
-  --batch-size 1 \
-  --grad-accum 1 \
-  --eval-steps 5 \
-  --output-dir output/test_lora
+uv run python src/finetune_lora.py --config configs/finetune_lora_dev.yaml
+```
+
+### Override individual values
+
+```bash
+# Different data source, everything else from config
+uv run python src/finetune_lora.py --config configs/finetune_lora.yaml \
+  --data-path DataForGood/climate-misinformation-RCoT
+
+# Longer run
+uv run python src/finetune_lora.py --config configs/finetune_lora.yaml --epochs 5
 ```
 
 ### With W&B logging and push to Hub
@@ -331,28 +360,27 @@ never from the generated traces.
 | `--data-path <file.jsonl>` | Local JSONL (requires `--keep-metadata` at generation time) | `metadata.label` field |
 | `--data-path <hf-repo>` | HF generated dataset (e.g. `DataForGood/climate-misinformation-RCoT`) | `label` column |
 
-### Mac smoke test — base model, no adapter
+### Production evaluation
 
 ```bash
-uv run python src/evaluate.py \
-  --source-dataset \
-  --hf-split test \
-  --country france \
-  --model Qwen/Qwen2.5-1.5B-Instruct \
-  --no-4bit \
-  --limit 20
+uv run python src/evaluate.py --config configs/evaluate.yaml
 ```
 
-### Evaluate a fine-tuned adapter on the source dataset
+### Mac smoke test
 
 ```bash
-uv run python src/evaluate.py \
-  --source-dataset \
-  --hf-split test \
-  --country france \
-  --model Qwen/Qwen2.5-1.5B-Instruct \
-  --adapter output/qwen2.5-1.5b-lora \
-  --no-4bit
+uv run python src/evaluate.py --config configs/evaluate_dev.yaml
+```
+
+### Override individual values
+
+```bash
+# Evaluate a different adapter
+uv run python src/evaluate.py --config configs/evaluate.yaml \
+  --adapter output/my-other-adapter
+
+# Evaluate base model (no adapter)
+uv run python src/evaluate.py --config configs/evaluate.yaml --adapter null
 ```
 
 ### Evaluate from a local generated file

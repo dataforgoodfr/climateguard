@@ -1,0 +1,33 @@
+# ── Data ──────────────────────────────────────────────────────────────────────
+data_path: DataForGood/climate-misinformation-RCoT
+hf_split: train
+val_size: 0.1
+
+# ── Model ─────────────────────────────────────────────────────────────────────
+model: Qwen/Qwen2.5-7B-Instruct
+load_in_4bit: true
+load_in_8bit: false
+use_unsloth: null          # null = auto-detect (enabled when CUDA + unsloth available)
+
+# ── LoRA ──────────────────────────────────────────────────────────────────────
+lora_rank: 16
+lora_alpha: 32
+lora_dropout: 0.05
+target_modules: q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj
+
+# ── Training ──────────────────────────────────────────────────────────────────
+output_dir: output/qwen2.5-7b-lora
+epochs: 3
+batch_size: 4
+grad_accum: 4
+lr: 2.0e-4
+weight_decay: 0.01
+max_grad_norm: 0.3
+max_seq_len: 2048
+eval_steps: 50
+
+# ── Logging / Hub ─────────────────────────────────────────────────────────────
+wandb: false
+run_name: null
+push_to_hub: false
+hub_repo: DataForGood/climateguard-qwen2.5-7b-lora

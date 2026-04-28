@@ -1,0 +1,20 @@
+# Dev / Mac smoke-test evaluation config
+# Usage: uv run python src/evaluate.py --config configs/evaluate_dev.yaml
+
+# ── Data ──────────────────────────────────────────────────────────────────────
+source_dataset: true
+data_path: null
+hf_split: test
+country: france
+limit: 20
+
+# ── Model ─────────────────────────────────────────────────────────────────────
+model: Qwen/Qwen2.5-1.5B-Instruct
+adapter: output/dev-lora
+no_4bit: true              # bitsandbytes requires CUDA
+use_unsloth: false
+max_seq_len: 512
+max_new_tokens: 128
+
+# ── Output ────────────────────────────────────────────────────────────────────
+output_file: null

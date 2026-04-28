@@ -1,0 +1,17 @@
+# ── Data ──────────────────────────────────────────────────────────────────────
+source_dataset: true       # evaluate on DataForGood/climateguard-training
+data_path: null            # set this (and source_dataset: false) to use a local file or HF repo
+hf_split: test
+country: france
+limit: null
+
+# ── Model ─────────────────────────────────────────────────────────────────────
+model: Qwen/Qwen2.5-7B-Instruct
+adapter: output/qwen2.5-7b-lora
+no_4bit: false
+use_unsloth: null          # null = auto-detect
+max_seq_len: 2048
+max_new_tokens: 256
+
+# ── Output ────────────────────────────────────────────────────────────────────
+output_file: null
