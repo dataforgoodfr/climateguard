@@ -6,8 +6,8 @@ country: france
 limit: null
 
 # ── Model ─────────────────────────────────────────────────────────────────────
-model: Qwen/Qwen2.5-7B-Instruct
-adapter: output/qwen2.5-7b-lora
+model: allenai/OLMo-2-0425-1B-Instruct
+adapter: output/olmo2-1b-lora
 no_4bit: false
 use_unsloth: null          # null = auto-detect
 max_seq_len: 2048
