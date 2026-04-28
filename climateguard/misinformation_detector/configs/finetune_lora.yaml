@@ -4,7 +4,7 @@ hf_split: train
 val_size: 0.1
 
 # ── Model ─────────────────────────────────────────────────────────────────────
-model: allenai/OLMo-2-0425-1B
+model: allenai/OLMo-2-0425-1B-Instruct
 load_in_4bit: true
 load_in_8bit: false
 use_unsloth: null          # null = auto-detect (enabled when CUDA + unsloth available)
