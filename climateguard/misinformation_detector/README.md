@@ -217,6 +217,98 @@ Output
 
 ---
 
+## Evaluation
+
+`src/evaluate.py` runs the fine-tuned model on a test set and prints accuracy, precision,
+recall, F1, and a confusion matrix. Ground truth is always sourced from human annotations —
+never from the generated traces.
+
+### Data sources
+
+| Flag | Dataset | Ground truth |
+|---|---|---|
+| `--source-dataset` | `DataForGood/climateguard-training` test split | Derived from annotation flags |
+| `--data-path <file.jsonl>` | Local JSONL (needs `--keep-metadata`) | `metadata.label` field |
+| `--data-path DataForGood/climate-misinformation-RCoT` | HF generated dataset | `label` column |
+
+### On the source dataset (recommended)
+
+```bash
+# Mac smoke test — base model, no adapter
+uv run python src/evaluate.py \
+  --source-dataset \
+  --hf-split test \
+  --country france \
+  --model Qwen/Qwen2.5-1.5B-Instruct \
+  --no-4bit \
+  --limit 50
+
+# With fine-tuned adapter
+uv run python src/evaluate.py \
+  --source-dataset \
+  --hf-split test \
+  --country france \
+  --model Qwen/Qwen2.5-1.5B-Instruct \
+  --adapter output/qwen2.5-1.5b-lora \
+  --no-4bit
+```
+
+### From a local generated file
+
+```bash
+uv run python src/evaluate.py \
+  --data-path data/synthetic_traces_france.jsonl \
+  --model Qwen/Qwen2.5-1.5B-Instruct \
+  --adapter output/qwen2.5-1.5b-lora \
+  --no-4bit
+```
+
+### From the HF generated dataset
+
+```bash
+uv run python src/evaluate.py \
+  --data-path DataForGood/climate-misinformation-RCoT \
+  --hf-split test \
+  --model Qwen/Qwen2.5-1.5B-Instruct \
+  --adapter output/qwen2.5-1.5b-lora \
+  --no-4bit
+```
+
+### Save per-example predictions
+
+```bash
+uv run python src/evaluate.py \
+  --source-dataset --hf-split test --country france \
+  --model Qwen/Qwen2.5-1.5B-Instruct \
+  --adapter output/qwen2.5-1.5b-lora \
+  --no-4bit \
+  --output-file output/predictions.jsonl
+```
+
+### Key options
+
+```
+Data
+  --source-dataset    Use DataForGood/climateguard-training (human-annotated)
+  --data-path         Local JSONL or HF generated dataset ID
+  --hf-split          Split to load                    (default: test)
+  --country           Filter by country                (source-dataset only)
+  --limit             Evaluate on at most N examples
+
+Model
+  --model             Base model                       (default: Qwen/Qwen2.5-1.5B-Instruct)
+  --adapter           LoRA adapter path or HF repo     (omit to evaluate base model)
+  --no-4bit           Disable quantization             (required on Mac)
+  --use-unsloth /
+  --no-unsloth        Force Unsloth on/off             (auto when CUDA + unsloth available)
+  --max-new-tokens    Generation budget                (default: 256)
+
+Output
+  --output-file       Save per-example results to JSONL
+```
+
+---
+
 ## Cost estimate
 
 The system prompt (~400 tokens) is cached after the first request, so subsequent calls pay
