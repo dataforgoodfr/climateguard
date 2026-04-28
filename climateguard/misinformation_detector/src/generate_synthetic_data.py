@@ -321,7 +321,7 @@ async def main(args: argparse.Namespace) -> None:
                     pass
         print(f"Resuming: {len(done_ids)} examples already processed.")
 
-    ds = load_dataset("DataForGood/climateguard-training")
+    ds = load_dataset("DataForGood/climateguard-training", token=os.environ.get("HUGGINGFACE_TOKEN") or os.environ.get("HF_TOKEN"))
     split = ds[args.split]
 
     if args.country:
