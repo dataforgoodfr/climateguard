@@ -67,22 +67,41 @@ def _apply_config(parser: argparse.ArgumentParser, config: dict) -> None:
 
 # ── URL extraction ────────────────────────────────────────────────────────────
 
+def _extract_urls(text: str) -> list[str]:
+    """Extract all http/https URLs from a string, splitting on commas and newlines."""
+    urls = []
+    for token in re.split(r"[,\n]+", text):
+        token = token.strip()
+        if token.startswith("http"):
+            urls.append(token)
+    return urls
+
+
 def _parse_references(raw) -> list[str]:
-    """Extract URLs from a debunk_references value (list, JSON string, or plain string)."""
+    """Extract URLs from a debunk_references value.
+
+    Handles: Python list, JSON-encoded list string, plain URL string,
+    and comma/newline-delimited strings of multiple URLs.
+    """
     if not raw:
         return []
     if isinstance(raw, list):
-        return [str(u).strip() for u in raw if u and str(u).strip().startswith("http")]
+        urls = []
+        for item in raw:
+            urls.extend(_extract_urls(str(item)))
+        return urls
     if isinstance(raw, str):
         raw = raw.strip()
         if raw.startswith("["):
             try:
                 items = json.loads(raw)
-                return [str(u).strip() for u in items if u and str(u).strip().startswith("http")]
+                urls = []
+                for item in items:
+                    urls.extend(_extract_urls(str(item)))
+                return urls
             except json.JSONDecodeError:
                 pass
-        if raw.startswith("http"):
-            return [raw]
+        return _extract_urls(raw)
     return []
 
 
