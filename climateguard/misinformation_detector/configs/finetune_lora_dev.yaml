@@ -5,6 +5,7 @@
 data_path: data/test_traces.jsonl
 hf_split: train
 val_size: 0.2
+balance_data: true
 
 # ── Model ─────────────────────────────────────────────────────────────────────
 model: Qwen/Qwen2.5-1.5B-Instruct

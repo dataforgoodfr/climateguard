@@ -1,0 +1,23 @@
+# Dev / smoke-test config — generates a small batch quickly
+# Usage: uv run python src/generate_synthetic_data.py --config configs/generate_synthetic_data_dev.yaml
+
+# ── Output ────────────────────────────────────────────────────────────────────
+output: data/test_traces.jsonl
+all_splits: false
+split: train
+
+# ── Filtering ─────────────────────────────────────────────────────────────────
+country: france
+limit: 20
+
+# ── Generation ────────────────────────────────────────────────────────────────
+concurrency: 5
+overwrite: false
+
+# ── Output options ────────────────────────────────────────────────────────────
+keep_metadata: true
+validate: true
+
+# ── HuggingFace Hub ───────────────────────────────────────────────────────────
+push_to_hub: false
+hub_repo: DataForGood/climate-misinformation-RCoT

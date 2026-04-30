@@ -2,6 +2,7 @@
 data_path: DataForGood/climate-misinformation-RCoT
 hf_split: train
 val_size: 0.1
+balance_data: true             # oversample MISINFORMATION to 50/50 — critical for recall
 
 # ── Model ─────────────────────────────────────────────────────────────────────
 model: allenai/OLMo-2-0425-1B-Instruct

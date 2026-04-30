@@ -1,0 +1,19 @@
+# ── Output ────────────────────────────────────────────────────────────────────
+output: data/synthetic_traces_france.jsonl
+all_splits: true               # generate train + test, pushed as a single DatasetDict
+
+# ── Filtering ─────────────────────────────────────────────────────────────────
+country: france
+limit: null                    # null = all examples
+
+# ── Generation ────────────────────────────────────────────────────────────────
+concurrency: 10                # max concurrent Claude API calls
+overwrite: false               # false = resume from where we left off
+
+# ── Output options ────────────────────────────────────────────────────────────
+keep_metadata: true            # required for --validate and class balancing in finetune
+validate: true                 # print accuracy / F1 after each split
+
+# ── HuggingFace Hub ───────────────────────────────────────────────────────────
+push_to_hub: false
+hub_repo: DataForGood/climate-misinformation-RCoT

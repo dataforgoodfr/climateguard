@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 
 import anthropic
+import yaml
 from datasets import Dataset, DatasetDict, load_dataset
 from dotenv import load_dotenv
 from tqdm.asyncio import tqdm as async_tqdm
@@ -44,15 +45,23 @@ Produce a reasoning trace written as if the detector itself is reading the trans
 reasoning step by step to the verdict. The trace must be grounded only in the provided
 annotations — do not invent facts.
 
-Structure of the trace:
-1. Briefly name the key claim(s) present (paraphrase from the transcript, guided by annotations).
-2. For MISINFORMATION: state why the claim is false or misleading, citing the factchecker
-   explanation in a single dense sentence. End with exactly: [[MISINFORMATION]]
-3. For CLEAN: state in one sentence why the content is accurate or contains no climate misinfo.
-   End with exactly: [[CLEAN]]
+Structure of the trace — follow this format exactly:
+
+Claims:
+- <claim 1 paraphrased from the transcript, one line>
+- <claim 2 if present, one line>
+- <claim 3 if present, one line — maximum 3 claims>
+
+<For MISINFORMATION: one dense sentence per claim explaining why it is false or misleading,
+citing the factchecker explanation. Then: [[MISINFORMATION]]>
+
+<For CLEAN: one sentence explaining why the claim(s) are accurate or no climate misinfo was
+found. Then: [[CLEAN]]>
 
 Hard rules:
-- Maximum 4 sentences total for MISINFORMATION cases; 2 sentences for CLEAN.
+- Always start with the "Claims:" block, even if there is only one claim.
+- If no climate claims are present, write: "Claims:\n- No climate claims identified."
+- Maximum 3 claims. If the factcheckers identified more, keep only the most significant.
 - No hedging language ("seems", "appears to", "may be") — direct factual statements only.
 - If misinformation was stated on air but then corrected by the presenter, still output
   [[MISINFORMATION]] — the false claim was broadcast.
@@ -63,14 +72,19 @@ Hard rules:
 INFERENCE_SYSTEM = """\
 You are a climate misinformation detector analysing raw TV transcripts.
 
-For each transcript:
-1. Identify any climate-related claims.
-2. Assess whether those claims are misinformative.
-3. End your response with [[MISINFORMATION]] if misinformation is present, or [[CLEAN]] if not.
+For each transcript, reason in the following steps:
 
-Be concise. Most transcripts contain no misinformation — output [[CLEAN]] immediately when
-nothing problematic is found. For detections, state the false claim and the correction in
-dense factual sentences before the label.\
+1. List the climate-related claims made by speakers (maximum 3, one per line):
+   Claims:
+   - <claim>
+
+2. For each claim, assess whether it contradicts established climate science consensus.
+
+3. End with exactly one label:
+   - [[MISINFORMATION]] if any claim is false or misleading
+   - [[CLEAN]] if all claims are accurate or no climate claims are present
+
+Always produce the Claims block first. Be direct and factual — no hedging language.\
 """
 
 # ── Label logic ───────────────────────────────────────────────────────────────
@@ -421,7 +435,26 @@ async def main(args: argparse.Namespace) -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Generate synthetic training data traces.")
+    # Pre-parse to pick up --config before building full defaults.
+    pre = argparse.ArgumentParser(add_help=False)
+    pre.add_argument("--config", default=None)
+    pre.add_argument("--env-file", default=".env")
+    pre_args, _ = pre.parse_known_args()
+
+    config: dict = {}
+    if pre_args.config:
+        with open(pre_args.config) as f:
+            config = yaml.safe_load(f) or {}
+
+    parser = argparse.ArgumentParser(
+        description="Generate synthetic training data traces.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "--config",
+        default=None,
+        help="Path to a YAML config file. CLI args override config values.",
+    )
     parser.add_argument(
         "--output",
         default="data/synthetic_traces.jsonl",
@@ -488,6 +521,9 @@ if __name__ == "__main__":
         default=".env",
         help="Path to .env file (default: .env)",
     )
+
+    # Apply config file as defaults — CLI args override.
+    parser.set_defaults(**{k: v for k, v in config.items() if v is not None})
     args = parser.parse_args()
 
     # Load .env before checking required variables.

@@ -19,12 +19,14 @@ misinformation_detector/
 │   ├── finetune_lora.py             # Step 2 — LoRA fine-tuning on the traces
 │   └── evaluate.py                  # Step 3 — evaluate on the test set
 ├── configs/
-│   ├── pretrain_lora.yaml           # CPT config (production)
-│   ├── pretrain_lora_dev.yaml       # CPT config (Mac / dev)
-│   ├── finetune_lora.yaml           # Production training config (7B, L40S)
-│   ├── finetune_lora_dev.yaml       # Dev / Mac smoke-test config (1.5B, no CUDA)
-│   ├── evaluate.yaml                # Production evaluation config
-│   └── evaluate_dev.yaml            # Dev / Mac evaluation config
+│   ├── generate_synthetic_data.yaml      # Data generation config (production)
+│   ├── generate_synthetic_data_dev.yaml  # Data generation config (dev / smoke-test)
+│   ├── pretrain_lora.yaml                # CPT config (production)
+│   ├── pretrain_lora_dev.yaml            # CPT config (Mac / dev)
+│   ├── finetune_lora.yaml                # SFT config (production)
+│   ├── finetune_lora_dev.yaml            # SFT config (Mac / dev)
+│   ├── evaluate.yaml                     # Evaluation config (production)
+│   └── evaluate_dev.yaml                 # Evaluation config (Mac / dev)
 ├── data/                            # Generated JSONL files (git-ignored)
 ├── output/                          # LoRA adapters (git-ignored)
 ├── .env.example                     # API key template
@@ -37,7 +39,7 @@ misinformation_detector/
 
 ## Configuration files
 
-Both `finetune_lora.py` and `evaluate.py` accept a `--config` flag pointing to a YAML file.
+All scripts accept a `--config` flag pointing to a YAML file.
 Values in the config become defaults; any CLI argument overrides them.
 
 ```bash
@@ -261,21 +263,23 @@ to activate the cache; subsequent calls pay ~0.1× of the system-prompt token co
 ### Quick start
 
 ```bash
-# Smoke-test: 20 French examples, keep metadata, validate labels
-uv run python src/generate_synthetic_data.py \
-  --limit 20 \
-  --country france \
-  --keep-metadata \
-  --validate \
-  --output data/test_traces.jsonl
+# Smoke-test: 20 French examples
+uv run python src/generate_synthetic_data.py --config configs/generate_synthetic_data_dev.yaml
+
+# Production: both splits, France, with validation
+uv run python src/generate_synthetic_data.py --config configs/generate_synthetic_data.yaml
 ```
 
-### Full train split (France)
+### Override individual values
 
 ```bash
-uv run python src/generate_synthetic_data.py \
-  --country france \
-  --output data/synthetic_traces_france.jsonl
+# Different country
+uv run python src/generate_synthetic_data.py --config configs/generate_synthetic_data.yaml \
+  --country belgium
+
+# Push to Hub after generation
+uv run python src/generate_synthetic_data.py --config configs/generate_synthetic_data.yaml \
+  --push-to-hub
 ```
 
 ### Resume after interruption

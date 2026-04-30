@@ -210,10 +210,56 @@ def apply_lora_unsloth(model, args):
     return model
 
 
+# ── Class balancing ───────────────────────────────────────────────────────────
+
+MISINFO_TOKEN = "[[MISINFORMATION]]"
+
+
+def _get_label(record: dict) -> str:
+    """Extract the predicted label from an assistant message."""
+    msgs = record.get("messages", [])
+    assistant = next((m["content"] for m in msgs if m["role"] == "assistant"), "")
+    return "MISINFORMATION" if MISINFO_TOKEN in assistant else "CLEAN"
+
+
+def balance_dataset(ds: Dataset) -> Dataset:
+    """Oversample the MISINFORMATION class to match the CLEAN class count."""
+    import random
+    misinfo_indices = [i for i, r in enumerate(ds) if _get_label(r) == "MISINFORMATION"]
+    clean_indices   = [i for i, r in enumerate(ds) if _get_label(r) == "CLEAN"]
+
+    n_misinfo = len(misinfo_indices)
+    n_clean   = len(clean_indices)
+    log.info("Before balancing — MISINFORMATION: %d  CLEAN: %d", n_misinfo, n_clean)
+
+    if n_misinfo == 0 or n_clean == 0:
+        log.warning("Cannot balance: one class is empty — skipping")
+        return ds
+
+    if n_misinfo < n_clean:
+        # Oversample minority (MISINFORMATION) with replacement
+        extra = random.choices(misinfo_indices, k=n_clean - n_misinfo)
+        balanced_indices = clean_indices + misinfo_indices + extra
+    else:
+        extra = random.choices(clean_indices, k=n_misinfo - n_clean)
+        balanced_indices = misinfo_indices + clean_indices + extra
+
+    random.shuffle(balanced_indices)
+    balanced = ds.select(balanced_indices)
+    log.info("After balancing  — total: %d (50/50)", len(balanced))
+    return balanced
+
+
 # ── Training ──────────────────────────────────────────────────────────────────
 
 
 def train(args, dataset: DatasetDict, model, tokenizer, use_unsloth: bool = False):
+    if args.balance_data:
+        dataset = DatasetDict({
+            "train":      balance_dataset(dataset["train"]),
+            "validation": dataset["validation"],  # never balance the eval set
+        })
+
     formatting_func = make_formatting_func(tokenizer)
 
     # Pre-format the dataset so SFTTrainer sees a plain "text" column.
@@ -322,6 +368,18 @@ if __name__ == "__main__":
         type=float,
         default=0.1,
         help="Fraction of data to hold out as validation (default: 0.1)",
+    )
+    parser.add_argument(
+        "--balance-data",
+        action="store_true",
+        default=True,
+        help="Oversample MISINFORMATION examples to 50/50 before training (default: on)",
+    )
+    parser.add_argument(
+        "--no-balance",
+        dest="balance_data",
+        action="store_false",
+        help="Disable class balancing",
     )
 
     # Model
