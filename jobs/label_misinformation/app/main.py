@@ -268,6 +268,15 @@ def main(country: Country):
                                 folder_inside_bucket=bucket_output_folder,
                                 country=country,
                             )
+                            save_to_s3(
+                                df_whispered,
+                                channel=channel,
+                                date=date,
+                                s3_client=s3_client,
+                                bucket="test-bucket-mediatree",
+                                folder_inside_bucket=bucket_output_folder,
+                                country=country,
+                            )
                         else:
                             logging.info(
                                 f"Nothing detected for channel {channel} on {date} - saving a empty file to not re-query it"
