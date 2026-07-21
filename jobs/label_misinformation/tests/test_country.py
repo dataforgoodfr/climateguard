@@ -45,7 +45,7 @@ def test_country_collection_presets():
         name="prod",
         code="prod",
         language="all",
-        countries=[BRAZIL_COUNTRY, FRANCE_COUNTRY],
+        countries=[FRANCE_COUNTRY],
     )
 
 
