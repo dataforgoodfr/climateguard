@@ -62,7 +62,7 @@ Hard rules:
 facts that are not in it.
 - Write in the same language as the excerpt.
 - An affirmation should read like something a person might plausibly say or \
-believe, not like a quiz question or a direct quote from the text.
+believe, not like a quiz question or a direct quote from the text. Do not mention the extract.
 - Output ONLY a JSON array, no prose before or after, no markdown code \
 fences, matching this schema exactly:
 [{{"affirmation": "...", "is_true": true, "debunk": "..."}}, ...]\
