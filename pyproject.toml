@@ -38,6 +38,14 @@ dependencies = [
     "wordcloud>=1.9.4",
     "tomli>=2.4.1",
     "pymupdf>=1.28.0",
+    "anthropic>=0.121.0",
+    "mistralai>=2.9.1",
+]
+
+[project.optional-dependencies]
+cuda = [
+    "bitsandbytes>=0.50.0",
+    "unsloth>=2026.1.2",
 ]
 
 
