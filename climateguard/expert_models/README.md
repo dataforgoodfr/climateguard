@@ -163,6 +163,12 @@ uv run climateguard/expert_models/scripts/train_lora.py biodiversity \
 # Real QLoRA run on a GPU box, combining both topics, pushed to the Hub
 uv run climateguard/expert_models/scripts/train_lora.py biodiversity insecurity \
     --backend unsloth --quant 4bit --push
+
+# QLoRA with unsloth on a specific checkpoint, the qwen3 chat template, one epoch
+uv run climateguard/expert_models/scripts/train_lora.py biodiversity insecurity \
+    --backend unsloth --quant 4bit \
+    --checkpoint unsloth/Qwen3.5-9B --chat-template qwen3 \
+    --epochs 1 --push
 ```
 
 The adapter is always saved locally to `train_output/adapter`. Pass `--push`

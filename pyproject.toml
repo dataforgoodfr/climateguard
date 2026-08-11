@@ -31,7 +31,11 @@ dependencies = [
     "sentencepiece>=0.2.1",
     "setfit>=1.1.3",
     "torch-optimi>=0.3.2",
-    "torch>=2.8.0",
+    # torchao (pulled in by the 'cuda' extra's unsloth dependency) imports
+    # torch.nn.functional.ScalingType, which doesn't exist before torch 2.10.
+    # uv locks one resolution across all extras, so this floor applies here
+    # too, not just under --extra cuda.
+    "torch>=2.10.0",
     "transformers>=4.56.2",
     "trl>=0.23.1",
     "wandb>=0.22.2",
