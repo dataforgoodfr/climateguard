@@ -13,6 +13,7 @@ expert_models/
 │   ├── parse_pdf_to_jsonl.py       # PDF -> per-subsection JSONL
 │   ├── generate_conversations.py   # per-subsection JSONL -> affirmation/debunk conversations
 │   └── train_lora.py               # conversations -> LoRA fine-tuned model, pushed to the Hub
+├── chat_templates/                 # optional Jinja chat templates for train_lora.py --chat-template
 ├── <model>/                        # e.g. biodiversity, insecurity
 │   └── data/
 │       ├── raw/                    # source PDF(s)
@@ -141,6 +142,15 @@ machine. On the GPU box, install them with:
 ```bash
 uv sync --extra cuda
 ```
+
+A topic-aware system prompt is built automatically (see
+`build_system_prompt`/`TOPIC_DESCRIPTIONS` in the script — add an entry there
+for each new topic) and prepended to every training example; override it
+with `--system-prompt`. `--chat-template {default,chatml,mistral}` swaps in a
+simple, known-good template from `chat_templates/*.jinja` instead of the
+checkpoint's own — useful for keeping formatting (and assistant-only loss
+masking via `{% generation %}` tags) consistent across different base
+models. `default` uses the checkpoint's built-in template unchanged.
 
 ```bash
 # Local smoke test on a laptop (CPU/MPS, tiny model, no push)

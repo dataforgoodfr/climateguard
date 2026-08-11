@@ -1,0 +1,19 @@
+{{- bos_token -}}
+{%- for message in messages -%}
+	{%- set content = message["content"] -%}
+	{%- if content is not string -%}
+		{%- set content = content | tojson -%}
+	{%- endif -%}
+	{%- if message["role"] == "system" -%}
+		{{- "<|im_start|>system\n" + content + "<|im_end|>\n" -}}
+	{%- elif message["role"] == "user" -%}
+		{{- "<|im_start|>user\n" + content + "<|im_end|>\n" -}}
+	{%- elif message["role"] == "assistant" -%}
+		{% generation %}
+		{{- "<|im_start|>assistant\n" + content + "<|im_end|>\n" -}}
+		{% endgeneration %}
+	{%- endif -%}
+{%- endfor -%}
+{%- if add_generation_prompt -%}
+	{{- "<|im_start|>assistant\n" -}}
+{%- endif -%}
