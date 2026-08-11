@@ -124,13 +124,17 @@ async def call_claude(client, model: str, system: str, user: str) -> str:
 
 
 async def call_mistral(client, model: str, system: str, user: str) -> str:
-    response = await client.chat.complete_async(
-        model=model,
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": user},
-        ],
-    )
+    try:
+        response = await client.chat.complete_async(
+            model=model,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
+            ],
+        )
+    except Exception as exc:  # mistralai raises several SDK-specific error types
+        print(f"[warn] Mistral API call failed: {exc!r}", file=sys.stderr)
+        return ""
     return response.choices[0].message.content or ""
 
 
@@ -168,6 +172,8 @@ async def generate_for_record(
 
     pairs = parse_pairs(raw, n_true, n_false)
     if not pairs:
+        snippet = raw.strip().replace("\n", " ")[:300] or "(empty response)"
+        print(f"[warn] No valid pairs parsed for {record['id']}: {snippet}", file=sys.stderr)
         return []
 
     results = []
