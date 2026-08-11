@@ -23,6 +23,13 @@ Two orthogonal choices:
 `uv sync --extra cuda` on the GPU box before using --backend unsloth or
 --quant 4bit.
 
+A topic-aware system prompt (see build_system_prompt/TOPIC_DESCRIPTIONS) is
+prepended to every training example automatically; override it with
+--system-prompt. --chat-template swaps in a simple, known-good ChatML or
+Mistral template from chat_templates/*.jinja instead of the checkpoint's own
+(often more complex) one - useful for keeping formatting, and assistant-only
+loss masking, consistent across different base models.
+
 The resulting adapter (and, with --merge-and-push, a merged full model - only
 supported with --quant none) is pushed to the Hugging Face Hub as a private
 model under the DataForGood org.
@@ -54,6 +61,7 @@ from dotenv import load_dotenv
 from huggingface_hub import login
 
 EXPERT_MODELS_DIR = Path(__file__).resolve().parents[1]
+CHAT_TEMPLATES_DIR = EXPERT_MODELS_DIR / "chat_templates"
 
 DEFAULT_CHECKPOINT = {
     "accelerate": "Qwen/Qwen2.5-7B-Instruct",
@@ -61,6 +69,45 @@ DEFAULT_CHECKPOINT = {
 }
 
 TARGET_MODULES = ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+
+# One clause per topic, stitched into the system prompt below. Add an entry
+# here for every new expert_models/<topic> directory.
+TOPIC_DESCRIPTIONS = {
+    "biodiversity": (
+        "biodiversity, pesticides and industrial agriculture - in particular the "
+        "misinformation surrounding the French 'loi Duplomb', pesticide "
+        "reintroduction (acetamipride), and their effects on ecosystems and "
+        "human health"
+    ),
+    "insecurity": (
+        "migration - common misconceptions and myths about migrants, asylum "
+        "seekers and immigration policy"
+    ),
+}
+
+SYSTEM_PROMPT_TEMPLATE = """\
+You are an assistant trained by Data For Good to fact-check claims about {topics}.
+
+Your knowledge on these topics comes from verified reference material (books \
+and reports written by subject-matter experts) that you were fine-tuned on. \
+When the user makes a statement:
+- If it is accurate, briefly confirm it.
+- If it is false, exaggerated, or misleading, say so clearly and explain why \
+in a few sentences, citing concrete facts or figures.
+
+Stay strictly grounded in what your training material supports - do not \
+speculate or invent facts. Be concise and direct, with no hedging language. \
+Always answer in the same language as the user's message.\
+"""
+
+
+def build_system_prompt(models: list[str]) -> str:
+    descriptions = [TOPIC_DESCRIPTIONS.get(m, m.replace("_", " ")) for m in models]
+    if len(descriptions) == 1:
+        topics = descriptions[0]
+    else:
+        topics = "; and ".join(descriptions)
+    return SYSTEM_PROMPT_TEMPLATE.format(topics=topics)
 
 
 # ── Data ─────────────────────────────────────────────────────────────────────
@@ -109,15 +156,33 @@ def group_train_test_split(dataset: Dataset, test_size: float, seed: int) -> tup
     return dataset.select(train_idx), dataset.select(test_idx)
 
 
-def add_chat_text(dataset: Dataset, tokenizer) -> Dataset:
+def add_chat_text(dataset: Dataset, tokenizer, system_prompt: str) -> Dataset:
     def _format(example):
+        messages = [{"role": "system", "content": system_prompt}, *example["messages"]]
         return {
             "text": tokenizer.apply_chat_template(
-                example["messages"], tokenize=False, add_generation_prompt=False
+                messages, tokenize=False, add_generation_prompt=False
             )
         }
 
     return dataset.map(_format)
+
+
+def apply_chat_template_override(tokenizer, name: str) -> None:
+    """Replace the tokenizer's chat template with one of chat_templates/*.jinja.
+
+    A model's built-in template can be verbose or inconsistent across
+    checkpoints; pinning a simple, known-good ChatML/Mistral template makes
+    training (and assistant-only loss masking via {% generation %} tags)
+    consistent regardless of which base model is used.
+    """
+    if name == "default":
+        return
+    template_path = CHAT_TEMPLATES_DIR / f"{name}.jinja"
+    if not template_path.exists():
+        available = ", ".join(p.stem for p in sorted(CHAT_TEMPLATES_DIR.glob("*.jinja")))
+        raise SystemExit(f"Unknown --chat-template '{name}'. Available: default, {available}")
+    tokenizer.chat_template = template_path.read_text()
 
 
 # ── Model loading ────────────────────────────────────────────────────────────
@@ -146,6 +211,7 @@ def _load_unsloth(args: argparse.Namespace):
         load_in_4bit=args.quant == "4bit",
         token=os.getenv("HF_TOKEN"),
     )
+    apply_chat_template_override(tokenizer, args.chat_template)
     model = FastLanguageModel.get_peft_model(
         model,
         r=args.lora_r,
@@ -166,6 +232,7 @@ def _load_accelerate(args: argparse.Namespace):
     tokenizer = AutoTokenizer.from_pretrained(args.checkpoint, token=os.getenv("HF_TOKEN"))
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
+    apply_chat_template_override(tokenizer, args.chat_template)
 
     model_kwargs: dict[str, Any] = {"token": os.getenv("HF_TOKEN")}
 
@@ -264,8 +331,11 @@ def main(args: argparse.Namespace) -> None:
     dataset = load_conversations(args.models, args.limit)
     print(f"Loaded {len(dataset)} conversation examples from: {', '.join(args.models)}")
 
+    system_prompt = args.system_prompt or build_system_prompt(args.models)
+    print(f"\nSystem prompt:\n{system_prompt}\n")
+
     model, tokenizer = load_model_and_tokenizer(args)
-    dataset = add_chat_text(dataset, tokenizer)
+    dataset = add_chat_text(dataset, tokenizer, system_prompt)
     train_dataset, eval_dataset = group_train_test_split(dataset, args.test_size, args.seed)
     print(f"Train: {len(train_dataset)}  Eval: {len(eval_dataset)}")
     print(f"\nSample:\n{train_dataset[0]['text']}\n")
@@ -348,6 +418,18 @@ if __name__ == "__main__":
     parser.add_argument("--backend", choices=["accelerate", "unsloth"], default="accelerate")
     parser.add_argument("--quant", choices=["4bit", "none"], default="4bit", help="4bit = QLoRA (needs CUDA); none = plain LoRA, works on CPU/MPS")
     parser.add_argument("--checkpoint", type=str, default=None, help="Base model (default depends on --backend)")
+    parser.add_argument(
+        "--chat-template",
+        type=str,
+        default="default",
+        help="'default' uses the checkpoint's own template, or a name from chat_templates/*.jinja (e.g. 'chatml', 'mistral')",
+    )
+    parser.add_argument(
+        "--system-prompt",
+        type=str,
+        default=None,
+        help="Override the auto-generated (topic-aware) system prompt prepended to every example",
+    )
     parser.add_argument("--max-length", type=int, default=2048)
     parser.add_argument("--learning-rate", type=float, default=2e-4)
     parser.add_argument("--train-batch-size", type=int, default=2)
