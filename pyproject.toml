@@ -36,7 +36,7 @@ dependencies = [
     # uv locks one resolution across all extras, so this floor applies here
     # too, not just under --extra cuda.
     "torch>=2.10.0",
-    "transformers>=4.56.2",
+    "transformers>=4.57.3",
     "trl>=0.23.1",
     "wandb>=0.22.2",
     "wordcloud>=1.9.4",
