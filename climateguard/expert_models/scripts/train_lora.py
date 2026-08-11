@@ -422,7 +422,7 @@ if __name__ == "__main__":
         "--chat-template",
         type=str,
         default="default",
-        help="'default' uses the checkpoint's own template, or a name from chat_templates/*.jinja (e.g. 'chatml', 'mistral')",
+        help="'default' uses the checkpoint's own template, or a name from chat_templates/*.jinja (e.g. 'chatml', 'qwen3', 'mistral')",
     )
     parser.add_argument(
         "--system-prompt",
