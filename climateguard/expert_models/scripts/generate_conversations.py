@@ -152,40 +152,65 @@ def parse_single_pair(raw: str) -> dict[str, Any] | None:
 # ── Providers ────────────────────────────────────────────────────────────────
 
 
+RATE_LIMIT_MAX_RETRIES = 5
+RATE_LIMIT_BASE_DELAY = 5  # seconds; doubles each retry, capped below
+
+
 async def call_claude(client, model: str, system: str, user: str, max_tokens: int) -> str:
     import anthropic
 
-    try:
-        response = await client.messages.create(
-            model=model,
-            max_tokens=max_tokens,
-            system=system,
-            messages=[{"role": "user", "content": user}],
-        )
-    except anthropic.RateLimitError as exc:
-        print(f"[warn] Claude rate limited, sleeping 30s: {exc!r}", file=sys.stderr)
-        await asyncio.sleep(30)
-        return ""
-    except anthropic.APIError as exc:
-        print(f"[warn] Claude API call failed: {exc!r}", file=sys.stderr)
-        return ""
-    return next((block.text for block in response.content if block.type == "text"), "")
+    delay = RATE_LIMIT_BASE_DELAY
+    for attempt in range(1, RATE_LIMIT_MAX_RETRIES + 1):
+        try:
+            response = await client.messages.create(
+                model=model,
+                max_tokens=max_tokens,
+                system=system,
+                messages=[{"role": "user", "content": user}],
+            )
+            return next((block.text for block in response.content if block.type == "text"), "")
+        except anthropic.RateLimitError as exc:
+            print(
+                f"[warn] Claude rate limited (attempt {attempt}/{RATE_LIMIT_MAX_RETRIES}), "
+                f"retrying in {delay}s: {exc!r}",
+                file=sys.stderr,
+            )
+            await asyncio.sleep(delay)
+            delay = min(delay * 2, 60)
+        except anthropic.APIError as exc:
+            print(f"[warn] Claude API call failed: {exc!r}", file=sys.stderr)
+            return ""
+    print(f"[warn] Claude still rate limited after {RATE_LIMIT_MAX_RETRIES} retries, giving up", file=sys.stderr)
+    return ""
 
 
 async def call_mistral(client, model: str, system: str, user: str, max_tokens: int) -> str:
-    try:
-        response = await client.chat.complete_async(
-            model=model,
-            max_tokens=max_tokens,
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": user},
-            ],
-        )
-    except Exception as exc:  # mistralai raises several SDK-specific error types
-        print(f"[warn] Mistral API call failed: {exc!r}", file=sys.stderr)
-        return ""
-    return response.choices[0].message.content or ""
+    delay = RATE_LIMIT_BASE_DELAY
+    for attempt in range(1, RATE_LIMIT_MAX_RETRIES + 1):
+        try:
+            response = await client.chat.complete_async(
+                model=model,
+                max_tokens=max_tokens,
+                messages=[
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user},
+                ],
+            )
+            return response.choices[0].message.content or ""
+        except Exception as exc:  # mistralai raises several SDK-specific error types
+            if getattr(exc, "status_code", None) == 429:
+                print(
+                    f"[warn] Mistral rate limited (attempt {attempt}/{RATE_LIMIT_MAX_RETRIES}), "
+                    f"retrying in {delay}s",
+                    file=sys.stderr,
+                )
+                await asyncio.sleep(delay)
+                delay = min(delay * 2, 60)
+                continue
+            print(f"[warn] Mistral API call failed: {exc!r}", file=sys.stderr)
+            return ""
+    print(f"[warn] Mistral still rate limited after {RATE_LIMIT_MAX_RETRIES} retries, giving up", file=sys.stderr)
+    return ""
 
 
 def make_client(provider: str):
