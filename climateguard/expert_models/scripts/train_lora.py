@@ -163,7 +163,12 @@ def add_chat_text(dataset: Dataset, tokenizer, system_prompt: str) -> Dataset:
         messages = [{"role": "system", "content": system_prompt}, *example["messages"]]
         return {
             "text": tokenizer.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=False
+                messages,
+                tokenize=False,
+                add_generation_prompt=False,
+                # Debunks are short, direct answers - never train the model to
+                # emit a <think> block, regardless of the checkpoint's default.
+                enable_thinking=False,
             )
         }
 
