@@ -105,13 +105,13 @@ def parse_pairs(raw: str, n_true: int, n_false: int) -> list[dict[str, Any]] | N
 # ── Providers ────────────────────────────────────────────────────────────────
 
 
-async def call_claude(client, model: str, system: str, user: str) -> str:
+async def call_claude(client, model: str, system: str, user: str, max_tokens: int) -> str:
     import anthropic
 
     try:
         response = await client.messages.create(
             model=model,
-            max_tokens=2048,
+            max_tokens=max_tokens,
             system=system,
             messages=[{"role": "user", "content": user}],
         )
@@ -123,10 +123,11 @@ async def call_claude(client, model: str, system: str, user: str) -> str:
     return next((block.text for block in response.content if block.type == "text"), "")
 
 
-async def call_mistral(client, model: str, system: str, user: str) -> str:
+async def call_mistral(client, model: str, system: str, user: str, max_tokens: int) -> str:
     try:
         response = await client.chat.complete_async(
             model=model,
+            max_tokens=max_tokens,
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
@@ -159,6 +160,7 @@ async def generate_for_record(
     model: str,
     record: dict[str, Any],
     n_pairs: int,
+    max_tokens: int,
     semaphore: asyncio.Semaphore,
 ) -> list[dict[str, Any]]:
     n_true = n_pairs // 2
@@ -168,7 +170,7 @@ async def generate_for_record(
 
     async with semaphore:
         call = call_claude if provider == "claude" else call_mistral
-        raw = await call(client, model, system, user)
+        raw = await call(client, model, system, user, max_tokens)
 
     pairs = parse_pairs(raw, n_true, n_false)
     if not pairs:
@@ -266,7 +268,9 @@ async def main(args: argparse.Namespace) -> None:
     written = 0
     with output_path.open(mode, encoding="utf-8") as out_f:
         tasks = [
-            generate_for_record(client, args.provider, llm_model, record, args.n_pairs, semaphore)
+            generate_for_record(
+                client, args.provider, llm_model, record, args.n_pairs, args.max_tokens, semaphore
+            )
             for record in pending
         ]
         for coro in async_tqdm.as_completed(tasks, total=len(tasks), desc=args.model):
@@ -289,6 +293,12 @@ if __name__ == "__main__":
         "--model-name", default=None, help="Override the provider's default model id"
     )
     parser.add_argument("--n-pairs", type=int, default=4, help="Affirmation/debunk pairs per subsection")
+    parser.add_argument(
+        "--max-tokens",
+        type=int,
+        default=2048,
+        help="Max output tokens per API call - raise this if responses get cut off (e.g. with a high --n-pairs)",
+    )
     parser.add_argument("--input", type=Path, default=None, help="Input JSONL (default: single file in data/parsed)")
     parser.add_argument("--output", type=Path, default=None, help="Output JSONL (default: data/conversations/<name>.jsonl)")
     parser.add_argument("--concurrency", type=int, default=5, help="Max concurrent API calls")
