@@ -168,6 +168,12 @@ async def call_claude(client, model: str, system: str, user: str, max_tokens: in
                 system=system,
                 messages=[{"role": "user", "content": user}],
             )
+            if response.stop_reason == "max_tokens":
+                print(
+                    f"[warn] Claude response truncated by max_tokens={max_tokens} "
+                    "(raise --max-tokens)",
+                    file=sys.stderr,
+                )
             return next((block.text for block in response.content if block.type == "text"), "")
         except anthropic.RateLimitError as exc:
             print(
@@ -196,6 +202,12 @@ async def call_mistral(client, model: str, system: str, user: str, max_tokens: i
                     {"role": "user", "content": user},
                 ],
             )
+            if response.choices[0].finish_reason == "length":
+                print(
+                    f"[warn] Mistral response truncated by max_tokens={max_tokens} "
+                    "(raise --max-tokens)",
+                    file=sys.stderr,
+                )
             return response.choices[0].message.content or ""
         except Exception as exc:  # mistralai raises several SDK-specific error types
             if getattr(exc, "status_code", None) == 429:
