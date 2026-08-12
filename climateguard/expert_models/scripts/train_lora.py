@@ -6,13 +6,20 @@ fine-tunes a base chat model on them with TRL, via either SFT or DPO.
 
 Three orthogonal choices:
 
-- `--method {sft,dpo}` - `sft` (default) supervises directly on the debunk
-  text + verdict tag. `dpo` instead preference-tunes: for each example, the
-  chosen completion is the debunk text with the correct "[TRUE]"/"[FALSE]"
-  tag and the rejected completion is the *same debunk text* with the tag
-  flipped - there's no independent second response to prefer between in
-  this data, so this isolates the preference signal to the TRUE/FALSE
-  calibration specifically (see add_dpo_columns).
+- `--method {sft,dpo,sft_dpo}` - `sft` (default) supervises directly on the
+  debunk text + verdict tag. `dpo` instead preference-tunes: for each
+  example, the chosen completion is the debunk text with the correct
+  "[TRUE]"/"[FALSE]" tag and the rejected completion is the *same debunk
+  text* with the tag flipped - there's no independent second response to
+  prefer between in this data, so this isolates the preference signal to
+  the TRUE/FALSE calibration specifically (see add_dpo_columns). `sft_dpo`
+  runs both, in order, continuing to train the *same* LoRA adapter in the
+  DPO stage rather than starting over - the standard SFT-warm-start-then-
+  preference-tune recipe. Its two stages have independent learning
+  rate/epoch controls (--learning-rate/--epochs for SFT, --dpo-learning-rate
+  /--dpo-epochs for DPO), since DPO is typically far more sensitive to a
+  high LR than SFT. The verdict eval (see below) runs after each stage when
+  --method sft_dpo, so you can see whether the DPO stage actually helped.
 
 - `--backend {unsloth,accelerate}` - which training stack to use.
   `unsloth` is faster and more memory-efficient but needs a CUDA GPU and the
@@ -69,6 +76,9 @@ Examples:
 
     # Same, but DPO instead of SFT
     python train_lora.py biodiversity insecurity --backend unsloth --quant 4bit --method dpo --push
+
+    # SFT warm-start, then DPO on the same adapter
+    python train_lora.py biodiversity insecurity --backend unsloth --quant 4bit --method sft_dpo --push
 """
 
 import argparse
@@ -541,6 +551,18 @@ def default_repo_id(args: argparse.Namespace) -> str:
     return f"DataForGood/{checkpoint_slug}-{topics}-{args.method}-{suffix}"
 
 
+# (stage_method, learning_rate, epochs) tuples to run, in order, for each --method.
+def training_stages(args: argparse.Namespace) -> list[tuple[str, float, int]]:
+    if args.method == "sft":
+        return [("sft", args.learning_rate, args.epochs)]
+    if args.method == "dpo":
+        return [("dpo", args.dpo_learning_rate, args.dpo_epochs)]
+    return [  # sft_dpo: SFT warm-start, then DPO continues training the same adapter
+        ("sft", args.learning_rate, args.epochs),
+        ("dpo", args.dpo_learning_rate, args.dpo_epochs),
+    ]
+
+
 def _import_dpo():
     """DPOTrainer's import chain hits a real trl/transformers incompatibility:
     trl.import_utils computes several `_xxx_available` flags by calling
@@ -567,38 +589,42 @@ def _import_dpo():
     return DPOConfig, DPOTrainer
 
 
-def main(args: argparse.Namespace) -> None:
-    if os.getenv("HF_TOKEN"):
-        login(token=os.getenv("HF_TOKEN"))
+def run_training_stage(
+    args: argparse.Namespace,
+    method: str,
+    learning_rate: float,
+    epochs: int,
+    model,
+    tokenizer,
+    base_dataset: Dataset,
+    system_prompt: str,
+    output_dir: Path,
+) -> Dataset:
+    """Build the method-specific dataset columns, train one stage, return the
+    eval split used (so the caller can run the shared verdict eval on it).
 
-    output_dir = Path(args.output_dir) if args.output_dir else EXPERT_MODELS_DIR / "train_output"
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    dataset = load_conversations(args.models, args.limit)
-    print(f"Loaded {len(dataset)} conversation examples from: {', '.join(args.models)}")
-
-    system_prompt = args.system_prompt or build_system_prompt(args.models)
-    print(f"\nSystem prompt:\n{system_prompt}\n")
-
-    model, tokenizer = load_model_and_tokenizer(args)
-    if args.method == "sft":
-        dataset = add_chat_text(dataset, tokenizer, system_prompt)
+    `model` is trained in place - for the "sft_dpo" method this is called
+    twice on the same peft model, so the DPO stage continues optimizing the
+    LoRA weights the SFT stage already trained, rather than starting fresh.
+    """
+    if method == "sft":
+        dataset = add_chat_text(base_dataset, tokenizer, system_prompt)
     else:
-        dataset = add_dpo_columns(dataset, system_prompt)
+        dataset = add_dpo_columns(base_dataset, system_prompt)
     train_dataset, eval_dataset = group_train_test_split(dataset, args.test_size, args.seed)
-    print(f"Train: {len(train_dataset)}  Eval: {len(eval_dataset)}")
-    if args.method == "sft":
-        print(f"\nSample:\n{train_dataset[0]['text']}\n")
+    print(f"[{method}] Train: {len(train_dataset)}  Eval: {len(eval_dataset)}")
+    if method == "sft":
+        print(f"\n[{method}] Sample:\n{train_dataset[0]['text']}\n")
     else:
-        print(f"\nSample chosen:\n{train_dataset[0]['chosen']}\n")
-        print(f"Sample rejected:\n{train_dataset[0]['rejected']}\n")
+        print(f"\n[{method}] Sample chosen:\n{train_dataset[0]['chosen']}\n")
+        print(f"[{method}] Sample rejected:\n{train_dataset[0]['rejected']}\n")
 
-    max_steps = args.epochs * max(
+    max_steps = epochs * max(
         1, -(-len(train_dataset) // (args.train_batch_size * args.gradient_accumulation_steps))
     )
     common_kwargs = dict(
         output_dir=str(output_dir),
-        learning_rate=args.learning_rate,
+        learning_rate=learning_rate,
         per_device_train_batch_size=args.train_batch_size,
         per_device_eval_batch_size=args.eval_batch_size,
         gradient_accumulation_steps=args.gradient_accumulation_steps,
@@ -617,7 +643,7 @@ def main(args: argparse.Namespace) -> None:
         report_to="wandb" if args.wandb else "none",
     )
 
-    if args.method == "sft":
+    if method == "sft":
         from trl import SFTConfig, SFTTrainer
 
         training_args = SFTConfig(
@@ -641,7 +667,8 @@ def main(args: argparse.Namespace) -> None:
             entity=os.getenv("WANDB_ENTITY", "gmguarino"),
             project="expert-models-lora",
             config=training_args.to_dict(),
-            name=f"{'-'.join(args.models)}-{args.checkpoint.split('/')[-1]}-{args.backend}-{args.quant}-{args.method}",
+            name=f"{'-'.join(args.models)}-{args.checkpoint.split('/')[-1]}-{args.backend}-{args.quant}-{method}",
+            reinit=True,
         )
 
     trainer = trainer_cls(
@@ -654,22 +681,52 @@ def main(args: argparse.Namespace) -> None:
     )
     trainer.train()
 
+    if args.wandb:
+        import wandb
+
+        wandb.finish()
+
+    return eval_dataset
+
+
+def main(args: argparse.Namespace) -> None:
+    if os.getenv("HF_TOKEN"):
+        login(token=os.getenv("HF_TOKEN"))
+
+    output_dir = Path(args.output_dir) if args.output_dir else EXPERT_MODELS_DIR / "train_output"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    dataset = load_conversations(args.models, args.limit)
+    print(f"Loaded {len(dataset)} conversation examples from: {', '.join(args.models)}")
+
+    system_prompt = args.system_prompt or build_system_prompt(args.models)
+    print(f"\nSystem prompt:\n{system_prompt}\n")
+
+    model, tokenizer = load_model_and_tokenizer(args)
+
+    eval_dataset = None
+    for method, learning_rate, epochs in training_stages(args):
+        print(f"\n=== Stage: {method} (lr={learning_rate}, epochs={epochs}) ===")
+        eval_dataset = run_training_stage(
+            args, method, learning_rate, epochs, model, tokenizer, dataset, system_prompt, output_dir
+        )
+        if not args.skip_eval:
+            print(f"\n=== Eval after {method} stage ===")
+            run_eval(
+                model,
+                tokenizer,
+                eval_dataset,
+                system_prompt,
+                args.backend,
+                args.max_length,
+                args.eval_max_new_tokens,
+                output_dir,
+            )
+
     adapter_dir = output_dir / "adapter"
     model.save_pretrained(adapter_dir)
     tokenizer.save_pretrained(adapter_dir)
     print(f"Adapter saved to {adapter_dir}")
-
-    if not args.skip_eval:
-        run_eval(
-            model,
-            tokenizer,
-            eval_dataset,
-            system_prompt,
-            args.backend,
-            args.max_length,
-            args.eval_max_new_tokens,
-            output_dir,
-        )
 
     if not args.push:
         print("Skipping Hub push (pass --push to publish).")
@@ -698,13 +755,27 @@ if __name__ == "__main__":
     parser.add_argument("--quant", choices=["4bit", "none"], default="4bit", help="4bit = QLoRA (needs CUDA); none = plain LoRA, works on CPU/MPS")
     parser.add_argument(
         "--method",
-        choices=["sft", "dpo"],
+        choices=["sft", "dpo", "sft_dpo"],
         default="sft",
         help="sft = supervised fine-tuning on the debunk text; dpo = preference-tune the TRUE/FALSE "
-        "verdict by preferring the correct tag over the flipped one for the same debunk text",
+        "verdict by preferring the correct tag over the flipped one for the same debunk text; "
+        "sft_dpo = run sft first, then continue training the same LoRA adapter with dpo",
     )
     parser.add_argument(
-        "--dpo-beta", type=float, default=0.1, help="DPO KL penalty coefficient (only used with --method dpo)"
+        "--dpo-beta", type=float, default=0.1, help="DPO KL penalty coefficient (used with --method dpo or sft_dpo)"
+    )
+    parser.add_argument(
+        "--dpo-learning-rate",
+        type=float,
+        default=5e-6,
+        help="Learning rate for the DPO stage (used with --method dpo or sft_dpo) - "
+        "DPO is typically far more sensitive to a high LR than SFT, so this is independent of --learning-rate",
+    )
+    parser.add_argument(
+        "--dpo-epochs",
+        type=int,
+        default=1,
+        help="Epochs for the DPO stage (used with --method dpo or sft_dpo)",
     )
     parser.add_argument("--checkpoint", type=str, default=None, help="Base model (default depends on --backend)")
     parser.add_argument(

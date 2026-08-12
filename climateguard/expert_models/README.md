@@ -134,16 +134,24 @@ Three independent choices:
   package. `none` is a plain LoRA over full/half-precision weights — the
   fallback for testing the whole pipeline locally on a laptop before
   spending GPU time.
-- `--method {sft,dpo}` — `sft` (default) supervises directly on the debunk
-  text + `[TRUE]`/`[FALSE]` verdict tag. `dpo` preference-tunes instead: for
-  each example, the chosen completion is the debunk text with the correct
-  verdict tag and the rejected completion is the *same debunk text* with the
-  tag flipped. There's no independent second response to prefer between in
-  this data, so this design isolates the preference signal to the TRUE/FALSE
-  calibration specifically (see `add_dpo_columns` in the script) — it won't
-  teach response style/quality the way DPO normally would with genuinely
-  different candidate responses. `--dpo-beta` (default 0.1) controls the KL
-  penalty.
+- `--method {sft,dpo,sft_dpo}` — `sft` (default) supervises directly on the
+  debunk text + `[TRUE]`/`[FALSE]` verdict tag. `dpo` preference-tunes
+  instead: for each example, the chosen completion is the debunk text with
+  the correct verdict tag and the rejected completion is the *same debunk
+  text* with the tag flipped. There's no independent second response to
+  prefer between in this data, so this design isolates the preference signal
+  to the TRUE/FALSE calibration specifically (see `add_dpo_columns` in the
+  script) — it won't teach response style/quality the way DPO normally would
+  with genuinely different candidate responses. `sft_dpo` runs both in
+  order, continuing to train the *same* LoRA adapter through the DPO stage
+  (SFT warm-start, then preference-tune) rather than training two separate
+  adapters — the standard recipe. `--dpo-beta` (default 0.1) controls the KL
+  penalty; `--dpo-learning-rate` (default `5e-6`) and `--dpo-epochs`
+  (default `1`) control the DPO stage independently of `--learning-rate`/
+  `--epochs` (which control the SFT stage) — DPO is typically far more
+  sensitive to a high learning rate than SFT. With `sft_dpo`, the verdict
+  eval (see below) runs once after each stage, so you can see whether DPO
+  actually improved on the SFT checkpoint.
 
 `unsloth` and `bitsandbytes` live in the `cuda` optional dependency group,
 since they're dead weight (and `unsloth` won't even import) on a non-CUDA
@@ -191,6 +199,10 @@ uv run climateguard/expert_models/scripts/train_lora.py biodiversity insecurity 
 # Same, but DPO instead of SFT
 uv run climateguard/expert_models/scripts/train_lora.py biodiversity insecurity \
     --backend unsloth --quant 4bit --method dpo --push
+
+# SFT warm-start, then DPO on the same adapter
+uv run climateguard/expert_models/scripts/train_lora.py biodiversity insecurity \
+    --backend unsloth --quant 4bit --method sft_dpo --push
 ```
 
 The adapter is always saved locally to `train_output/adapter`. Pass `--push`
