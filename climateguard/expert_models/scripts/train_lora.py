@@ -34,6 +34,15 @@ The resulting adapter (and, with --merge-and-push, a merged full model - only
 supported with --quant none) is pushed to the Hugging Face Hub as a private
 model under the DataForGood org.
 
+After training, the model is run once over the held-out eval set: for every
+example it must generate a response starting with an explicit "[TRUE]" or
+"[FALSE]" verdict (an instruction only added at eval time, never seen during
+training), which is parsed and compared against the is_true ground truth
+carried through from generate_conversations.py's metadata. Per-example
+predictions are saved to <output-dir>/eval_predictions.jsonl and accuracy/
+precision/recall/F1/confusion-matrix stats are printed. Skip with
+--skip-eval.
+
 Usage:
     python train_lora.py <model> [<model> ...] [--backend accelerate|unsloth]
         [--quant 4bit|none] [--checkpoint HF_MODEL_ID] [--push] [--merge-and-push]
@@ -52,6 +61,7 @@ import argparse
 import json
 import os
 import random
+import re
 from pathlib import Path
 from typing import Any
 
@@ -59,6 +69,7 @@ import torch
 from datasets import Dataset
 from dotenv import load_dotenv
 from huggingface_hub import login
+from tqdm import tqdm
 
 EXPERT_MODELS_DIR = Path(__file__).resolve().parents[1]
 CHAT_TEMPLATES_DIR = EXPERT_MODELS_DIR / "chat_templates"
@@ -110,6 +121,28 @@ def build_system_prompt(models: list[str]) -> str:
     else:
         topics = "; and ".join(descriptions)
     return SYSTEM_PROMPT_TEMPLATE.format(topics=topics)
+
+
+# Appended to the system prompt only for the post-training eval pass, so the
+# model's verdict can be parsed and scored against the is_true ground truth
+# carried in the dataset - this instruction is never part of training data.
+EVAL_VERDICT_INSTRUCTION = """\
+
+
+For this evaluation, you must start with your normal answer, \
+then always end your reply with exactly the tag \
+"[TRUE]" or "[FALSE]" (nothing else after it) indicating whether the \
+statement is accurate.
+"""
+
+VERDICT_RE = re.compile(r"\[?\s*(TRUE|FALSE)\s*\]?", re.IGNORECASE)
+
+
+def extract_verdict(text: str) -> bool | None:
+    match = VERDICT_RE.search(text)
+    if not match:
+        return None
+    return match.group(1).upper() == "TRUE"
 
 
 # ── Data ─────────────────────────────────────────────────────────────────────
@@ -295,6 +328,123 @@ def _load_accelerate(args: argparse.Namespace):
     return model, tokenizer
 
 
+# ── Eval ─────────────────────────────────────────────────────────────────────
+
+
+def run_eval(
+    model,
+    tokenizer,
+    eval_dataset: Dataset,
+    system_prompt: str,
+    backend: str,
+    max_length: int,
+    max_new_tokens: int,
+    output_dir: Path,
+) -> None:
+    """Generate a verdict + answer for every eval example, compare the verdict
+    to the is_true ground truth, and print classification stats."""
+    if backend == "unsloth":
+        from unsloth import FastLanguageModel
+
+        FastLanguageModel.for_inference(model)
+    model.eval()
+    device = next(model.parameters()).device
+
+    if device.type == "mps":
+        # generate() hits a fatal (uncatchable) Metal backend assertion with
+        # some tensor sizes on Apple Silicon; run eval generation on CPU
+        # instead. Slower, but this only affects local smoke tests - real
+        # training runs on CUDA, which isn't affected.
+        print("[info] MPS generate() has a known backend crash bug; running eval on CPU instead.")
+        model.to("cpu")
+        device = torch.device("cpu")
+
+    eval_system = system_prompt + EVAL_VERDICT_INSTRUCTION
+
+    rows = []
+    for example in tqdm(eval_dataset, desc="eval"):
+        affirmation = example["messages"][0]["content"]
+        chat = [
+            {"role": "system", "content": eval_system},
+            {"role": "user", "content": affirmation},
+        ]
+        prompt_text = tokenizer.apply_chat_template(
+            chat, tokenize=False, add_generation_prompt=True, enable_thinking=False
+        )
+        inputs = tokenizer(
+            prompt_text,
+            return_tensors="pt",
+            truncation=True,
+            max_length=max(1, max_length - max_new_tokens),
+        ).to(device)
+
+        try:
+            with torch.no_grad():
+                output_ids = model.generate(
+                    **inputs, max_new_tokens=max_new_tokens, do_sample=False
+                )
+            response = tokenizer.decode(
+                output_ids[0][inputs["input_ids"].shape[1] :], skip_special_tokens=True
+            ).strip()
+        except RuntimeError as exc:
+            # A single generation failure (e.g. an MPS backend allocation bug,
+            # or a transient CUDA OOM) shouldn't lose the rest of the eval pass.
+            print(f"[warn] Generation failed for {example['source_id']}: {exc!r}")
+            response = ""
+
+        ground_truth = bool(example["is_true"])
+        predicted = extract_verdict(response)
+        rows.append(
+            {
+                "source_id": example["source_id"],
+                "affirmation": affirmation,
+                "ground_truth_is_true": ground_truth,
+                "predicted_is_true": predicted,
+                "correct": None if predicted is None else predicted == ground_truth,
+                "response": response,
+            }
+        )
+
+    results_path = output_dir / "eval_predictions.jsonl"
+    with results_path.open("w", encoding="utf-8") as f:
+        for row in rows:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    print(f"Eval predictions saved to {results_path}")
+
+    tp = tn = fp = fn = unparseable = 0
+    for row in rows:
+        if row["predicted_is_true"] is None:
+            unparseable += 1
+        elif row["ground_truth_is_true"] and row["predicted_is_true"]:
+            tp += 1
+        elif not row["ground_truth_is_true"] and not row["predicted_is_true"]:
+            tn += 1
+        elif not row["ground_truth_is_true"] and row["predicted_is_true"]:
+            fp += 1
+        else:
+            fn += 1
+
+    total = tp + tn + fp + fn
+    print("\n── Eval verdict accuracy (TRUE = affirmation is accurate) ───")
+    print(f"  Total evaluated : {len(rows)}  (unparseable verdict: {unparseable})")
+    if total == 0:
+        print("  No parseable verdicts to score.")
+    else:
+        accuracy = (tp + tn) / total
+        precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+        recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) > 0 else 0.0
+        print(f"  Accuracy        : {accuracy:.3f}")
+        print(f"  Precision (TRUE): {precision:.3f}")
+        print(f"  Recall (TRUE)   : {recall:.3f}")
+        print(f"  F1 (TRUE)       : {f1:.3f}")
+        print("\n  Confusion matrix:")
+        print("                     Pred TRUE      Pred FALSE")
+        print(f"  GT  TRUE               {tp:>5}          {fn:>5}")
+        print(f"  GT  FALSE              {fp:>5}          {tn:>5}")
+    print("───────────────────────────────────────────────────────────")
+
+
 # ── Hub push ─────────────────────────────────────────────────────────────────
 
 
@@ -399,6 +549,18 @@ def main(args: argparse.Namespace) -> None:
     tokenizer.save_pretrained(adapter_dir)
     print(f"Adapter saved to {adapter_dir}")
 
+    if not args.skip_eval:
+        run_eval(
+            model,
+            tokenizer,
+            eval_dataset,
+            system_prompt,
+            args.backend,
+            args.max_length,
+            args.eval_max_new_tokens,
+            output_dir,
+        )
+
     if not args.push:
         print("Skipping Hub push (pass --push to publish).")
         return
@@ -455,6 +617,18 @@ if __name__ == "__main__":
     parser.add_argument("--push", action=argparse.BooleanOptionalAction, default=False, help="Push the result to the Hugging Face Hub")
     parser.add_argument("--merge-and-push", action=argparse.BooleanOptionalAction, default=False, help="Also merge the adapter into the base model before pushing (only with --quant none)")
     parser.add_argument("--hub-repo", type=str, default=None, help="Override the Hub repo id (default: DataForGood/<checkpoint>-<topics>-<lora|qlora>)")
+    parser.add_argument(
+        "--skip-eval",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Skip the post-training TRUE/FALSE verdict eval pass over the eval set",
+    )
+    parser.add_argument(
+        "--eval-max-new-tokens",
+        type=int,
+        default=300,
+        help="Max new tokens to generate per eval example",
+    )
     parser.add_argument("--wandb", action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument("--env-file", type=str, default=".env")
 
