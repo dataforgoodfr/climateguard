@@ -119,12 +119,12 @@ Useful flags:
 ### 3. Fine-tune a model — `train_lora.py`
 
 LoRA fine-tunes a base chat model on one or more topics' conversation files
-with TRL's `SFTTrainer`, then pushes the result to the Hugging Face Hub as a
-**private** model under the `DataForGood` org. Pairs are split into
-train/eval by source excerpt (`source_id`), so pairs generated from the same
-subsection never leak across the split.
+with TRL (SFT or DPO — see `--method` below), then pushes the result to the
+Hugging Face Hub as a **private** model under the `DataForGood` org. Pairs
+are split into train/eval by source excerpt (`source_id`), so pairs
+generated from the same subsection never leak across the split.
 
-Two independent choices:
+Three independent choices:
 
 - `--backend {accelerate,unsloth}` — training stack. `accelerate` (default)
   uses plain transformers + peft + trl and runs anywhere, including CPU/MPS.
@@ -134,6 +134,16 @@ Two independent choices:
   package. `none` is a plain LoRA over full/half-precision weights — the
   fallback for testing the whole pipeline locally on a laptop before
   spending GPU time.
+- `--method {sft,dpo}` — `sft` (default) supervises directly on the debunk
+  text + `[TRUE]`/`[FALSE]` verdict tag. `dpo` preference-tunes instead: for
+  each example, the chosen completion is the debunk text with the correct
+  verdict tag and the rejected completion is the *same debunk text* with the
+  tag flipped. There's no independent second response to prefer between in
+  this data, so this design isolates the preference signal to the TRUE/FALSE
+  calibration specifically (see `add_dpo_columns` in the script) — it won't
+  teach response style/quality the way DPO normally would with genuinely
+  different candidate responses. `--dpo-beta` (default 0.1) controls the KL
+  penalty.
 
 `unsloth` and `bitsandbytes` live in the `cuda` optional dependency group,
 since they're dead weight (and `unsloth` won't even import) on a non-CUDA
@@ -142,6 +152,14 @@ machine. On the GPU box, install them with:
 ```bash
 uv sync --extra cuda
 ```
+
+`--method dpo` works around two real `trl`/`transformers` version-compatibility
+bugs in `train_lora.py` (`_import_dpo` and the `model.warnings_issued` patch
+right before `DPOTrainer` is constructed) — unrelated to this project's code,
+they're needed because `trl`'s `DPOTrainer` import chain and `__init__` both
+assume APIs that changed in the pinned `transformers` version. Safe to
+remove if a future `trl`/`transformers` bump fixes them upstream (try
+without them first; the script will error clearly if they're still needed).
 
 A topic-aware system prompt is built automatically (see
 `build_system_prompt`/`TOPIC_DESCRIPTIONS` in the script — add an entry there
@@ -169,6 +187,10 @@ uv run climateguard/expert_models/scripts/train_lora.py biodiversity insecurity 
     --backend unsloth --quant 4bit \
     --checkpoint unsloth/Qwen3.5-9B --chat-template qwen3 \
     --epochs 1 --push
+
+# Same, but DPO instead of SFT
+uv run climateguard/expert_models/scripts/train_lora.py biodiversity insecurity \
+    --backend unsloth --quant 4bit --method dpo --push
 ```
 
 The adapter is always saved locally to `train_output/adapter`. Pass `--push`

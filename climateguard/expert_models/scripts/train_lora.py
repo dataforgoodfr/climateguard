@@ -2,9 +2,17 @@
 
 Reads the conversation JSONL produced by generate_conversations.py
 (data/conversations/<pdf_name>.jsonl) for one or more expert-model topics and
-fine-tunes a base chat model on them with TRL's SFTTrainer.
+fine-tunes a base chat model on them with TRL, via either SFT or DPO.
 
-Two orthogonal choices:
+Three orthogonal choices:
+
+- `--method {sft,dpo}` - `sft` (default) supervises directly on the debunk
+  text + verdict tag. `dpo` instead preference-tunes: for each example, the
+  chosen completion is the debunk text with the correct "[TRUE]"/"[FALSE]"
+  tag and the rejected completion is the *same debunk text* with the tag
+  flipped - there's no independent second response to prefer between in
+  this data, so this isolates the preference signal to the TRUE/FALSE
+  calibration specifically (see add_dpo_columns).
 
 - `--backend {unsloth,accelerate}` - which training stack to use.
   `unsloth` is faster and more memory-efficient but needs a CUDA GPU and the
@@ -58,6 +66,9 @@ Examples:
 
     # Real QLoRA run on a GPU box, combining two topics, pushed to the Hub
     python train_lora.py biodiversity insecurity --backend unsloth --quant 4bit --push
+
+    # Same, but DPO instead of SFT
+    python train_lora.py biodiversity insecurity --backend unsloth --quant 4bit --method dpo --push
 """
 
 import argparse
@@ -164,6 +175,7 @@ def load_conversations(models: list[str], limit: int | None) -> Dataset:
                     rows.append(
                         {
                             "messages": rec["messages"],
+                            "affirmation": rec["messages"][0]["content"],
                             "source_id": f"{model_name}:{meta.get('source_id', '')}",
                             "is_true": meta.get("is_true"),
                             "topic": model_name,
@@ -209,6 +221,49 @@ def add_chat_text(dataset: Dataset, tokenizer, system_prompt: str) -> Dataset:
         }
 
     return dataset.map(_format)
+
+
+def add_dpo_columns(dataset: Dataset, system_prompt: str) -> Dataset:
+    """Build prompt/chosen/rejected columns for DPO training.
+
+    There's no naturally-occurring second (worse) response to prefer
+    against - generate_conversations.py produces one correct debunk per
+    affirmation, not multiple candidates. So the rejected completion reuses
+    the exact same debunk text with the *opposite* verdict tag: chosen is
+    "<debunk> [TRUE]"/"<debunk> [FALSE]" (matching the ground truth),
+    rejected is the same text with the tag flipped. This isolates the
+    preference signal specifically to the TRUE/FALSE calibration - the same
+    behavior the tagged SFT training targets - rather than general response
+    quality/style, which this data can't support a meaningful preference
+    over. DPOTrainer applies the chat template itself (via processing_class),
+    so unlike add_chat_text this doesn't need the tokenizer.
+    """
+
+    def _format(example):
+        user_msg, assistant_msg = example["messages"]
+        return {
+            "prompt": [{"role": "system", "content": system_prompt}, user_msg],
+            "chosen": [
+                {
+                    "role": "assistant",
+                    "content": f"{assistant_msg['content']} {verdict_tag(example['is_true'])}",
+                }
+            ],
+            "rejected": [
+                {
+                    "role": "assistant",
+                    "content": f"{assistant_msg['content']} {verdict_tag(not example['is_true'])}",
+                }
+            ],
+            # Same non-thinking-mode requirement as SFT training - see add_chat_text.
+            "chat_template_kwargs": {"enable_thinking": False},
+        }
+
+    # DPOTrainer validates that each example's keys exactly match one of a
+    # fixed set of supported combinations; "messages" alongside "prompt"/
+    # "chosen"/"rejected" isn't one of them, so drop it (run_eval uses the
+    # separate "affirmation" column instead - see load_conversations).
+    return dataset.map(_format, remove_columns=["messages"])
 
 
 def apply_chat_template_override(tokenizer, name: str) -> None:
@@ -371,7 +426,7 @@ def run_eval(
 
     rows = []
     for example in tqdm(eval_dataset, desc="eval"):
-        affirmation = example["messages"][0]["content"]
+        affirmation = example["affirmation"]
         chat = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": affirmation},
@@ -483,12 +538,36 @@ def default_repo_id(args: argparse.Namespace) -> str:
     checkpoint_slug = args.checkpoint.split("/")[-1]
     topics = "-".join(args.models)
     suffix = "qlora" if args.quant == "4bit" else "lora"
-    return f"DataForGood/{checkpoint_slug}-{topics}-{suffix}"
+    return f"DataForGood/{checkpoint_slug}-{topics}-{args.method}-{suffix}"
+
+
+def _import_dpo():
+    """DPOTrainer's import chain hits a real trl/transformers incompatibility:
+    trl.import_utils computes several `_xxx_available` flags by calling
+    transformers' `_is_package_available`, which returns a `(bool, version)`
+    tuple - but trl assigns that directly to a flag it later reads as a plain
+    bool in `if is_xxx_available():` guards (e.g. for the optional mergekit/
+    llm_blender-based callbacks). A non-empty tuple is always truthy in
+    Python, so those guards always take the "available" branch and try to
+    import packages that aren't installed - and, for mergekit specifically,
+    can never be installed here, since it pins pydantic<2.11 against this
+    project's pydantic>=2.11.9. Fix the flags in place before importing the
+    DPO trainer, which pulls in that chain (callbacks.py -> judges.py).
+    """
+    import trl.import_utils as trl_import_utils
+
+    for name in dir(trl_import_utils):
+        if name.startswith("_") and name.endswith("_available"):
+            value = getattr(trl_import_utils, name)
+            if isinstance(value, tuple):
+                setattr(trl_import_utils, name, bool(value[0]))
+
+    from trl import DPOConfig, DPOTrainer
+
+    return DPOConfig, DPOTrainer
 
 
 def main(args: argparse.Namespace) -> None:
-    from trl import SFTConfig, SFTTrainer
-
     if os.getenv("HF_TOKEN"):
         login(token=os.getenv("HF_TOKEN"))
 
@@ -502,20 +581,23 @@ def main(args: argparse.Namespace) -> None:
     print(f"\nSystem prompt:\n{system_prompt}\n")
 
     model, tokenizer = load_model_and_tokenizer(args)
-    dataset = add_chat_text(dataset, tokenizer, system_prompt)
+    if args.method == "sft":
+        dataset = add_chat_text(dataset, tokenizer, system_prompt)
+    else:
+        dataset = add_dpo_columns(dataset, system_prompt)
     train_dataset, eval_dataset = group_train_test_split(dataset, args.test_size, args.seed)
     print(f"Train: {len(train_dataset)}  Eval: {len(eval_dataset)}")
-    print(f"\nSample:\n{train_dataset[0]['text']}\n")
+    if args.method == "sft":
+        print(f"\nSample:\n{train_dataset[0]['text']}\n")
+    else:
+        print(f"\nSample chosen:\n{train_dataset[0]['chosen']}\n")
+        print(f"Sample rejected:\n{train_dataset[0]['rejected']}\n")
 
     max_steps = args.epochs * max(
         1, -(-len(train_dataset) // (args.train_batch_size * args.gradient_accumulation_steps))
     )
-    training_args = SFTConfig(
+    common_kwargs = dict(
         output_dir=str(output_dir),
-        dataset_text_field="text",
-        max_length=args.max_length,
-        packing=False,
-        eval_strategy="steps",
         learning_rate=args.learning_rate,
         per_device_train_batch_size=args.train_batch_size,
         per_device_eval_batch_size=args.eval_batch_size,
@@ -523,6 +605,7 @@ def main(args: argparse.Namespace) -> None:
         weight_decay=args.weight_decay,
         warmup_steps=min(10, max_steps // 10 or 1),
         max_steps=max_steps,
+        eval_strategy="steps",
         logging_strategy="steps",
         logging_steps=max(1, max_steps // 20),
         eval_steps=max(1, max_steps // 10),
@@ -534,6 +617,22 @@ def main(args: argparse.Namespace) -> None:
         report_to="wandb" if args.wandb else "none",
     )
 
+    if args.method == "sft":
+        from trl import SFTConfig, SFTTrainer
+
+        training_args = SFTConfig(
+            dataset_text_field="text", max_length=args.max_length, packing=False, **common_kwargs
+        )
+        trainer_cls, trainer_kwargs = SFTTrainer, {}
+    else:
+        DPOConfig, DPOTrainer = _import_dpo()
+        training_args = DPOConfig(beta=args.dpo_beta, max_length=args.max_length, **common_kwargs)
+        trainer_cls, trainer_kwargs = DPOTrainer, {}
+        if not hasattr(model, "warnings_issued"):
+            # DPOTrainer.__init__ unconditionally sets model.warnings_issued[...],
+            # an attribute transformers no longer initializes on PreTrainedModel.
+            model.warnings_issued = {}
+
     if args.wandb:
         import wandb
 
@@ -542,15 +641,16 @@ def main(args: argparse.Namespace) -> None:
             entity=os.getenv("WANDB_ENTITY", "gmguarino"),
             project="expert-models-lora",
             config=training_args.to_dict(),
-            name=f"{'-'.join(args.models)}-{args.checkpoint.split('/')[-1]}-{args.backend}-{args.quant}",
+            name=f"{'-'.join(args.models)}-{args.checkpoint.split('/')[-1]}-{args.backend}-{args.quant}-{args.method}",
         )
 
-    trainer = SFTTrainer(
+    trainer = trainer_cls(
         model=model,
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
         processing_class=tokenizer,
+        **trainer_kwargs,
     )
     trainer.train()
 
@@ -596,6 +696,16 @@ if __name__ == "__main__":
     parser.add_argument("models", nargs="+", help="Expert model topic(s), e.g. 'biodiversity' 'insecurity'")
     parser.add_argument("--backend", choices=["accelerate", "unsloth"], default="accelerate")
     parser.add_argument("--quant", choices=["4bit", "none"], default="4bit", help="4bit = QLoRA (needs CUDA); none = plain LoRA, works on CPU/MPS")
+    parser.add_argument(
+        "--method",
+        choices=["sft", "dpo"],
+        default="sft",
+        help="sft = supervised fine-tuning on the debunk text; dpo = preference-tune the TRUE/FALSE "
+        "verdict by preferring the correct tag over the flipped one for the same debunk text",
+    )
+    parser.add_argument(
+        "--dpo-beta", type=float, default=0.1, help="DPO KL penalty coefficient (only used with --method dpo)"
+    )
     parser.add_argument("--checkpoint", type=str, default=None, help="Base model (default depends on --backend)")
     parser.add_argument(
         "--chat-template",
