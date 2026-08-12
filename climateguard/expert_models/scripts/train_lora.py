@@ -30,18 +30,21 @@ Mistral template from chat_templates/*.jinja instead of the checkpoint's own
 (often more complex) one - useful for keeping formatting, and assistant-only
 loss masking, consistent across different base models.
 
+That system prompt instructs the model to always end its reply with an
+explicit "[TRUE]" or "[FALSE]" verdict. Training examples are tagged to
+match (using the is_true ground truth from generate_conversations.py's
+metadata), so the model is actually trained to state the veridicity of the
+statement, not just asked to at inference time.
+
 The resulting adapter (and, with --merge-and-push, a merged full model - only
 supported with --quant none) is pushed to the Hugging Face Hub as a private
 model under the DataForGood org.
 
-After training, the model is run once over the held-out eval set: for every
-example it must generate a response starting with an explicit "[TRUE]" or
-"[FALSE]" verdict (an instruction only added at eval time, never seen during
-training), which is parsed and compared against the is_true ground truth
-carried through from generate_conversations.py's metadata. Per-example
-predictions are saved to <output-dir>/eval_predictions.jsonl and accuracy/
-precision/recall/F1/confusion-matrix stats are printed. Skip with
---skip-eval.
+After training, the model is run once over the held-out eval set with that
+same system prompt; the generated verdict is parsed and compared against
+ground truth. Per-example predictions are saved to
+<output-dir>/eval_predictions.jsonl and accuracy/precision/recall/F1/
+confusion-matrix stats are printed. Skip with --skip-eval.
 
 Usage:
     python train_lora.py <model> [<model> ...] [--backend accelerate|unsloth]
@@ -110,7 +113,10 @@ follow the instructions carefully and respond according to the user's desires.
 
 Stay strictly grounded in what your training material supports - do not \
 speculate or invent facts. Be concise and direct, with no hedging language. \
-Always answer in the same language as the user's message.\
+Always answer in the same language as the user's message.
+
+Always end your reply with exactly the tag "[TRUE]" or "[FALSE]" (nothing \
+else after it), indicating whether the user's statement is accurate.\
 """
 
 
@@ -123,19 +129,11 @@ def build_system_prompt(models: list[str]) -> str:
     return SYSTEM_PROMPT_TEMPLATE.format(topics=topics)
 
 
-# Appended to the system prompt only for the post-training eval pass, so the
-# model's verdict can be parsed and scored against the is_true ground truth
-# carried in the dataset - this instruction is never part of training data.
-EVAL_VERDICT_INSTRUCTION = """\
-
-
-For this evaluation, you must start with your normal answer, \
-then always end your reply with exactly the tag \
-"[TRUE]" or "[FALSE]" (nothing else after it) indicating whether the \
-statement is accurate.
-"""
-
 VERDICT_RE = re.compile(r"\[?\s*(TRUE|FALSE)\s*\]?", re.IGNORECASE)
+
+
+def verdict_tag(is_true: bool) -> str:
+    return "[TRUE]" if is_true else "[FALSE]"
 
 
 def extract_verdict(text: str) -> bool | None:
@@ -194,7 +192,12 @@ def group_train_test_split(dataset: Dataset, test_size: float, seed: int) -> tup
 
 def add_chat_text(dataset: Dataset, tokenizer, system_prompt: str) -> Dataset:
     def _format(example):
-        messages = [{"role": "system", "content": system_prompt}, *example["messages"]]
+        user_msg, assistant_msg = example["messages"]
+        tagged_assistant = {
+            "role": "assistant",
+            "content": f"{assistant_msg['content']} {verdict_tag(example['is_true'])}",
+        }
+        messages = [{"role": "system", "content": system_prompt}, user_msg, tagged_assistant]
         return {
             "text": tokenizer.apply_chat_template(
                 messages,
@@ -367,13 +370,11 @@ def run_eval(
     # without it.
     use_bf16_autocast = device.type == "cuda" and torch.cuda.is_bf16_supported()
 
-    eval_system = system_prompt + EVAL_VERDICT_INSTRUCTION
-
     rows = []
     for example in tqdm(eval_dataset, desc="eval"):
         affirmation = example["messages"][0]["content"]
         chat = [
-            {"role": "system", "content": eval_system},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": affirmation},
         ]
         prompt_text = tokenizer.apply_chat_template(
