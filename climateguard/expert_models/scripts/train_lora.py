@@ -141,6 +141,7 @@ VERDICT_RE = re.compile(r"\[?\s*(TRUE|FALSE)\s*\]?", re.IGNORECASE)
 def extract_verdict(text: str) -> bool | None:
     match = VERDICT_RE.search(text)
     if not match:
+        print(text)
         return None
     return match.group(1).upper() == "TRUE"
 
@@ -359,6 +360,13 @@ def run_eval(
         model.to("cpu")
         device = torch.device("cpu")
 
+    # PEFT keeps LoRA A/B matrices in float32 for numerical stability even on
+    # a bf16/4-bit-compute base model. SFTTrainer's forward pass handles that
+    # dtype mix internally via autocast; a bare model.generate() call here
+    # doesn't, and raises "expected scalar type BFloat16 but found Float"
+    # without it.
+    use_bf16_autocast = device.type == "cuda" and torch.cuda.is_bf16_supported()
+
     eval_system = system_prompt + EVAL_VERDICT_INSTRUCTION
 
     rows = []
@@ -379,7 +387,9 @@ def run_eval(
         ).to(device)
 
         try:
-            with torch.no_grad():
+            with torch.no_grad(), torch.autocast(
+                device_type="cuda", dtype=torch.bfloat16, enabled=use_bf16_autocast
+            ):
                 output_ids = model.generate(
                     **inputs, max_new_tokens=max_new_tokens, do_sample=False
                 )
