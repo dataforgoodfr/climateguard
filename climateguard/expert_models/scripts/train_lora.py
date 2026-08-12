@@ -45,11 +45,15 @@ Mistral template from chat_templates/*.jinja instead of the checkpoint's own
 (often more complex) one - useful for keeping formatting, and assistant-only
 loss masking, consistent across different base models.
 
-That system prompt instructs the model to always end its reply with an
-explicit "[TRUE]" or "[FALSE]" verdict. Training examples are tagged to
-match (using the is_true ground truth from generate_conversations.py's
-metadata), so the model is actually trained to state the veridicity of the
-statement, not just asked to at inference time.
+That system prompt instructs the model to always start its reply with an
+explicit "[TRUE]" or "[FALSE]" verdict (the tag comes first, not last - a
+verdict placed after the explanation competes with the model's pretrained
+tendency to stop cleanly once a complete thought is finished, which needs
+much more training signal to override than committing to the tag as the
+very first token). Training examples are tagged to match (using the
+is_true ground truth from generate_conversations.py's metadata), so the
+model is actually trained to state the veridicity of the statement, not
+just asked to at inference time.
 
 The resulting adapter (and, with --merge-and-push, a merged full model - only
 supported with --quant none) is pushed to the Hugging Face Hub as a private
@@ -125,18 +129,16 @@ You are an assistant trained by Data For Good and Quotaclimat to fact-check clai
 
 Your knowledge on these topics comes from verified reference material (books \
 and reports written by subject-matter experts) that you were fine-tuned on. \
-When the user makes a statement:
+Always start your reply with exactly the tag "[TRUE]" or "[FALSE]" (nothing \
+before it), indicating whether the user's statement is accurate, then \
+continue with your explanation:
 - If it is accurate, briefly confirm it.
 - If it is false, exaggerated, or misleading, say so clearly and explain why \
 in a few sentences, citing concrete facts or figures.
-- Finish the reply with the tag "[TRUE]" or "[FALSE]".
 
 Stay strictly grounded in what your training material supports - do not \
 speculate or invent facts. Be concise and direct, with no hedging language. \
-Always answer in the same language as the user's message.
-
-Always end your reply with exactly the tag "[TRUE]" or "[FALSE]" (nothing \
-else after it), indicating whether the user's statement is accurate.\
+Always answer in the same language as the user's message.\
 """
 
 
@@ -216,7 +218,7 @@ def add_chat_text(dataset: Dataset, tokenizer, system_prompt: str) -> Dataset:
         user_msg, assistant_msg = example["messages"]
         tagged_assistant = {
             "role": "assistant",
-            "content": f"{assistant_msg['content']} {verdict_tag(example['is_true'])}",
+            "content": f"{verdict_tag(example['is_true'])} {assistant_msg['content']}",
         }
         messages = [{"role": "system", "content": system_prompt}, user_msg, tagged_assistant]
         return {
@@ -240,13 +242,17 @@ def add_dpo_columns(dataset: Dataset, system_prompt: str) -> Dataset:
     against - generate_conversations.py produces one correct debunk per
     affirmation, not multiple candidates. So the rejected completion reuses
     the exact same debunk text with the *opposite* verdict tag: chosen is
-    "<debunk> [TRUE]"/"<debunk> [FALSE]" (matching the ground truth),
+    "[TRUE] <debunk>"/"[FALSE] <debunk>" (matching the ground truth),
     rejected is the same text with the tag flipped. This isolates the
     preference signal specifically to the TRUE/FALSE calibration - the same
     behavior the tagged SFT training targets - rather than general response
     quality/style, which this data can't support a meaningful preference
-    over. DPOTrainer applies the chat template itself (via processing_class),
-    so unlike add_chat_text this doesn't need the tokenizer.
+    over. The tag is the *first* token specifically so chosen/rejected
+    diverge immediately - DPO's per-token logprob signal is strongest right
+    where the two sequences first differ, and a tag buried after a long
+    shared explanation gives a much weaker training signal. DPOTrainer
+    applies the chat template itself (via processing_class), so unlike
+    add_chat_text this doesn't need the tokenizer.
     """
 
     def _format(example):
@@ -256,13 +262,13 @@ def add_dpo_columns(dataset: Dataset, system_prompt: str) -> Dataset:
             "chosen": [
                 {
                     "role": "assistant",
-                    "content": f"{assistant_msg['content']} {verdict_tag(example['is_true'])}",
+                    "content": f"{verdict_tag(example['is_true'])} {assistant_msg['content']}",
                 }
             ],
             "rejected": [
                 {
                     "role": "assistant",
-                    "content": f"{assistant_msg['content']} {verdict_tag(not example['is_true'])}",
+                    "content": f"{verdict_tag(not example['is_true'])} {assistant_msg['content']}",
                 }
             ],
             # Same non-thinking-mode requirement as SFT training - see add_chat_text.
