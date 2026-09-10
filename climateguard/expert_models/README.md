@@ -221,4 +221,42 @@ merging a 4-bit-quantized base isn't (push the QLoRA adapter and merge it
 against the full-precision base separately if you need a merged model from a
 4-bit run).
 
+### 4. Run inference on a CSV — `run_inference.py`
+
+Pulls a trained model from the Hub (`--hub-repo`, either a LoRA adapter repo
+or a merged full model — detected automatically) and runs it over a CSV of
+media transcripts, writing an Excel file.
+
+Input CSV columns (required): `id, channel_name, datetime, plaintext, url`.
+Output: those columns plus `verdict` and `debunk`.
+
+Two model calls per row, both using the same model with different system
+prompts:
+
+1. **Relevance check** — is `plaintext` about the topic at all? Uses a
+   dedicated system prompt built from a topic definition (see
+   `RELEVANCE_DEFINITIONS` in the script — add an entry per topic; falls
+   back to `TOPIC_DESCRIPTIONS` from `train_lora.py` if none is set) asking
+   for a `[RELEVANT]`/`[NOT_RELEVANT]` tag. Rows tagged `NOT_RELEVANT` skip
+   classification entirely: `verdict` is set straight to `"NOT_RELEVANT"`
+   and `debunk` holds the model's one-line justification. An unparseable
+   relevance response is treated as relevant (fails open, so a parsing
+   hiccup doesn't silently drop a row) rather than as not-relevant. Skip
+   this step entirely with `--skip-relevance-check`.
+2. **Classification** (only for rows that passed step 1) — the same
+   topic-aware system prompt used at training time; `verdict` becomes
+   `TRUE`/`FALSE`/`UNPARSEABLE` from the model's `[TRUE]`/`[FALSE]` tag, and
+   `debunk` is the rest of the response with the tag stripped.
+
+```bash
+# Requires HF_TOKEN with read access to the (private) hub_repo
+uv run climateguard/expert_models/scripts/run_inference.py biodiversity \
+    --hub-repo DataForGood/Qwen3.5-9B-biodiversity-sft_dpo-qlora --quant 4bit
+```
+
+Defaults to `data/inference/input.csv` → `data/inference/output.xlsx` under
+the topic directory; override with `--input`/`--output`. `--chat-template`
+should match what the model was trained with. `--limit` and `--quant none`
+(CPU/MPS) are useful for a quick local test before a real GPU-box run.
+
 See `--help` on any script for the full option list.

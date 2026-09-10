@@ -4,14 +4,25 @@ transcripts, extract its TRUE/FALSE verdict per row, and write an Excel file.
 Input CSV columns (required): id, channel_name, datetime, plaintext, url
 Output columns: id, channel_name, datetime, plaintext, url, verdict, debunk
 
-For each row, `plaintext` is sent to the model as the user message (with the
-same topic-aware system prompt used at training time - see
-build_system_prompt in train_lora.py). The model is expected to start its
-reply with "[TRUE]" or "[FALSE]" (see train_lora.py's SYSTEM_PROMPT_TEMPLATE
-and the "move verdict tag to start of response" fix); that tag becomes the
-`verdict` column ("TRUE", "FALSE", or "UNPARSEABLE" if the model didn't
-produce a recognizable tag) and the rest of the response (tag stripped)
-becomes `debunk`.
+Two model calls per row (same model, different system prompts):
+
+1. Relevance check - is `plaintext` about the topic at all? Uses a separate
+   system prompt (see RELEVANCE_SYSTEM_PROMPT_TEMPLATE/RELEVANCE_DEFINITIONS)
+   asking for a "[RELEVANT]"/"[NOT_RELEVANT]" tag. Rows the model tags
+   NOT_RELEVANT skip classification entirely - `verdict` is set directly to
+   "NOT_RELEVANT" and `debunk` holds the model's one-line justification.
+   Unparseable relevance responses are treated as relevant (fail open, so a
+   parsing hiccup doesn't silently drop a row from classification). Skip
+   this step with --skip-relevance-check.
+
+2. Classification (only for rows that passed step 1) - `plaintext` is sent
+   as the user message with the same topic-aware system prompt used at
+   training time (see build_system_prompt in train_lora.py). The model is
+   expected to start its reply with "[TRUE]" or "[FALSE]" (see
+   train_lora.py's SYSTEM_PROMPT_TEMPLATE and the "move verdict tag to start
+   of response" fix); that tag becomes `verdict` ("TRUE", "FALSE", or
+   "UNPARSEABLE" if the model didn't produce a recognizable tag) and the
+   rest of the response (tag stripped) becomes `debunk`.
 
 `--hub-repo` can point at either a LoRA adapter repo (pushed via
 train_lora.py's default adapter-only push) or a merged full model
@@ -28,6 +39,7 @@ Example:
 
 import argparse
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -43,6 +55,7 @@ EXPERT_MODELS_DIR = SCRIPTS_DIR.parent
 sys.path.insert(0, str(SCRIPTS_DIR))
 
 from train_lora import (  # noqa: E402
+    TOPIC_DESCRIPTIONS,
     VERDICT_RE,
     apply_chat_template_override,
     build_system_prompt,
@@ -53,11 +66,60 @@ from train_lora import (  # noqa: E402
 
 REQUIRED_COLUMNS = ["id", "channel_name", "datetime", "plaintext", "url"]
 
+# Per-topic relevance definitions for the pre-classification filter step.
+# Falls back to TOPIC_DESCRIPTIONS (train_lora.py) for any topic without a
+# dedicated entry here.
+RELEVANCE_DEFINITIONS = {
+    "biodiversity": (
+        "La santé environnementale est définie ici comme l'ensemble des atteintes à la santé humaine "
+        "liées à l'exposition à des facteurs environnementaux physiques, chimiques et biologiques, "
+        "ainsi que des politiques, controverses et pratiques de prévention qui leur sont associées.\n"
+        "Sont notamment incluses les expositions aux substances chimiques persistantes (PFAS, métaux "
+        "lourds tels que le cadmium ou le plomb, pesticides et biocides), la contamination de l'eau, "
+        "de l'air, des sols et des chaînes alimentaires, ainsi que les nuisances et polluants tels que "
+        "le bruit, les particules fines et les perturbateurs endocriniens.\n"
+        "Sont couverts aussi bien les faits d'exposition et leurs impacts sanitaires (cancers, atteintes "
+        "neurologiques, troubles de la reproduction) que les seuils réglementaires, les responsabilités "
+        "industrielles et les enjeux de reconnaissance et d'indemnisation. Cette thématique est "
+        "fréquemment articulée à celles portant sur l'agriculture, l'industrie, l'alimentation et la "
+        "régulation sanitaire."
+    ),
+}
 
-def strip_verdict_tag(text: str) -> str:
-    """Remove the leading [TRUE]/[FALSE] tag (and following whitespace) from
-    a response, leaving just the explanation for the `debunk` column."""
-    match = VERDICT_RE.match(text.strip())
+RELEVANCE_SYSTEM_PROMPT_TEMPLATE = """\
+You determine whether a media transcript excerpt is relevant to a specific \
+topic, defined as follows:
+
+{definition}
+
+Given the excerpt below, decide whether it discusses this topic, even \
+indirectly (related debates, policies, controversies, or consequences).
+
+Always start your reply with exactly the tag "[RELEVANT]" or \
+"[NOT_RELEVANT]" (nothing before it), then briefly justify your answer in \
+one sentence, in the same language as the excerpt.\
+"""
+
+
+def build_relevance_system_prompt(model: str) -> str:
+    definition = RELEVANCE_DEFINITIONS.get(model) or TOPIC_DESCRIPTIONS.get(model, model.replace("_", " "))
+    return RELEVANCE_SYSTEM_PROMPT_TEMPLATE.format(definition=definition)
+
+
+RELEVANCE_RE = re.compile(r"\[?\s*(NOT_RELEVANT|RELEVANT)\s*\]?", re.IGNORECASE)
+
+
+def extract_relevance(text: str) -> bool | None:
+    match = RELEVANCE_RE.search(text)
+    if not match:
+        return None
+    return match.group(1).upper() == "RELEVANT"
+
+
+def strip_tag(text: str, tag_re: re.Pattern) -> str:
+    """Remove a leading [TAG] (and following whitespace) from a response,
+    leaving just the explanation."""
+    match = tag_re.match(text.strip())
     if not match:
         return text.strip()
     return text.strip()[match.end() :].strip()
@@ -198,24 +260,58 @@ def main(args: argparse.Namespace) -> None:
     system_prompt = args.system_prompt or build_system_prompt([args.model])
     print(f"\nSystem prompt:\n{system_prompt}\n")
 
+    relevance_system_prompt = args.relevance_system_prompt or build_relevance_system_prompt(args.model)
+    if not args.skip_relevance_check:
+        print(f"\nRelevance system prompt:\n{relevance_system_prompt}\n")
+
     model, tokenizer = load_model_and_tokenizer(args.hub_repo, args.quant, args.chat_template)
 
-    responses = run_inference(
-        model,
-        tokenizer,
-        df["plaintext"].tolist(),
-        system_prompt,
-        args.batch_size,
-        args.max_length,
-        args.max_new_tokens,
-    )
+    texts = df["plaintext"].tolist()
+    n = len(texts)
+    verdicts: list[str | None] = [None] * n
+    debunks: list[str] = [""] * n
 
-    verdicts = []
-    debunks = []
-    for response in responses:
-        is_true = extract_verdict(response)
-        verdicts.append("UNPARSEABLE" if is_true is None else ("TRUE" if is_true else "FALSE"))
-        debunks.append(strip_verdict_tag(response))
+    if args.skip_relevance_check:
+        classify_idx = list(range(n))
+    else:
+        relevance_responses = run_inference(
+            model,
+            tokenizer,
+            texts,
+            relevance_system_prompt,
+            args.batch_size,
+            args.max_length,
+            args.relevance_max_new_tokens,
+        )
+        classify_idx = []
+        not_relevant = 0
+        for i, response in enumerate(relevance_responses):
+            is_relevant = extract_relevance(response)
+            if is_relevant is False:
+                verdicts[i] = "NOT_RELEVANT"
+                debunks[i] = strip_tag(response, RELEVANCE_RE)
+                not_relevant += 1
+            else:
+                # True or unparseable (None): fail open into classification
+                # rather than silently dropping a row on a parsing hiccup.
+                classify_idx.append(i)
+        print(f"\nRelevance: {not_relevant} filtered as NOT_RELEVANT, {len(classify_idx)} proceeding to classification")
+
+    if classify_idx:
+        subset_texts = [texts[i] for i in classify_idx]
+        responses = run_inference(
+            model,
+            tokenizer,
+            subset_texts,
+            system_prompt,
+            args.batch_size,
+            args.max_length,
+            args.max_new_tokens,
+        )
+        for idx, response in zip(classify_idx, responses):
+            is_true = extract_verdict(response)
+            verdicts[idx] = "UNPARSEABLE" if is_true is None else ("TRUE" if is_true else "FALSE")
+            debunks[idx] = strip_tag(response, VERDICT_RE)
 
     df["verdict"] = verdicts
     df["debunk"] = debunks
@@ -239,11 +335,26 @@ if __name__ == "__main__":
         default="default",
         help="'default' uses the checkpoint's own template, or a name from chat_templates/*.jinja (e.g. 'chatml', 'qwen3', 'mistral') - should match what the model was trained with",
     )
-    parser.add_argument("--system-prompt", type=str, default=None, help="Override the auto-generated (topic-aware) system prompt")
+    parser.add_argument("--system-prompt", type=str, default=None, help="Override the auto-generated (topic-aware) system prompt for the classification step")
+    parser.add_argument(
+        "--skip-relevance-check",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Skip the relevance-filter step and classify every row directly",
+    )
+    parser.add_argument(
+        "--relevance-system-prompt",
+        type=str,
+        default=None,
+        help="Override the auto-generated (topic-definition-based) system prompt for the relevance-check step",
+    )
+    parser.add_argument(
+        "--relevance-max-new-tokens", type=int, default=100, help="Max tokens to generate per row for the relevance-check step"
+    )
     parser.add_argument("--input", type=Path, default=None, help="Input CSV (default: expert_models/<model>/data/inference/input.csv)")
     parser.add_argument("--output", type=Path, default=None, help="Output XLSX (default: expert_models/<model>/data/inference/output.xlsx)")
     parser.add_argument("--max-length", type=int, default=4096, help="Total token budget (prompt + generation)")
-    parser.add_argument("--max-new-tokens", type=int, default=400, help="Max tokens to generate per row")
+    parser.add_argument("--max-new-tokens", type=int, default=400, help="Max tokens to generate per row for the classification step")
     parser.add_argument("--batch-size", type=int, default=2 , help="Rows per generation batch")
     parser.add_argument("--limit", type=int, default=None, help="Process at most N rows (for quick tests)")
     parser.add_argument("--env-file", type=str, default=".env")
