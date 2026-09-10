@@ -166,6 +166,36 @@ def extract_verdict(text: str) -> bool | None:
     return match.group(1).upper() == "TRUE"
 
 
+def stop_token_ids(tokenizer) -> list[int]:
+    """Token ids that should end generation.
+
+    chat_templates/chatml.jinja and qwen3.jinja hard-code the literal turn
+    terminator "<|im_end|>" rather than the tokenizer's own eos_token. If a
+    checkpoint's real eos_token_id is a *different* token, generate()'s
+    default stopping check (tokenizer.eos_token_id only) never fires on
+    "<|im_end|>" - so the model runs past the end of its turn and, with
+    nothing telling it to stop, falls back on its pretrained instinct to
+    keep going by hallucinating a new "user" turn and replying to it, then
+    another, until max_new_tokens is exhausted. Stop on both.
+    """
+    ids = {tokenizer.eos_token_id}
+    im_end_id = tokenizer.convert_tokens_to_ids("<|im_end|>")
+    if im_end_id is not None and im_end_id != tokenizer.unk_token_id:
+        ids.add(im_end_id)
+    return list(ids)
+
+
+TURN_MARKER_RE = re.compile(r"\n\s*(user|assistant|system)\s*\n")
+
+
+def truncate_at_next_turn(text: str) -> str:
+    """Defense in depth: if a runaway generation still slipped past
+    stop_token_ids (e.g. an unanticipated template), cut it at the first
+    sign of a hallucinated new turn rather than keeping the whole thing."""
+    match = TURN_MARKER_RE.search(text)
+    return text[: match.start()].strip() if match else text
+
+
 # ── Data ─────────────────────────────────────────────────────────────────────
 
 
@@ -439,6 +469,7 @@ def run_eval(
     # doesn't, and raises "expected scalar type BFloat16 but found Float"
     # without it.
     use_bf16_autocast = device.type == "cuda" and torch.cuda.is_bf16_supported()
+    eos_ids = stop_token_ids(tokenizer)
 
     rows = []
     for example in tqdm(eval_dataset, desc="eval"):
@@ -462,11 +493,12 @@ def run_eval(
                 device_type="cuda", dtype=torch.bfloat16, enabled=use_bf16_autocast
             ):
                 output_ids = model.generate(
-                    **inputs, max_new_tokens=max_new_tokens, do_sample=False
+                    **inputs, max_new_tokens=max_new_tokens, do_sample=False, eos_token_id=eos_ids
                 )
             response = tokenizer.decode(
                 output_ids[0][inputs["input_ids"].shape[1] :], skip_special_tokens=True
             ).strip()
+            response = truncate_at_next_turn(response)
         except RuntimeError as exc:
             # A single generation failure (e.g. an MPS backend allocation bug,
             # or a transient CUDA OOM) shouldn't lose the rest of the eval pass.

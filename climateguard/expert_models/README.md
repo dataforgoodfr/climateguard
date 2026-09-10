@@ -178,7 +178,14 @@ checkpoint's own — useful for keeping formatting (and assistant-only loss
 masking via `{% generation %}` tags) consistent across different base
 models. `qwen3` matches `chatml` but wraps each assistant turn in an empty
 `<think></think>` block, matching Qwen3's non-reasoning training format.
-`default` uses the checkpoint's built-in template unchanged.
+`default` uses the checkpoint's built-in template unchanged. `chatml` and
+`qwen3` terminate every turn with `{{ eos_token }}` (the tokenizer's real
+end-of-sequence token), not a hard-coded `"<|im_end|>"` string — if those
+ever mismatch, `generate()`'s default stopping check never fires on the
+literal text, so the model runs on past its turn and hallucinates a new one
+(`train_lora.py`'s `stop_token_ids`/`truncate_at_next_turn`, used by both
+`run_eval` and `run_inference.py`, guard against this for already-trained
+checkpoints that predate this fix).
 
 ```bash
 # Local smoke test on a laptop (CPU/MPS, tiny model, no push)

@@ -28,7 +28,6 @@ Example:
 
 import argparse
 import os
-import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -48,6 +47,8 @@ from train_lora import (  # noqa: E402
     apply_chat_template_override,
     build_system_prompt,
     extract_verdict,
+    stop_token_ids,
+    truncate_at_next_turn,
 )
 
 REQUIRED_COLUMNS = ["id", "channel_name", "datetime", "plaintext", "url"]
@@ -134,6 +135,7 @@ def run_inference(
         model.to("cpu")
         device = torch.device("cpu")
     use_bf16_autocast = device.type == "cuda" and torch.cuda.is_bf16_supported()
+    eos_ids = stop_token_ids(tokenizer)
 
     responses: list[str] = []
     for start in tqdm(range(0, len(texts), batch_size), desc="inference"):
@@ -167,10 +169,12 @@ def run_inference(
                     max_new_tokens=max_new_tokens,
                     do_sample=False,
                     pad_token_id=tokenizer.pad_token_id,
+                    eos_token_id=eos_ids,
                 )
             for i in range(len(batch)):
                 gen_ids = output_ids[i][inputs["input_ids"].shape[1] :]
-                responses.append(tokenizer.decode(gen_ids, skip_special_tokens=True).strip())
+                text = tokenizer.decode(gen_ids, skip_special_tokens=True).strip()
+                responses.append(truncate_at_next_turn(text))
         except RuntimeError as exc:
             print(f"[warn] Generation failed for rows {start}-{start + len(batch)}: {exc!r}")
             responses.extend([""] * len(batch))
@@ -240,7 +244,7 @@ if __name__ == "__main__":
     parser.add_argument("--output", type=Path, default=None, help="Output XLSX (default: expert_models/<model>/data/inference/output.xlsx)")
     parser.add_argument("--max-length", type=int, default=4096, help="Total token budget (prompt + generation)")
     parser.add_argument("--max-new-tokens", type=int, default=400, help="Max tokens to generate per row")
-    parser.add_argument("--batch-size", type=int, default=4, help="Rows per generation batch")
+    parser.add_argument("--batch-size", type=int, default=2 , help="Rows per generation batch")
     parser.add_argument("--limit", type=int, default=None, help="Process at most N rows (for quick tests)")
     parser.add_argument("--env-file", type=str, default=".env")
 
