@@ -49,6 +49,7 @@ BaseLS = declarative_base()
 keywords_table = "keywords"
 labelstudio_task_table = "task"
 labelstudio_task_completion_table = "task_completion"
+labelstudio_task_aggregate_table = "labelstudio_task_aggregate"
 
 
 class Keywords(Base):
@@ -108,6 +109,66 @@ class LabelStudioTask(BaseLS):
     comment_count = Column(Integer, nullable=False)
     last_comment_updated_at = Column(DateTime, nullable=True)
     unresolved_comment_count = Column(Integer, nullable=False)
+
+
+class LabelStudioTaskAggregate(Base):
+    __tablename__ = labelstudio_task_aggregate_table
+    # column_name,data_type,character_maximum_length,column_default,is_nullable
+    task_aggregate_id = Column(String, nullable=False, primary_key=True)
+    id = Column(Integer, nullable=False)
+    data = Column(JSON, nullable=False)
+    created_at = Column(DateTime, nullable=False)
+    updated_at = Column(DateTime, nullable=False)
+    is_labeled = Column(Boolean, nullable=False)
+    project_id = Column(Integer, nullable=True)
+    meta = Column(JSON, nullable=True)
+    overlap = Column(Integer, nullable=False)
+    file_upload_id = Column(Integer, nullable=True)
+    updated_by_id = Column(Integer, nullable=True)
+    inner_id = Column(BigInteger, nullable=True)
+    total_annotations = Column(Integer, nullable=False)
+    cancelled_annotations = Column(Integer, nullable=False)
+    total_predictions = Column(Integer, nullable=False)
+    comment_count = Column(Integer, nullable=False)
+    last_comment_updated_at = Column(DateTime, nullable=True)
+    unresolved_comment_count = Column(Integer, nullable=False)
+    country = Column(String, nullable=False)
+
+
+task_global_completion_table = "task_global_completion"
+task_global_completion_schema = "analytics"
+
+# Plain Core Table (not a declarative model): the real table has no primary
+# key / unique constraint to map an ORM identity onto, and is only ever
+# appended to here (annotation-derived columns are filled in later downstream).
+task_global_completion = Table(
+    task_global_completion_table,
+    MetaData(schema=task_global_completion_schema),
+    Column("task_completion_aggregate_id", String),
+    Column("task_aggregate_id", String),
+    Column("task_id", Integer),
+    Column("created_at", DateTime),
+    Column("updated_at", DateTime),
+    Column("is_labeled", Boolean),
+    Column("project_id", Integer),
+    Column("country", String),
+    Column("data_item_id", Text),
+    Column("data_item_channel", Text),
+    Column("data_item_channel_name", Text),
+    Column("data_item_channel_title", Text),
+    Column("data_item_channel_program", Text),
+    Column("data_item_channel_program_type", Text),
+    Column("data_item_day", Double),
+    Column("data_item_month", Double),
+    Column("data_item_year", Double),
+    Column("data_item_start", DateTime),
+    Column("data_item_model_name", Text),
+    Column("data_item_model_reason", Text),
+    Column("data_item_model_result", Double),
+    Column("data_item_plaintext", Text),
+    Column("data_item_plaintext_whisper", Text),
+    Column("data_item_url_mediatree", Text),
+)
 
 
 class LabelStudioTaskCompletion(BaseLS):
@@ -510,6 +571,12 @@ def get_labelstudio_records_period(
     dataframe = pd.DataFrame(output, columns=columns)
 
     return dataframe
+
+
+def get_next_task_aggregate_id(session: Session) -> int:
+    """Next free incremental value for labelstudio_task_aggregate.id/inner_id."""
+    max_id = session.execute(select(func.max(LabelStudioTaskAggregate.id))).scalar()
+    return (max_id or 0) + 1
 
 
 def get_labelstudio_annotations(

@@ -6,6 +6,7 @@ import modin.pandas as pd
 import ray
 from country import Country, CountryCollection, get_countries
 from date_utils import get_date_range
+from db_target_utils import save_to_db
 from labelstudio_utils import wait_and_sync_label_studio
 from logging_utils import getLogger
 from mediatree_utils import get_new_plaintext_from_whisper, mediatree_check_secrets
@@ -101,6 +102,7 @@ def main(country: Country):
     date_env: str = os.getenv("DATE", "")
     bucket_output_folder = os.getenv("BUCKET_OUTPUT_FOLDER", "")
     min_misinformation_score = int(os.getenv("MIN_MISINFORMATION_SCORE", 10))
+    save_to_target_db = bool(os.getenv("SAVE_TO_TARGET_DB", ""))
 
     openai_api_key = get_secret_docker("OPENAI_API_KEY")
 
@@ -259,28 +261,46 @@ def main(country: Country):
                             # save JSON LabelStudio format
                             # If the dataframe is empty after the dropna, the function will still
                             # Save an empty.txt file
-                            save_to_s3(
-                                df_whispered,
-                                channel=channel,
-                                date=date,
-                                s3_client=s3_client,
-                                bucket=bucket_output,
-                                folder_inside_bucket=bucket_output_folder,
-                                country=country,
-                            )
+                            if save_to_target_db:
+                                save_to_db(
+                                    df_whispered,
+                                    channel=channel,
+                                    date=date,
+                                    session=session,
+                                    country=country,
+                                )
+                            else:
+                                save_to_s3(
+                                    df_whispered,
+                                    channel=channel,
+                                    date=date,
+                                    s3_client=s3_client,
+                                    bucket=bucket_output,
+                                    folder_inside_bucket=bucket_output_folder,
+                                    country=country,
+                                )
                         else:
                             logging.info(
                                 f"Nothing detected for channel {channel} on {date} - saving a empty file to not re-query it"
                             )
-                            save_to_s3(
-                                misinformation_only_news,
-                                channel=channel,
-                                date=date,
-                                s3_client=s3_client,
-                                bucket=bucket_output,
-                                folder_inside_bucket=bucket_output_folder,
-                                country=country,
-                            )
+                            if save_to_target_db:
+                                save_to_db(
+                                    misinformation_only_news,
+                                    channel=channel,
+                                    date=date,
+                                    session=session,
+                                    country=country,
+                                )
+                            else:
+                                save_to_s3(
+                                    misinformation_only_news,
+                                    channel=channel,
+                                    date=date,
+                                    s3_client=s3_client,
+                                    bucket=bucket_output,
+                                    folder_inside_bucket=bucket_output_folder,
+                                    country=country,
+                                )
                     except Exception as err:
                         logging.error(
                             f"continuing loop - but met error with {channel} - day {date}: error : {err}"

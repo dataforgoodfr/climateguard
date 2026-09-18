@@ -62,6 +62,26 @@ FRANCE_COUNTRY = Country(
     ],
     channels_whisper=["fr3-idf"],
 )
+EXTENDED_FRANCE_COUNTRY = Country( # For the Droit à l'Info project
+    code="ext-fra",
+    name="france",
+    language="french",
+    bucket=os.getenv("BUCKET_OUTPUT", "climateguard"),
+    model=get_secret_docker("MODEL_NAME", "gpt-4o-mini"),
+    prompt_version=get_secret_docker("PROMPT_VERSION", "0.0.1"),
+    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID", 4),
+    label_studio_project=os.getenv("LABEL_STUDIO_PROJECT", 4),
+    channels=[
+        "tf1",
+        "france2",
+        "fr3-idf",
+        "rtl",
+        "france5",
+        "tmc",
+        "lcp",
+    ],
+    channels_whisper=["fr3-idf"],
+)
 BELGIUM_COUNTRY = Country(
     code="bel",
     name="belgium",
@@ -203,6 +223,8 @@ POLAND_COUNTRY = Country(
 
 
 def get_all_countries():
+    # EXTENDED_FRANCE_COUNTRY is intentionally excluded: it must be run explicitly
+    # (COUNTRY=ext-fra), never swept in by COUNTRY=all/prod/legacy.
     return sorted(
         [
             FRANCE_COUNTRY,
@@ -266,9 +288,15 @@ def convert_to_base_country_name(name: str):
     return name.split("-")[0]
 
 
+# Countries that must only be run explicitly (by code) and are never part of
+# ALL_COUNTRIES/LEGACY_COUNTRIES/PROD_COUNTRIES, so COUNTRY=all/prod/legacy never sweeps them in.
+EXPLICIT_ONLY_COUNTRIES = [EXTENDED_FRANCE_COUNTRY]
+
+
 def get_country_or_collection_from_code(code: str):
     for entity in [
         *ALL_COUNTRIES.countries,
+        *EXPLICIT_ONLY_COUNTRIES,
         LEGACY_COUNTRIES,
         PROD_COUNTRIES,
         ALL_COUNTRIES,
@@ -294,10 +322,16 @@ def get_country_or_collection_from_name(name: str):
     )
 
 
-def get_countries(name: str):
-    entity: Union[Country, CountryCollection] = get_country_or_collection_from_name(
-        name
-    )
+def get_countries(identifier: str):
+    # code is checked first since it is the only unique identifier: several
+    # Country entries (e.g. FRANCE_COUNTRY / EXTENDED_FRANCE_COUNTRY) intentionally
+    # share the same `name` so that they save/query as the same underlying country.
+    try:
+        entity: Union[Country, CountryCollection] = get_country_or_collection_from_code(
+            identifier
+        )
+    except NotImplementedError:
+        entity = get_country_or_collection_from_name(identifier)
     if isinstance(entity, Country):
         return CountryCollection(
             name=entity.name,
