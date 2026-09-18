@@ -234,7 +234,7 @@ def main(country: Country):
                             )
 
                             if (
-                                channel not in country.channels_no_whisper
+                                channel in country.channels_whisper
                             ):  # not from mediatree, so cannot get the new audio
                                 logging.info(
                                     "Getting new plaintext from whisper by getting the original audio..."
