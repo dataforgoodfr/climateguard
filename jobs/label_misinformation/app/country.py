@@ -19,7 +19,7 @@ class Country:
         field()
     )  # ID for Label Studio project (visible on the web UI url)
     channels: List[str] = field()
-    channels_no_whisper: List[str] = field(default_factory=lambda: [])
+    channels_whisper: List[str] = field(default_factory=lambda: [])
 
     def verify_code(self, code: str):
         return code.lower() == self.code
@@ -60,6 +60,7 @@ FRANCE_COUNTRY = Country(
         "france-info",
         "rfi",
     ],
+    channels_whisper=["fr3-idf"],
 )
 BELGIUM_COUNTRY = Country(
     code="bel",
@@ -92,25 +93,6 @@ BELGIUM_COUNTRY = Country(
         "bel-rtl",
         "vivacite",
         "ln-radio",
-    ],
-    channels_no_whisper=[
-        "CANALZ",
-        "RTL",
-        "LAUNE",
-        "LN24",
-        "LATROIS",
-        "ACTV",
-        "CANALC",
-        "BX1",
-        "CANALZOOM",
-        "MATELE",
-        "NOTELE",
-        "RTC",
-        "TELEMB",
-        "TELESAMBRE",
-        "TVCOM",
-        "TVLUX",
-        "VEDIA",
     ],
 )
 BELGIUM_FLANDERS_COUNTRY = Country(
@@ -171,7 +153,6 @@ GERMANY_COUNTRY = Country(
         "prosieben",
         "kabel-eins",
     ],
-    channels_no_whisper=["daserste", "zdf"],
 )
 
 SPAIN_COUNTRY = Country(

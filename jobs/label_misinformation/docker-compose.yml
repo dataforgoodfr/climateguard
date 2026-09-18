@@ -18,7 +18,7 @@ services:
       BUCKET_SECRET: /run/secrets/bucket_secret
       AWS_DEFAULT_REGION: fr-par
       MIN_MISINFORMATION_SCORE: 8 # the minimum score to have to be kept (10 out of 10)
-      DATE: "2025-06-03" # YYYY-MM-DD 
+      DATE: "2026-06-03" # YYYY-MM-DD 
       NUMBER_OF_PREVIOUS_DAYS: 33
       # SENTRY_DSN: prod_only
       # CHANNEL: tvrecord # mediatree former channel name, not title (cnews) ---- rmc or tvrecord for testing
@@ -43,6 +43,7 @@ services:
       LABEL_STUDIO_PROJECT_ID_GERMANY: 14
       LABEL_STUDIO_PROJECT_GERMANY: 20
       API_LABEL_STUDIO_KEY: 820ee53b50e14ec0f96c262cf90c04aca4057e1c
+      FORCE_WHISPER_TRANSCRIPTION: 0
     depends_on:
       - postgres_db
       - labelstudio
