@@ -234,7 +234,7 @@ def main(country: Country):
                             )
 
                             if (
-                                channel in country.channels_whisper
+                                channel in country.channels_whisper or os.getenv('FORCE_WHISPER_TRANSCRIPTION', False)
                             ):  # not from mediatree, so cannot get the new audio
                                 logging.info(
                                     "Getting new plaintext from whisper by getting the original audio..."
