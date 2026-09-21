@@ -43,7 +43,7 @@ services:
       LABEL_STUDIO_PROJECT_ID_GERMANY: 14
       LABEL_STUDIO_PROJECT_GERMANY: 20
       API_LABEL_STUDIO_KEY: 820ee53b50e14ec0f96c262cf90c04aca4057e1c
-      FORCE_WHISPER_TRANSCRIPTION: 0
+      FORCE_WHISPER_TRANSCRIPTION: ""
     depends_on:
       - postgres_db
       - labelstudio
