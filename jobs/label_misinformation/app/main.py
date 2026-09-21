@@ -133,7 +133,14 @@ def main(country: Country):
         session = get_db_session()
         labelstudio_db_session = get_db_session(
             engine=connect_to_db(
-                db_database=os.environ.get("POSTGRES_DB_LS", "labelstudio")
+                db_database=os.environ.get("POSTGRES_DB_LS", "labelstudio"),
+                # each unset -> connect_to_db falls back to the keywords DB's
+                # POSTGRES_HOST/USER/PASSWORD/PORT, so labelstudio only needs its
+                # own connection details configured if it actually lives elsewhere
+                db_host=os.environ.get("POSTGRES_HOST_LS"),
+                db_user=os.environ.get("POSTGRES_USER_LS"),
+                db_password=os.environ.get("POSTGRES_PASSWORD_LS"),
+                db_port=os.environ.get("POSTGRES_PORT_LS"),
             )
         )
         for date in date_range:

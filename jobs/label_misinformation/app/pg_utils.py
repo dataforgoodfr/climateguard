@@ -136,13 +136,19 @@ class LabelStudioTaskCompletion(BaseLS):
     bulk_created = Column(Boolean, nullable=True, default=False)
 
 
-def connect_to_db(db_database: str = None):
+def connect_to_db(
+    db_database: str = None,
+    db_host: str = None,
+    db_user: str = None,
+    db_password: str = None,
+    db_port: str = None,
+):
     if db_database is None:
         db_database = os.environ.get("POSTGRES_DB", "barometre")
-    DB_USER = os.environ.get("POSTGRES_USER", "user")
-    DB_HOST = os.environ.get("POSTGRES_HOST", "localhost")
-    DB_PORT = os.environ.get("POSTGRES_PORT", 5432)
-    DB_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "password")
+    DB_USER = db_user or os.environ.get("POSTGRES_USER", "user")
+    DB_HOST = db_host or os.environ.get("POSTGRES_HOST", "localhost")
+    DB_PORT = db_port or os.environ.get("POSTGRES_PORT", 5432)
+    DB_PASSWORD = db_password or os.environ.get("POSTGRES_PASSWORD", "password")
 
     logging.info("Connect to the host %s for DB %s" % (DB_HOST, db_database))
 
