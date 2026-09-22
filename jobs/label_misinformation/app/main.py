@@ -16,7 +16,12 @@ from pg_utils import (
     get_labelstudio_ids,
     is_there_data_for_this_day_safe_guard,
 )
-from pipeline import Pipeline, PipelineInput, SinglePromptPipeline
+from pipeline import (
+    MistralSinglePromptPipeline,
+    Pipeline,
+    PipelineInput,
+    SinglePromptPipeline,
+)
 from prompts import PIPELINE_PRODUCTION_PROMPT, PROMPTS
 from s3_utils import check_if_object_exists_in_s3, get_s3_client, save_to_s3
 from secret_utils import get_secret_docker
@@ -78,9 +83,16 @@ def detect_misinformation(
         raise
     logging.info(f"model_result Examples : {df_news.head(10)}")
 
-    misinformation_only_news = df_news[
-        df_news["model_result"] >= min_misinformation_score
-    ].reset_index(drop=True)
+    if pipeline.binary:
+        # Binary prompts output a misinformation flag (score in {0, 10}); ignore
+        # MIN_MISINFORMATION_SCORE and filter on the flag directly.
+        misinformation_only_news = df_news[df_news["model_result"] > 0].reset_index(
+            drop=True
+        )
+    else:
+        misinformation_only_news = df_news[
+            df_news["model_result"] >= min_misinformation_score
+        ].reset_index(drop=True)
     logging.info(
         "Schema misinformation_only_news :\n%s", misinformation_only_news.dtypes
     )
@@ -101,8 +113,7 @@ def main(country: Country):
     date_env: str = os.getenv("DATE", "")
     bucket_output_folder = os.getenv("BUCKET_OUTPUT_FOLDER", "")
     min_misinformation_score = int(os.getenv("MIN_MISINFORMATION_SCORE", 10))
-
-    openai_api_key = get_secret_docker("OPENAI_API_KEY")
+    llm_provider = os.getenv("LLM_PROVIDER", "mistral").lower()
 
     mediatree_check_secrets()
 
@@ -114,16 +125,24 @@ def main(country: Country):
                 f"Starting app {app_name} for country {country.name} "
                 f"with model {model_name} for date {date_env} "
                 f"with bucket output {bucket_output}, "
+                f"with llm_provider {llm_provider}, "
                 f"min_misinformation_score to keep is {min_misinformation_score} out of 10..."
             )
         )
         # For the moment the prompt does not change according to the different countries
         # If this changes we need to parametrize the country here
-        pipeline = SinglePromptPipeline(
-            model_name=model_name,
-            api_key=openai_api_key,
-            prompt=PROMPTS[PIPELINE_PRODUCTION_PROMPT],
-        )
+        if llm_provider == "openai":
+            pipeline = SinglePromptPipeline(
+                model_name=model_name,
+                api_key=get_secret_docker("OPENAI_API_KEY"),
+                prompt=PROMPTS["0.0.1"],
+            )
+        else:
+            pipeline = MistralSinglePromptPipeline(
+                model_name=model_name,
+                api_key=get_secret_docker("MISTRAL_API_KEY"),
+                prompt=PROMPTS[PIPELINE_PRODUCTION_PROMPT],
+            )
 
         date_range = get_date_range(date_env, minus_days=number_of_previous_days)
         logging.info(
