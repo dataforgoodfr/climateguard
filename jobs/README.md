@@ -39,18 +39,28 @@ docker compose exec testconsole bash
 ## Configuration
 The app config is setup via environment variables, here is an exhaustive list of the required environment variables needed:
 
-* "MODEL_NAME" - the default model used inside openai 
-* "MODEL_NAME_BRAZIL" - the model used inside openai
+* "LLM_PROVIDER" - which pipeline/API to run misinformation detection with: `mistral` (default) or `openai`. See "LLM provider" below.
+* "MODEL_NAME" - the model used for the selected LLM_PROVIDER (e.g. `mistral-small-2603` for mistral, `gpt-4o-mini` for openai)
+* "MODEL_NAME_BRAZIL" - same as MODEL_NAME, but for the brazil country
+* "PIPELINE_PRODUCTION_PROMPT" - the prompt version used by the mistral pipeline (see `app/prompts/prompts.py`), defaults to `"0.1.0"`. Only applies when LLM_PROVIDER=mistral; the openai pipeline always uses prompt version `"0.0.1"`.
 *  "APP_NAME" - will be used as folder inside bucket_output bucket
-* "OPENAI_KEY"
+* "MISTRAL_API_KEY" - required when LLM_PROVIDER=mistral (the default)
+* "OPENAI_API_KEY" - required when LLM_PROVIDER=openai
 *  "DATE" : to query a date with format YYYY-MM-DD, if none the date is yesterday
 *  "BUCKET_OUTPUT" - bucket name with partitions : year,month,day,channel
 *  "BUCKET_OUTPUT_BRAZIL" - bucket name with partitions : country,year,month,day,channel
 *  "BUCKET_OUTPUT_BELGIUM" - bucket name with partitions : country,year,month,day,channel
-* "MIN_MISINFORMATION_SCORE": 10 # the minimum score to have to be kept (10 out of 10)
+* "MIN_MISINFORMATION_SCORE": 10 # the minimum score to have to be kept (10 out of 10). Only applies to non-binary prompts (the openai pipeline / prompt version "0.0.1"); the mistral pipeline's prompt outputs a binary misinformation flag, so this setting is ignored when LLM_PROVIDER=mistral.
 * "CHANNEL" : mediatree former channel name (tf1 for TF1, itele for cnews, bfmtv for BFMTv ...)
 * NUMBER_OF_PREVIOUS_DAYS (integer): default 7 days to check if something missing - in case production servers had an issue
 * COUNTRY: The country or country collection for which to run the job. by default this should be `prod`. Possible values are france, brazil, belgium, all (france, brazil and belgium) and prod (france and brazil). For more details see label_misinformation/app/country.py.
+
+### LLM provider
+The job can run misinformation detection through two interchangeable pipelines, selected via `LLM_PROVIDER`:
+* `mistral` (default) - uses `MistralSinglePromptPipeline` with the Mistral API (`mistralai` SDK) and the French structured prompt (`PIPELINE_PRODUCTION_PROMPT`, defaults to `"0.1.0"`). The model returns a `reasoning` string and a `misinformation` boolean (structured JSON output); the boolean is mapped to a score of 10 (misinformation) or 0 (not misinformation), and `MIN_MISINFORMATION_SCORE` is not applied - any score > 0 is flagged.
+* `openai` - uses the original `SinglePromptPipeline` with the OpenAI API and prompt version `"0.0.1"` (English, plain 0-10 score). `MIN_MISINFORMATION_SCORE` applies as before.
+
+Requires the matching secret (`MISTRAL_API_KEY` or `OPENAI_API_KEY`) and `secrets/mistral_key` / `secrets/openai_key` file to be set up (see Secrets above).
 
 ### To sync data after each process
 This can be done manually by clicking on UI, but if you set this it will be done after each cron job if LABEL_STUDIO_PROJECT_ID is set :
