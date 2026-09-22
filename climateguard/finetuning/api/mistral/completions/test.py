@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 from sklearn.metrics import classification_report
 from tqdm.asyncio import tqdm
 
-MAX_CONCURRENCY = 10
+MAX_CONCURRENCY = 20
 
 
 load_dotenv()
@@ -145,16 +145,14 @@ async def run(client: Mistral, model: str, dataset):
     return await tqdm.gather(*tasks)
 
 
-if __name__ == "__main__":
+async def main(model: str):
     api_key = os.getenv("MISTRAL_API_KEY")
-    model = "mistral-small-2603"
-
     client = Mistral(api_key=api_key)
 
     for split in ["train", "test"]:
         dataset = get_data(split)
 
-        results = asyncio.run(run(client, model, dataset))
+        results = await run(client, model, dataset)
         predictions = [prediction for prediction, _ in results]
         raw_results = [raw_result for _, raw_result in results]
 
@@ -168,3 +166,7 @@ if __name__ == "__main__":
         df_results.to_csv(f"raw_results_{split}.csv")
         print(f"=== {split} ===")
         print(classification_report(dataset.to_pandas()["output"].to_list(), predictions))
+
+
+if __name__ == "__main__":
+    asyncio.run(main("mistral-small-2603"))
