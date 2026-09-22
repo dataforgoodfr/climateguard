@@ -69,8 +69,8 @@ EXTENDED_FRANCE_COUNTRY = Country( # For the Droit à l'Info project
     bucket=os.getenv("BUCKET_OUTPUT", "climateguard"),
     model=get_secret_docker("MODEL_NAME", "gpt-4o-mini"),
     prompt_version=get_secret_docker("PROMPT_VERSION", "0.0.1"),
-    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID", 4),
-    label_studio_project=os.getenv("LABEL_STUDIO_PROJECT", 4),
+    label_studio_id=os.getenv("LABEL_STUDIO_PROJECT_ID", 17),
+    label_studio_project=os.getenv("LABEL_STUDIO_PROJECT", 23),
     channels=[
         "tf1",
         "france2",
