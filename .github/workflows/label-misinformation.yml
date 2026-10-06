@@ -21,6 +21,7 @@ jobs:
       working-directory: jobs/label_misinformation
       run: |
         touch secrets/openai_key
+        touch secrets/mistral_key
         touch secrets/model_name
         touch secrets/bucket_access
         touch secrets/bucket_secret

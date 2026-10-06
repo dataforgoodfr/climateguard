@@ -4,11 +4,14 @@ services:
     environment:
       LOGLEVEL: INFO
       ENV: prod
-      APP_NAME: label-misinformation 
+      APP_NAME: label-misinformation
+      LLM_PROVIDER: mistral
+      PIPELINE_PRODUCTION_PROMPT: "0.1.0"
       OPENAI_API_KEY: /run/secrets/openai_key
-      MODEL_NAME:  gpt-4o-mini
-      MODEL_NAME_BRAZIL:  gpt-4o-mini
-      MODEL_NAME_GERMANY:  gpt-4o-mini
+      MISTRAL_API_KEY: /run/secrets/mistral_key
+      MODEL_NAME:  mistral-small-2603
+      MODEL_NAME_BRAZIL:  mistral-small-2603
+      MODEL_NAME_GERMANY:  mistral-small-2603
       BUCKET_OUTPUT: test-bucket-mediatree
       BUCKET_OUTPUT_BELGIUM: test-bucket-mediatree
       BUCKET_OUTPUT_BRAZIL: test-bucket-mediatree
@@ -49,6 +52,7 @@ services:
       - labelstudio
     secrets:
        - openai_key
+       - mistral_key
        - bucket_access
        - bucket_secret
        - pwd_api
@@ -157,11 +161,14 @@ services:
     environment:
       LOGLEVEL: DEBUG
       ENV: docker
-      APP_NAME: label-misinformation 
+      APP_NAME: label-misinformation
+      LLM_PROVIDER: mistral
+      PIPELINE_PRODUCTION_PROMPT: "0.1.0"
       OPENAI_API_KEY: /run/secrets/openai_key
-      MODEL_NAME:  gpt-4o-mini
+      MISTRAL_API_KEY: /run/secrets/mistral_key
+      MODEL_NAME:  mistral-small-2603
       BUCKET_OUTPUT: test-bucket-mediatree # change to test-bucket-mediatree for testing
-      BUCKET_OUTPUT_BRAZIL: test-bucket-mediatree # change to test-bucket-mediatree for testing 
+      BUCKET_OUTPUT_BRAZIL: test-bucket-mediatree # change to test-bucket-mediatree for testing
       BUCKET_OUTPUT_GERMANY: test-bucket-mediatree # change to test-bucket-mediatree for testing
       BUCKET_OUTPUT_FOLDER: label-misinformation-tmp
       BUCKET_ACCESS: /run/secrets/bucket_access
@@ -175,7 +182,7 @@ services:
       MEDIATREE_USER : /run/secrets/username_api
       MEDIATREE_PASSWORD: /run/secrets/pwd_api
       MEDIATREE_AUTH_URL: https://keywords.mediatree.fr/api/auth/token/
-      KEYWORDS_URL: https://keywords.mediatree.fr/api/export/single 
+      KEYWORDS_URL: https://keywords.mediatree.fr/api/export/single
       POSTGRES_USER: user
       POSTGRES_DB: barometre
       POSTGRES_DB_LS: barometre
@@ -186,6 +193,7 @@ services:
       - postgres_db
     secrets:
        - openai_key
+       - mistral_key
        - bucket_access
        - bucket_secret
        - pwd_api
@@ -200,11 +208,14 @@ services:
     environment:
       LOGLEVEL: DEBUG
       ENV: docker
-      APP_NAME: label-misinformation 
+      APP_NAME: label-misinformation
+      LLM_PROVIDER: mistral
+      PIPELINE_PRODUCTION_PROMPT: "0.1.0"
       OPENAI_API_KEY: /run/secrets/openai_key
-      MODEL_NAME:  gpt-4o-mini
-      MODEL_NAME_BRAZIL: gpt-4o-mini
-      MODEL_NAME_GERMANY: gpt-4o-mini
+      MISTRAL_API_KEY: /run/secrets/mistral_key
+      MODEL_NAME:  mistral-small-2603
+      MODEL_NAME_BRAZIL: mistral-small-2603
+      MODEL_NAME_GERMANY: mistral-small-2603
       BUCKET_OUTPUT: test-bucket-mediatree
       BUCKET_OUTPUT_BELGIUM: test-bucket-mediatree
       BUCKET_OUTPUT_BRAZIL: test-bucket-mediatree
@@ -231,6 +242,7 @@ services:
       - postgres_db
     secrets:
        - openai_key
+       - mistral_key
        - bucket_access
        - bucket_secret
        - pwd_api
@@ -242,6 +254,8 @@ services:
 secrets: # https://docs.docker.com/compose/use-secrets/
   openai_key:
     file: secrets/openai_key
+  mistral_key:
+    file: secrets/mistral_key
   model_name_brazil:
     file: secrets/model_name_brazil
   bucket_access:

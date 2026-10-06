@@ -4,12 +4,15 @@ import os
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import asyncio
 import pandas as pd
 import openai
+from mistralai.client import Mistral
+from mistralai.extra.utils.response_format import response_format_from_pydantic_model
 from prompts import DisinformationPrompt, PROMPTS
+from pydantic import BaseModel, Field
 from secret_utils import get_secret_docker
 
 # Non prod modules
@@ -98,6 +101,180 @@ def parse_response(response: str, id: Optional[str] = None) -> PipelineOutput:
     return PipelineOutput(score=score, id=id)
 
 
+class MisinformationClassification(BaseModel):
+    reasoning: str = Field(
+        description="Brève analyse du texte expliquant s'il promeut ou non de la désinformation climatique, avant de donner la réponse finale."
+    )
+    misinformation: bool = Field(
+        description="Whether the text promotes climate change misinformation that undermines well-established scientific consensus, as defined above."
+    )
+
+
+MISTRAL_RESPONSE_FORMAT = response_format_from_pydantic_model(MisinformationClassification)
+MISINFORMATION_FIELD_RE = re.compile(r'"misinformation"\s*:\s*(true|false)', re.IGNORECASE)
+
+
+def parse_structured_response(
+    content: str, id: Optional[str] = None
+) -> Tuple[PipelineOutput, bool]:
+    """Parse a structured (reasoning + misinformation bool) Mistral response.
+
+    Returns (output, ok) where ok is False if neither strict JSON parsing nor
+    the regex fallback could recover a misinformation value (score defaults to 0).
+    """
+    try:
+        result = MisinformationClassification.model_validate_json(content)
+        return PipelineOutput(
+            score=10 if result.misinformation else 0, reason=result.reasoning, id=id
+        ), True
+    except Exception:
+        # The model can emit invalid JSON (e.g. an unescaped quote inside the
+        # free-text `reasoning` field, or a truncated response after a repetition
+        # loop got cut off by the `stop` sequence). Fall back to extracting just
+        # the `misinformation` boolean, which is short and rarely malformed.
+        match = MISINFORMATION_FIELD_RE.search(content)
+        if match:
+            misinformation = match.group(1).lower() == "true"
+            return PipelineOutput(
+                score=10 if misinformation else 0, reason=content, id=id
+            ), True
+        logging.warning(f"Could not parse structured response {content}")
+        return PipelineOutput(score=0, reason="", id=id), False
+
+
+class MistralSinglePromptPipeline(Pipeline):
+    def __init__(
+        self,
+        model_name: str,
+        api_key: Optional[str] = None,
+        prompt: Optional[DisinformationPrompt] = None,
+        prompt_version: Optional[str] = None,
+        use_async: bool = False,
+        semaphore_limit: int = 5,
+    ) -> None:
+        if not prompt:
+            if not prompt_version:
+                raise ValueError(
+                    "Must define either prompt or prompt_version to retrieve prompt from versions."
+                )
+            prompt = self._get_prompt_from_version(prompt_version)
+
+        mistral_key = api_key if api_key else get_secret_docker("MISTRAL_API_KEY")
+        self._client = Mistral(api_key=mistral_key)
+        self._model = model_name
+        self.use_async = use_async
+        if self.use_async:
+            self.semaphore_limit = semaphore_limit
+
+        self._system_prompt = prompt.prompt
+        self.prompt_version = prompt.version
+        self.binary = prompt.binary
+        self.version = f"{model_name}/{prompt.version}"
+        self._steps = [
+            f"Mistral structured prompt with {self._model} - prompt version: {prompt.version} - prompt text: {self._system_prompt}"
+        ]
+
+    def _get_prompt_from_version(self, version_string: str):
+        return PROMPTS[version_string]
+
+    def _build_messages(self, transcript: str):
+        content = self._system_prompt.format(transcript=transcript)
+        return [{"role": "user", "content": content}]
+
+    def _complete(self, messages, temperature: float) -> str:
+        chat_response = self._client.chat.complete(
+            model=self._model,
+            messages=messages,
+            response_format=MISTRAL_RESPONSE_FORMAT,
+            temperature=temperature,
+            max_tokens=512,
+            presence_penalty=0.5,
+            frequency_penalty=0.5,
+            stop=["\t\t\t"],
+        )
+        return chat_response.choices[0].message.content
+
+    async def _async_complete(self, messages, temperature: float) -> str:
+        chat_response = await self._client.chat.complete_async(
+            model=self._model,
+            messages=messages,
+            response_format=MISTRAL_RESPONSE_FORMAT,
+            temperature=temperature,
+            max_tokens=512,
+            presence_penalty=0.5,
+            frequency_penalty=0.5,
+            stop=["\t\t\t"],
+        )
+        return chat_response.choices[0].message.content
+
+    def process(self, input_data: PipelineInput) -> PipelineOutput:
+        messages = self._build_messages(input_data.transcript)
+        try:
+            content = self._complete(messages, temperature=0.05)
+            output, ok = parse_structured_response(content, id=input_data.id)
+            if ok:
+                return output
+
+            # Likely a degenerate repetition loop cut off by `stop`. A single
+            # retry at a higher temperature rarely re-enters the same loop.
+            content = self._complete(messages, temperature=0.3)
+            output, ok = parse_structured_response(content, id=input_data.id)
+            return output
+        except Exception as e:
+            logging.error(f"Error calling Mistral: {e}")
+            raise Exception
+
+    async def _async_process(
+        self,
+        input_data: PipelineInput,
+        semaphore: asyncio.Semaphore = asyncio.Semaphore(1),
+    ):
+        messages = self._build_messages(input_data.transcript)
+        async with semaphore:
+            content = await self._async_complete(messages, temperature=0.05)
+        output, ok = parse_structured_response(content, id=input_data.id)
+        if not ok:
+            # Likely a degenerate repetition loop cut off by `stop`. A single
+            # retry at a higher temperature rarely re-enters the same loop.
+            async with semaphore:
+                content = await self._async_complete(messages, temperature=0.3)
+            output, ok = parse_structured_response(content, id=input_data.id)
+        return input_data.id, output
+
+    async def _async_batch_process(self, input_data: List[PipelineInput]):
+        semaphore = asyncio.Semaphore(self.semaphore_limit)
+        return await asyncio.gather(
+            *[
+                self._async_process(
+                    PipelineInput(
+                        transcript=input.transcript, id=input.id if input.id else idx
+                    ),
+                    semaphore,
+                )
+                for idx, input in enumerate(input_data)
+            ]
+        )
+
+    def batch_process(self, input_data: List[PipelineInput]):
+        if self.use_async:
+            unordered_responses = asyncio.run(self._async_batch_process(input_data))
+            response_dict = {idx: output for idx, output in unordered_responses}
+            responses = []
+            for idx, input in enumerate(input_data):
+                _id = input.id if input.id else idx
+                responses.append(response_dict[_id])
+        else:
+            responses = []
+            for data in input_data:
+                responses.append(self.process(data))
+        return responses
+
+    def describe(self) -> None:
+        for step in self._steps:
+            logging.info(step)
+        return self._steps
+
+
 class SinglePromptPipeline(Pipeline):
     def __init__(
         self,
@@ -125,6 +302,7 @@ class SinglePromptPipeline(Pipeline):
 
         self._system_prompt = prompt.prompt
         self.prompt_version = prompt.version
+        self.binary = prompt.binary
         self.version = f"{model_name}/{prompt.version}"
         self._steps = [
             f"Single Open AI prompt with {self._model} - prompt version: {prompt.version} - prompt text: {self._system_prompt}"
@@ -352,6 +530,7 @@ def get_pipeline_from_name(name: str):
     mapping = {
         "bert": BertPipeline,
         "simple_prompt": SinglePromptPipeline,
+        "mistral_prompt": MistralSinglePromptPipeline,
     }
     if name in mapping:
         return mapping[name]
