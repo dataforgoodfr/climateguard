@@ -98,10 +98,11 @@ Tu disposes de l'outil `search_reference` qui interroge des documents de référ
 1. Réfléchis d'abord : quels passages touchent à la thématique ? Une vérification documentaire est-elle \
 vraiment nécessaire ? Si l'extrait est hors sujet ou manifestement sans problème, n'appelle pas l'outil.
 2. Si oui, formule une requête précise par affirmation à vérifier, en français, puis appelle l'outil.
-3. Après chaque résultat, réfléchis : les extraits sont-ils pertinents et suffisants pour conclure ? \
-Sinon, reformule ta requête ou fais une autre recherche. Les extraits renvoyés peuvent être hors sujet : \
-ne les utilise que s'ils répondent vraiment à l'affirmation.
-4. Quand tu as assez d'éléments, donne ta réponse finale.
+3. Après chaque recherche, on te demandera d'évaluer explicitement si les extraits renvoyés sont pertinents \
+pour l'affirmation vérifiée (réponse [PERTINENT] ou [NON_PERTINENT]). Les extraits peuvent être hors sujet : \
+ne les utilise que s'ils répondent vraiment à l'affirmation. S'ils ne sont pas pertinents, tu pourras \
+reformuler ta requête (autres mots-clés, autre angle) et relancer la recherche.
+4. Quand tu as assez d'éléments, ou si la recherche reste vaine, donne ta réponse finale.
 
 Format de la réponse finale (en français) : commence EXACTEMENT par la balise « [FLAGGED] » ou « [NOT_FLAGGED] » \
 (rien avant). Si [FLAGGED], liste ensuite une puce par passage problématique : \
@@ -117,6 +118,27 @@ NUDGE_FINAL = (
     "en commençant exactement par [FLAGGED] ou [NOT_FLAGGED]."
 )
 NO_RESULT = "Aucun extrait pertinent trouvé."
+
+# Explicit evaluation step run after every tool result (tools disabled for this turn).
+EVAL_PROMPT = (
+    "Évalue maintenant les extraits renvoyés par l'outil : répondent-ils réellement à l'affirmation "
+    "que tu cherchais à vérifier ? Réponds en commençant EXACTEMENT par [PERTINENT] ou [NON_PERTINENT], "
+    "puis justifie en une ou deux phrases (indique les [S#] utiles le cas échéant)."
+)
+RELEVANCE_EVAL_RE = re.compile(r"\[?\s*(NON_PERTINENT|PERTINENT)\s*\]?", re.IGNORECASE)
+CONTINUE_AFTER_RELEVANT = (
+    "Poursuis : vérifie une autre affirmation avec l'outil si nécessaire, sinon donne ta réponse finale."
+)
+RETRY_AFTER_IRRELEVANT = (
+    "Les extraits ne sont pas pertinents. Reformule ta requête (autres mots-clés, autre angle, terme plus "
+    "général ou plus précis) et appelle de nouveau `search_reference`. Si tu estimes qu'aucune source "
+    "ne peut répondre, passe directement à ta réponse finale."
+)
+FINAL_AFTER_IRRELEVANT = (
+    "Les extraits ne sont pas pertinents et tu ne peux plus faire de recherche. Donne ta réponse finale sans "
+    "citer ces extraits, en commençant exactement par [FLAGGED] ou [NOT_FLAGGED] ; "
+    "base-toi uniquement sur des faits solidement établis et reste prudent."
+)
 
 
 def build_system_prompt(model: str) -> str:
@@ -191,13 +213,13 @@ class Retriever:
         return ("\n\n".join(parts) if parts else NO_RESULT), ids
 
 
-def generate(model, tokenizer, prompt: str, args: argparse.Namespace) -> str:
+def generate(model, tokenizer, prompt: str, args: argparse.Namespace, max_new_tokens: int | None = None) -> str:
     device = next(model.parameters()).device
     inputs = tokenizer(prompt, return_tensors="pt").to(device)
     with torch.no_grad():
         out = model.generate(
             **inputs,
-            max_new_tokens=args.max_new_tokens,
+            max_new_tokens=max_new_tokens or args.max_new_tokens,
             do_sample=True,
             temperature=0.6,
             top_p=0.95,
@@ -239,6 +261,7 @@ def run_agent(model, tokenizer, retriever: Retriever, system_prompt: str, text: 
     queries: list[str] = []
     source_ids: list[str] = []
     trace: list[dict] = []
+    evaluations: list[str] = []
     rounds = 0
     nudged = False
     final = ""
@@ -281,6 +304,33 @@ def run_agent(model, tokenizer, retriever: Retriever, system_prompt: str, text: 
                 source_ids.extend(i for i in chunk_ids if i not in source_ids)
                 messages.append({"role": "tool", "content": result})
                 trace.append({"query": query, "result": result})
+
+            # Explicit evaluation step: is the retrieved evidence relevant? If not, loop back with a new query.
+            messages.append({"role": "user", "content": EVAL_PROMPT})
+            eval_prompt = tokenizer.apply_chat_template(
+                messages, tokenize=False, add_generation_prompt=True, enable_thinking=False
+            )
+            if len(tokenizer(eval_prompt)["input_ids"]) + args.max_eval_tokens > args.max_length:
+                messages.pop()
+                nudged = True
+                messages.append({"role": "user", "content": NUDGE_FINAL})
+                continue
+            eval_text = generate(model, tokenizer, eval_prompt, args, max_new_tokens=args.max_eval_tokens)
+            eval_text = THINK_RE.sub("", eval_text).replace("</think>", "").strip()
+            match = RELEVANCE_EVAL_RE.match(eval_text)
+            # Unparseable evaluation fails open as relevant, so a formatting slip doesn't discard evidence.
+            relevant = not match or match.group(1).upper() == "PERTINENT"
+            evaluations.append("PERTINENT" if relevant else "NON_PERTINENT")
+            trace.append({"evaluation": eval_text, "relevant": relevant})
+            messages.append({"role": "assistant", "content": eval_text})
+            if relevant:
+                follow_up = CONTINUE_AFTER_RELEVANT
+            elif rounds < args.max_tool_rounds:
+                follow_up = RETRY_AFTER_IRRELEVANT
+            else:
+                follow_up = FINAL_AFTER_IRRELEVANT
+                nudged = True
+            messages.append({"role": "user", "content": follow_up})
             continue
 
         final = TOOL_CALL_RE.sub("", content).strip()
@@ -291,7 +341,7 @@ def run_agent(model, tokenizer, retriever: Retriever, system_prompt: str, text: 
         messages.append({"role": "assistant", "content": final})
         messages.append({"role": "user", "content": NUDGE_FINAL})
 
-    return {"final": final, "queries": queries, "sources": source_ids, "trace": trace}
+    return {"final": final, "queries": queries, "evaluations": evaluations, "sources": source_ids, "trace": trace}
 
 
 def main(args: argparse.Namespace) -> None:
@@ -313,7 +363,7 @@ def main(args: argparse.Namespace) -> None:
     model, tokenizer = load_model_and_tokenizer(args.model_name, args.quant)
     torch.manual_seed(args.seed)
 
-    verdicts, debunks, queries, sources = [], [], [], []
+    verdicts, debunks, queries, evals, sources = [], [], [], [], []
     trace_file = open(args.trace, "w", encoding="utf-8") if args.trace else None
     try:
         for row_id, text in tqdm(zip(df["id"], df["plaintext"]), total=len(df), desc="agent"):
@@ -321,10 +371,11 @@ def main(args: argparse.Namespace) -> None:
                 result = run_agent(model, tokenizer, retriever, system_prompt, text, args)
             except RuntimeError as exc:
                 print(f"[warn] Agent failed for row {row_id}: {exc!r}")
-                result = {"final": "", "queries": [], "sources": [], "trace": []}
+                result = {"final": "", "queries": [], "evaluations": [], "sources": [], "trace": []}
             verdicts.append(extract_verdict(result["final"]))
             debunks.append(strip_tag(result["final"], VERDICT_RE))
             queries.append(" | ".join(result["queries"]))
+            evals.append(" | ".join(result["evaluations"]))
             sources.append(", ".join(result["sources"]))
             if trace_file:
                 trace_file.write(json.dumps({"id": row_id, **result}, ensure_ascii=False) + "\n")
@@ -336,6 +387,7 @@ def main(args: argparse.Namespace) -> None:
     df["verdict"] = verdicts
     df["debunk"] = debunks
     df["queries"] = queries
+    df["evaluations"] = evals
     df["sources"] = sources
     print(f"\nVerdict counts: {df['verdict'].value_counts().to_dict()}")
     print(f"Rows with at least one search: {(df['queries'] != '').sum()}/{len(df)}")
@@ -358,6 +410,7 @@ if __name__ == "__main__":
     parser.add_argument("--max-length", type=int, default=8192, help="Prompt token budget; tools are disabled when the context would exceed it")
     parser.add_argument("--max-transcript-tokens", type=int, default=3000, help="Truncate longer transcripts")
     parser.add_argument("--max-new-tokens", type=int, default=1500, help="Per generation step (includes reasoning)")
+    parser.add_argument("--max-eval-tokens", type=int, default=250, help="Max tokens for the post-retrieval relevance evaluation step")
     parser.add_argument("--no-thinking", action="store_true", help="Disable Qwen3 thinking mode (no reflection step)")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--system-prompt", type=str, default=None, help="Override the French system prompt")
