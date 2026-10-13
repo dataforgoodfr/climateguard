@@ -260,3 +260,17 @@ should match what the model was trained with. `--limit` and `--quant none`
 (CPU/MPS) are useful for a quick local test before a real GPU-box run.
 
 See `--help` on any script for the full option list.
+
+## RAG agent (no fine-tuning)
+
+Alternative to the LoRA models: index the parsed reference text and let a base chat model (Qwen3) call a `search_reference` tool.
+
+```bash
+# 1. chunk (<=600 chars) + embed -> <topic>/data/rag/{chunks.jsonl,embeddings.npy,meta.json}
+uv run python climateguard/expert_models/scripts/build_rag_index.py biodiversity [--embedder e5|bge-m3|mistral]
+
+# 2. run the agent over <topic>/data/inference/input.csv -> output_rag.xlsx
+uv run python climateguard/expert_models/scripts/run_rag_agent.py biodiversity --quant none --limit 5 --trace trace.jsonl
+```
+
+Verdict is binary: `[FLAGGED]` (falsehood, manipulation or inaction discourse on environmental health) / `[NOT_FLAGGED]`. Prompts are in French; the agent reasons (Qwen3 thinking) before and after each tool call, and may skip retrieval.
