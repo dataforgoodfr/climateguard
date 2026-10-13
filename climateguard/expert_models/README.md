@@ -273,4 +273,4 @@ uv run python climateguard/expert_models/scripts/build_rag_index.py biodiversity
 uv run python climateguard/expert_models/scripts/run_rag_agent.py biodiversity --quant none --limit 5 --trace trace.jsonl
 ```
 
-Verdict is binary: `[FLAGGED]` (falsehood, manipulation or inaction discourse on environmental health) / `[NOT_FLAGGED]`. Prompts are in French; the agent reasons (Qwen3 thinking) before and after each tool call, and may skip retrieval.
+Verdict is binary: `[FLAGGED]` (falsehood, manipulation or inaction discourse on environmental health) / `[NOT_FLAGGED]`. Prompts are in French; the agent reasons (Qwen3 thinking) before each tool call and may skip retrieval. After every search an explicit evaluation step marks the retrieved snippets `[PERTINENT]` or `[NON_PERTINENT]`; if not relevant, the agent rephrases its query and searches again (up to `--max-tool-rounds`). The output has an `evaluations` column.
