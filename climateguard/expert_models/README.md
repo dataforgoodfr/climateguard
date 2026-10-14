@@ -274,3 +274,9 @@ uv run python climateguard/expert_models/scripts/run_rag_agent.py biodiversity -
 ```
 
 Verdict is binary: `[FLAGGED]` (falsehood, manipulation or inaction discourse on environmental health) / `[NOT_FLAGGED]`. Prompts are in French; the agent reasons (Qwen3 thinking) before each tool call and may skip retrieval. After every search an explicit evaluation step marks the retrieved snippets `[PERTINENT]` or `[NON_PERTINENT]`; if not relevant, the agent rephrases its query and searches again (up to `--max-tool-rounds`). The output has an `evaluations` column.
+
+Same agent on the Mistral API (`mistral-small-2603` by default, needs `MISTRAL_API_KEY`; native function calling, output `output_rag_mistral.xlsx`):
+
+```bash
+uv run python climateguard/expert_models/scripts/run_rag_agent_mistral.py biodiversity --limit 5 --trace trace.jsonl
+```
