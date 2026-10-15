@@ -1,7 +1,14 @@
 name: Test & Build & Deploy to Scaleway
 
 on:
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - 'jobs/label_misinformation/**'
+      - '.github/workflows/label-misinformation.yml'
   push:
+    branches:
+      - main
     paths:
       - 'jobs/label_misinformation/**'
       - '.github/workflows/label-misinformation.yml'
@@ -14,6 +21,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'push' }}
     steps:
     - uses: actions/checkout@v4
 
@@ -31,6 +39,7 @@ jobs:
 
   test_build:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'push' }}
     outputs:
       PROJECT_VERSION: ${{ steps.get_version.outputs.PROJECT_VERSION }}
     steps:
@@ -48,9 +57,6 @@ jobs:
   build_and_bump:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
-    needs: 
-      - test
-      - test_build
     outputs:
       PROJECT_VERSION: ${{ steps.get_version.outputs.PROJECT_VERSION }}
     steps:
@@ -103,14 +109,4 @@ jobs:
       run: docker tag ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/label-misinformation:${{ env.PROJECT_VERSION }} ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/label-misinformation:latest
 
     - name: Push label-misinformation Image
-      run: docker push --all-tags ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/label-misinformation 
-
-    - name: Update Scaleway Job Definition
-      uses: jawher/action-scw@v2.34.0
-      env:
-        SCW_ACCESS_KEY: ${{ secrets.SCALEWAY_API_KEY }}
-        SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
-        SCW_ORGANIZATION_ID: ${{ secrets.SCW_ORGANIZATION_ID }}
-        SCW_ZONE: ${{ secrets.SCW_ZONE }}
-      with:
-        args: jobs definition update ${{ secrets.SCALEWAY_JOB_LABEL_ID }} image-uri=${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/label-misinformation:${{ env.PROJECT_VERSION }}
+      run: docker push --all-tags ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/label-misinformation
