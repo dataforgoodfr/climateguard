@@ -15,6 +15,13 @@ data "scaleway_secret" "openai_api_key" {
   project_id = data.scaleway_account_project.project.id
 }
 
+# MISTRAL_API_KEY
+data "scaleway_secret" "mistral_api_key" {
+  name       = "mistral-api-key"
+  path       = "/common"
+  project_id = data.scaleway_account_project.project.id
+}
+
 # POSTGRES_PASSWORD
 data "scaleway_secret" "postgres_password_barometre" {
   name       = "postgres_password-barometre"

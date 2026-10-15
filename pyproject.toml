@@ -22,7 +22,6 @@ dependencies = [
     "psutil>=7.1.0",
     "psycopg>=3.3.3",
     "psycopg2>=2.9.11",
-    "pydantic>=2.11.9",
     "python-dotenv>=1.1.1",
     "requests>=2.32.5",
     "rouge-score>=0.1.2",
@@ -37,6 +36,8 @@ dependencies = [
     "wandb>=0.22.2",
     "wordcloud>=1.9.4",
     "tomli>=2.4.1",
+    "mistralai>=2.5.0",
+    "pydantic>=2.11.9",
 ]
 
 
