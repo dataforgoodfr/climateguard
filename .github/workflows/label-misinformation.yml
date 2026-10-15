@@ -21,6 +21,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'push' }}
     steps:
     - uses: actions/checkout@v4
 
@@ -38,6 +39,7 @@ jobs:
 
   test_build:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'push' }}
     outputs:
       PROJECT_VERSION: ${{ steps.get_version.outputs.PROJECT_VERSION }}
     steps:
@@ -55,9 +57,6 @@ jobs:
   build_and_bump:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
-    needs: 
-      - test
-      - test_build
     outputs:
       PROJECT_VERSION: ${{ steps.get_version.outputs.PROJECT_VERSION }}
     steps:
