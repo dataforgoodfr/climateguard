@@ -133,6 +133,8 @@ BELGIUM_FLANDERS_COUNTRY = Country(
         "qmusic",
         "play",
         "vrt1",
+        "atv",
+        "tvl"
     ],
 )
 
