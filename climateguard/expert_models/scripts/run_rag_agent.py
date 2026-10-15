@@ -414,6 +414,10 @@ def main(args: argparse.Namespace) -> None:
     print(f"Evidence: {df['evidence'].value_counts().to_dict()}")
     print(f"Rows with at least one search: {(df['queries'] != '').sum()}/{len(df)}")
 
+    if args.only_flagged:
+        df = df[df["verdict"] == "FLAGGED"]
+        print(f"Keeping only FLAGGED rows: {len(df)}")
+
     args.output.parent.mkdir(parents=True, exist_ok=True)
     df.to_excel(args.output, index=False, engine="openpyxl")
     print(f"Wrote {len(df)} rows to {args.output}")
@@ -439,6 +443,12 @@ if __name__ == "__main__":
     parser.add_argument("--input", type=Path, default=None, help="Default: <model>/data/inference/input.csv")
     parser.add_argument("--output", type=Path, default=None, help="Default: <model>/data/inference/output_rag.xlsx")
     parser.add_argument("--trace", type=Path, default=None, help="Write the full agent turns (reasoning, tool calls, results) to this JSONL")
+    parser.add_argument(
+        "--only-flagged",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Write only FLAGGED rows to the output (--no-only-flagged keeps every row; the --trace file always has all rows)",
+    )
     parser.add_argument("--limit", type=int, default=None, help="Process at most N rows")
     parser.add_argument("--env-file", type=str, default=".env")
     args = parser.parse_args()
