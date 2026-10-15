@@ -159,8 +159,7 @@ class MistralSinglePromptPipeline(Pipeline):
                 )
             prompt = self._get_prompt_from_version(prompt_version)
 
-        mistral_key = api_key if api_key else get_secret_docker("MISTRAL_API_KEY")
-        self._client = Mistral(api_key=mistral_key)
+        self._api_key = api_key if api_key else get_secret_docker("MISTRAL_API_KEY")
         self._model = model_name
         self.use_async = use_async
         if self.use_async:
@@ -176,6 +175,22 @@ class MistralSinglePromptPipeline(Pipeline):
 
     def _get_prompt_from_version(self, version_string: str):
         return PROMPTS[version_string]
+
+    @property
+    def _client(self) -> Mistral:
+        # Lazily created, and excluded from pickling (see __getstate__): the
+        # underlying httpx client holds a thread lock that Ray/Modin cannot
+        # serialize when this pipeline is captured by a df.apply() closure
+        # (see main.py's extract_model_result). Each worker process recreates
+        # its own client once, on first use, after unpickling.
+        if self.__dict__.get("_client_instance") is None:
+            self._client_instance = Mistral(api_key=self._api_key)
+        return self._client_instance
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        state.pop("_client_instance", None)
+        return state
 
     def _build_messages(self, transcript: str):
         content = self._system_prompt.format(transcript=transcript)
