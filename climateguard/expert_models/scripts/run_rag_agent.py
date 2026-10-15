@@ -14,7 +14,8 @@ falsehood / manipulation of the truth about the theme (environmental health),
 or discourse of inaction ("il est trop tard", "on n'y peut rien").
 
 Output columns: input columns + verdict (FLAGGED | NOT_FLAGGED | UNPARSEABLE),
-debunk, queries (tool queries issued), sources (chunk_ids retrieved).
+debunk, queries (tool queries issued), evaluations (PERTINENT/NON_PERTINENT per search),
+evidence (grounded | ungrounded | no_search), sources (chunk_ids retrieved).
 
 Usage:
     python run_rag_agent.py biodiversity [--model-name Qwen/Qwen3-8B]
@@ -89,15 +90,23 @@ Ta mission est de classer l'extrait de façon BINAIRE :
 (a) une affirmation fausse ou inexacte ; \
 (b) une manipulation de la vérité (information tronquée ou sélective, cadrage trompeur, fausse équivalence, \
 exagération ou minimisation, doute injustifié sur un consensus scientifique) ; \
-(c) un discours d'inaction ou de fatalisme (« il est trop tard », « on ne peut plus rien faire », \
-« ça ne sert à rien », « les efforts sont inutiles »).
+(c) un discours d'inaction ou de fatalisme, c'est-à-dire qui affirme qu'agir est inutile ou impossible \
+(« il est trop tard », « on ne peut plus rien faire », « ça ne sert à rien », « les efforts sont inutiles ») ; \
+une simple difficulté ou un constat réaliste sur l'ampleur du problème n'en est pas un.
 - [NOT_FLAGGED] dans tous les autres cas : propos exacts, propos sans rapport avec la thématique, \
 ou simples opinions qui ne déforment pas les faits.
 
 Tu disposes de l'outil `search_reference` qui interroge des documents de référence fiables. Méthode :
 1. Réfléchis d'abord : quels passages touchent à la thématique ? Une vérification documentaire est-elle \
 vraiment nécessaire ? Si l'extrait est hors sujet ou manifestement sans problème, n'appelle pas l'outil.
-2. Si oui, formule une requête précise par affirmation à vérifier, en français, puis appelle l'outil.
+2. L'outil ne sert qu'à vérifier les affirmations factuelles (catégories a et b). Un discours d'inaction \
+(catégorie c) se repère à sa formulation seule : signale-le directement, sans le chercher dans les documents. \
+Si l'extrait ne contient que du discours d'inaction, n'appelle pas l'outil. \
+Toute affirmation factuelle liée à la thématique (effets d'un produit ou d'une substance, chiffres, \
+lois, consensus scientifique, déclarations d'experts, y compris celles qui te semblent évidemment vraies \
+ou fausses) DOIT être vérifiée avec l'outil : ne te fie pas à ta seule mémoire et ne la qualifie pas \
+d'« opinion » pour éviter la recherche. Formule une requête précise (une par affirmation), en français, \
+puis appelle l'outil.
 3. Après chaque recherche, on te demandera d'évaluer explicitement si les extraits renvoyés sont pertinents \
 pour l'affirmation vérifiée (réponse [PERTINENT] ou [NON_PERTINENT]). Les extraits peuvent être hors sujet : \
 ne les utilise que s'ils répondent vraiment à l'affirmation. S'ils ne sont pas pertinents, tu pourras \
@@ -108,6 +117,8 @@ Format de la réponse finale (en français) : commence EXACTEMENT par la balise 
 (rien avant). Si [FLAGGED], liste ensuite une puce par passage problématique : \
 « phrase citée de la transcription » — catégorie (fausseté / manipulation / inaction) — \
 explication concise et factuelle qui corrige ou remet en contexte, en citant les sources [S#] utilisées. \
+Pour un discours d'inaction, la catégorie est « inaction » et l'explication reste brève ; \
+ne cite de source [S#] que si une recherche en a réellement fourni une pertinente. \
 Si [NOT_FLAGGED], justifie en une phrase. N'invente aucun fait qui ne figure pas dans les sources \
 retournées ou qui n'est pas solidement établi.\
 """
@@ -144,6 +155,14 @@ FINAL_AFTER_IRRELEVANT = (
 def build_system_prompt(model: str) -> str:
     definition = RELEVANCE_DEFINITIONS.get(model) or TOPIC_DESCRIPTIONS.get(model, model.replace("_", " "))
     return SYSTEM_PROMPT_TEMPLATE.format(definition=definition)
+
+
+def evidence_status(queries: list[str], evaluations: list[str]) -> str:
+    """grounded = at least one search was judged relevant; ungrounded = searched but nothing relevant
+    (the verdict then rests on the model's own knowledge); no_search = retrieval was not used."""
+    if not queries:
+        return "no_search"
+    return "grounded" if "PERTINENT" in evaluations else "ungrounded"
 
 
 def extract_verdict(text: str) -> str:
@@ -363,7 +382,7 @@ def main(args: argparse.Namespace) -> None:
     model, tokenizer = load_model_and_tokenizer(args.model_name, args.quant)
     torch.manual_seed(args.seed)
 
-    verdicts, debunks, queries, evals, sources = [], [], [], [], []
+    verdicts, debunks, queries, evals, evidence, sources = [], [], [], [], [], []
     trace_file = open(args.trace, "w", encoding="utf-8") if args.trace else None
     try:
         for row_id, text in tqdm(zip(df["id"], df["plaintext"]), total=len(df), desc="agent"):
@@ -376,6 +395,7 @@ def main(args: argparse.Namespace) -> None:
             debunks.append(strip_tag(result["final"], VERDICT_RE))
             queries.append(" | ".join(result["queries"]))
             evals.append(" | ".join(result["evaluations"]))
+            evidence.append(evidence_status(result["queries"], result["evaluations"]))
             sources.append(", ".join(result["sources"]))
             if trace_file:
                 trace_file.write(json.dumps({"id": row_id, **result}, ensure_ascii=False) + "\n")
@@ -388,8 +408,10 @@ def main(args: argparse.Namespace) -> None:
     df["debunk"] = debunks
     df["queries"] = queries
     df["evaluations"] = evals
+    df["evidence"] = evidence
     df["sources"] = sources
     print(f"\nVerdict counts: {df['verdict'].value_counts().to_dict()}")
+    print(f"Evidence: {df['evidence'].value_counts().to_dict()}")
     print(f"Rows with at least one search: {(df['queries'] != '').sum()}/{len(df)}")
 
     args.output.parent.mkdir(parents=True, exist_ok=True)

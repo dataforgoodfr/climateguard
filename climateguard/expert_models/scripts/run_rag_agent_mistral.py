@@ -52,6 +52,7 @@ from run_rag_agent import (  # noqa: E402
     VERDICT_RE,
     Retriever,
     build_system_prompt,
+    evidence_status,
     extract_verdict,
     strip_tag,
 )
@@ -218,7 +219,7 @@ def main(args: argparse.Namespace) -> None:
     print(f"Index: {len(retriever.chunks)} chunks, embedder {retriever.meta['embedding_model']}")
     client = Mistral(api_key=os.environ["MISTRAL_API_KEY"])
 
-    verdicts, debunks, queries, evals, sources = [], [], [], [], []
+    verdicts, debunks, queries, evals, evidence, sources = [], [], [], [], [], []
     trace_file = open(args.trace, "w", encoding="utf-8") if args.trace else None
     try:
         for row_id, text in tqdm(zip(df["id"], df["plaintext"]), total=len(df), desc="agent"):
@@ -231,6 +232,7 @@ def main(args: argparse.Namespace) -> None:
             debunks.append(strip_tag(result["final"], VERDICT_RE))
             queries.append(" | ".join(result["queries"]))
             evals.append(" | ".join(result["evaluations"]))
+            evidence.append(evidence_status(result["queries"], result["evaluations"]))
             sources.append(", ".join(result["sources"]))
             if trace_file:
                 trace_file.write(json.dumps({"id": row_id, **result}, ensure_ascii=False) + "\n")
@@ -243,8 +245,10 @@ def main(args: argparse.Namespace) -> None:
     df["debunk"] = debunks
     df["queries"] = queries
     df["evaluations"] = evals
+    df["evidence"] = evidence
     df["sources"] = sources
     print(f"\nVerdict counts: {df['verdict'].value_counts().to_dict()}")
+    print(f"Evidence: {df['evidence'].value_counts().to_dict()}")
     print(f"Rows with at least one search: {(df['queries'] != '').sum()}/{len(df)}")
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
