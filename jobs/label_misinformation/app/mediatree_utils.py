@@ -57,10 +57,12 @@ def get_start_and_end_of_chunk(start):
 def get_url_mediatree(date, channel) -> str:
     # https://keywords.mediatree.fr/player/?fifo=france-inter&start_cts=1729447079&end_cts=1729447201&position_cts=1729447080
     timestamp, timestamp_end = get_start_and_end_of_chunk(date)
+    channel = channel if channel != "sud-radio" else "sudradio"
     return f"https://keywords.mediatree.fr/player/?fifo={channel}&start_cts={timestamp}&end_cts={timestamp_end}&position_cts={timestamp}"
 
 
 def get_mediatree_single_export_url(token, channel_name, start, end):
+    channel_name = channel_name if channel_name != "sud-radio" else "sudradio"
     return f"{API_BASE_URL}?token={token}&channel={channel_name}&cts_in={start}&cts_out={end}&format=mp4"
 
 
@@ -72,8 +74,6 @@ def get_response_single_export_api(single_export_api):
 def fetch_video_url(row, token):
     """Fetches a single video URL based on a DataFrame row."""
     try:
-        if row["channel_name"] in ("daserste", "zdf"):
-            return None # plaintext will be used in those cases as it is already high quality.
         if not pd.isna(row["start"]) and not pd.isna(row["channel_name"]):
             logging.info(f"fetch_video_url for : {row}")
             start, end = get_start_and_end_of_chunk(row["start"])
@@ -83,6 +83,7 @@ def fetch_video_url(row, token):
             single_export_api = get_mediatree_single_export_url(
                 token, channel_name, start, end
             )
+
             logging.info(
                 f"Fetching URL for {channel_name} [{start}-{end}]: {single_export_api}"
             )

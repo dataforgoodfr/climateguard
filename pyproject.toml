@@ -22,7 +22,6 @@ dependencies = [
     "psutil>=7.1.0",
     "psycopg>=3.3.3",
     "psycopg2>=2.9.11",
-    "pydantic>=2.11.9",
     "python-dotenv>=1.1.1",
     "requests>=2.32.5",
     "rouge-score>=0.1.2",
@@ -51,6 +50,8 @@ dependencies = [
 cuda = [
     "bitsandbytes>=0.50.0",
     "unsloth>=2026.6.1",
+    "mistralai>=2.5.0",
+    "pydantic>=2.11.9",
 ]
 
 

@@ -17,6 +17,7 @@ module "belgium" {
   labelstudio_admin_password    = var.labelstudio_admin_password
   labelstudio_user_token        = var.labelstudio_user_token
   model_name                    = var.model_name
+  llm_provider                  = "openai"
   sentry_dsn                    = var.sentry_dsn
 }
 

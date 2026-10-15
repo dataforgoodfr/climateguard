@@ -35,12 +35,41 @@
     
     <Text name="text_to_review_misinformation" value="$item.plaintext_whisper" granularity="word"/>
     
-     <View style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
-      <Choices name="choice" toName="table" required="true" showInline="true">
-        <Choice value="Correct" html="&lt;span style='color:green'&gt;✓&lt;/span&gt; Misinformation" hotkey="m"/>
-        <Choice value="Incorrect" html="&lt;span style='color:red'&gt;✗&lt;/span&gt; Not Misinformation" hotkey="n"/>
-      </Choices>
-     </View>
+    <View>
+      <View style="display: flex;font-style: italic; gap: 15px; margin-top: 15px; flex-wrap: wrap;">
+  		  <Text name="text_to_review_contains_misinformation" value="Does the above text contain misinformation (unchallenged)?"/>
+      </View>
+      <View style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+        <Choices name="choice" toName="table" required="true" showInline="false">
+          <Choice value="Correct" html="&lt;span style='color:green'&gt;✓&lt;/span&gt; Contains Misinformation" hotkey="m"/>
+          <Choice value="Incorrect" html="&lt;span style='color:red'&gt;✗&lt;/span&gt; Does Not Contain Misinformation" hotkey="n"/>
+        </Choices>
+      </View>
+    </View>
+    
+    <View visibleWhen="choice-selected" whenTagName="choice" whenChoiceValue="Incorrect">
+       <View style="display: flex;">
+  		<Text name="misinfo_correction_text" value="Did the text not contain  misinformation or was it challenged ?"/>
+       </View>
+       <View style="display: flex;">
+        <Choices name="Was Misinformation Corrected?" toName="table" required="false" showInline="true">>
+          <Choice value="not_corrected" html="No Misinformation"/>
+          <Choice value="corrected" html="Challenged"/>
+        </Choices>
+       </View>
+    </View>
+     
+    <View visibleWhen="choice-selected" whenTagName="choice" whenChoiceValue="Correct">
+       <View style="display: flex;">
+  		<Text name="misinfo_emblematic_text" value="Is this an emblematic misinformation case for the narrative ?"/>
+       </View>
+       <View style="display: flex;">
+        <Choices name="Is emblematicfor narrative ?" toName="table" required="false" showInline="true">>
+          <Choice value="is_emblematic_narrative" html="Yes"/>
+          <Choice value="is_not_emblematic_narrative" html="No"/>
+        </Choices>
+       </View>
+    </View>
      
      <Header name="claim_header" value="Claims" granularity="word"/>
      <TextArea 
@@ -105,17 +134,6 @@
         </Choices>
       </View>
     </View>  
-     <View visibleWhen="choice-selected" whenTagName="choice" whenChoiceValue="Correct">
-       <View style="display: flex;">
-  		<Text name="misinfo_correction_text" value="Misinformation is actively corrected live by expert/journalist (providing context or debunk) ?"/>
-       </View>
-       <View style="display: flex;">
-        <Choices name="Was Misinformation Corrected?" toName="table" required="false" showInline="true">
-          <Choice value="corrected" html="Yes"/>
-          <Choice value="not_corrected" html="No"/>
-        </Choices>
-       </View>
-    </View>
   </View>
    
   <View visibleWhen="choice-selected" whenTagName="choice" >

@@ -60,6 +60,11 @@ variable "model_name" {
   type = string
 }
 
+variable "llm_provider" {
+  type    = string
+  default = "mistral"
+}
+
 variable "job_cron_schedule" {
   type    = string
   default = "5 6 * * *"
