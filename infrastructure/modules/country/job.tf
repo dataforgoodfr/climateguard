@@ -28,6 +28,7 @@ resource "scaleway_job_definition" "main" {
     "LABEL_STUDIO_PROJECT"    = var.labelstudio_project
     "LABEL_STUDIO_PROJECT_ID" = var.labelstudio_project_id
     "LABEL_STUDIO_URL"        = "https://${scaleway_container.labelstudio_container.domain_name}"
+    "LLM_PROVIDER"            = var.llm_provider
     "LOGLEVEL"                = "INFO"
     "MEDIATREE_AUTH_URL"      = "https://keywords.mediatree.fr/api/auth/token/"
     "MEDIATREE_USER"          = "quotaclimat"
@@ -62,6 +63,10 @@ resource "scaleway_job_definition" "main" {
   secret_reference {
     secret_id   = data.scaleway_secret.openai_api_key.id
     environment = "OPENAI_API_KEY"
+  }
+  secret_reference {
+    secret_id   = data.scaleway_secret.mistral_api_key.id
+    environment = "MISTRAL_API_KEY"
   }
   secret_reference {
     secret_id   = data.scaleway_secret.postgres_password_barometre.id

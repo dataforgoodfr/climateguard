@@ -23,6 +23,11 @@ variable "openai_api_key" {
   sensitive = true
 }
 
+variable "mistral_api_key" {
+  type      = string
+  sensitive = true
+}
+
 variable "project_secret_access_key" {
   type      = string
   sensitive = true
