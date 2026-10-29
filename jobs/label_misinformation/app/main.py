@@ -22,7 +22,7 @@ from pipeline import (
     PipelineInput,
     SinglePromptPipeline,
 )
-from prompts import PIPELINE_PRODUCTION_PROMPT, PROMPTS
+from prompts import PROMPTS
 from s3_utils import check_if_object_exists_in_s3, get_s3_client, save_to_s3
 from secret_utils import get_secret_docker
 from sentry_sdk.crons import monitor
@@ -141,7 +141,8 @@ def main(country: Country):
             pipeline = MistralSinglePromptPipeline(
                 model_name=model_name,
                 api_key=get_secret_docker("MISTRAL_API_KEY"),
-                prompt=PROMPTS[PIPELINE_PRODUCTION_PROMPT],
+                language=country.language,
+                prompt=PROMPTS[country.prompt_version],
             )
 
         date_range = get_date_range(date_env, minus_days=number_of_previous_days)
@@ -260,7 +261,11 @@ def main(country: Country):
                             )
 
                             if (
-                                channel in country.channels_whisper or os.getenv('FORCE_WHISPER_TRANSCRIPTION', False)
+                                channel in country.channels_whisper
+                                or os.getenv("FORCE_WHISPER_TRANSCRIPTION", "")
+                                .strip()
+                                .lower()
+                                in ("1", "true", "yes")
                             ):  # not from mediatree, so cannot get the new audio
                                 logging.info(
                                     "Getting new plaintext from whisper by getting the original audio..."

@@ -42,7 +42,7 @@ The app config is setup via environment variables, here is an exhaustive list of
 * "LLM_PROVIDER" - which pipeline/API to run misinformation detection with: `mistral` (default) or `openai`. See "LLM provider" below.
 * "MODEL_NAME" - the model used for the selected LLM_PROVIDER (e.g. `mistral-small-2603` for mistral, `gpt-4o-mini` for openai)
 * "MODEL_NAME_BRAZIL" - same as MODEL_NAME, but for the brazil country
-* "PIPELINE_PRODUCTION_PROMPT" - the prompt version used by the mistral pipeline (see `app/prompts/prompts.py`), defaults to `"0.1.0"`. Only applies when LLM_PROVIDER=mistral; the openai pipeline always uses prompt version `"0.0.1"`.
+* "PROMPT_VERSION" - overrides the prompt version used by the mistral pipeline (see `app/prompts/prompts.py`). Defaults to the per-country value in `app/country.py` (the prompt translated into the country's language, e.g. `"0.1.0-nl"` for belgium-flanders). Only applies when LLM_PROVIDER=mistral; the openai pipeline always uses prompt version `"0.0.1"`.
 *  "APP_NAME" - will be used as folder inside bucket_output bucket
 * "MISTRAL_API_KEY" - required when LLM_PROVIDER=mistral (the default)
 * "OPENAI_API_KEY" - required when LLM_PROVIDER=openai
@@ -57,7 +57,7 @@ The app config is setup via environment variables, here is an exhaustive list of
 
 ### LLM provider
 The job can run misinformation detection through two interchangeable pipelines, selected via `LLM_PROVIDER`:
-* `mistral` (default) - uses `MistralSinglePromptPipeline` with the Mistral API (`mistralai` SDK) and the French structured prompt (`PIPELINE_PRODUCTION_PROMPT`, defaults to `"0.1.0"`). The model returns a `reasoning` string and a `misinformation` boolean (structured JSON output); the boolean is mapped to a score of 10 (misinformation) or 0 (not misinformation), and `MIN_MISINFORMATION_SCORE` is not applied - any score > 0 is flagged.
+* `mistral` (default) - uses `MistralSinglePromptPipeline` with the Mistral API (`mistralai` SDK) and the structured prompt of the country (`country.prompt_version`, `"0.1.0"` translated into the country's language). The model returns a `reasoning` string and a `misinformation` boolean (structured JSON output); the boolean is mapped to a score of 10 (misinformation) or 0 (not misinformation), and `MIN_MISINFORMATION_SCORE` is not applied - any score > 0 is flagged.
 * `openai` - uses the original `SinglePromptPipeline` with the OpenAI API and prompt version `"0.0.1"` (English, plain 0-10 score). `MIN_MISINFORMATION_SCORE` applies as before.
 
 Requires the matching secret (`MISTRAL_API_KEY` or `OPENAI_API_KEY`) and `secrets/mistral_key` / `secrets/openai_key` file to be set up (see Secrets above).
