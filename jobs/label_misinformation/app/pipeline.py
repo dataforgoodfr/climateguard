@@ -4,6 +4,7 @@ import os
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import List, Optional, Tuple
 
 import asyncio
@@ -12,7 +13,7 @@ import openai
 from mistralai.client import Mistral
 from mistralai.extra.utils.response_format import response_format_from_pydantic_model
 from prompts import DisinformationPrompt, PROMPTS
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, create_model
 from secret_utils import get_secret_docker
 
 # Non prod modules
@@ -102,15 +103,54 @@ def parse_response(response: str, id: Optional[str] = None) -> PipelineOutput:
 
 
 class MisinformationClassification(BaseModel):
-    reasoning: str = Field(
-        description="Brève analyse du texte expliquant s'il promeut ou non de la désinformation climatique, avant de donner la réponse finale."
-    )
-    misinformation: bool = Field(
-        description="Whether the text promotes climate change misinformation that undermines well-established scientific consensus, as defined above."
-    )
+    reasoning: str
+    misinformation: bool
 
 
-MISTRAL_RESPONSE_FORMAT = response_format_from_pydantic_model(MisinformationClassification)
+# Field descriptions are sent to the model as part of the JSON schema, so they
+# must be in the language of the prompt or the reasoning may come back in the
+# wrong language.
+SCHEMA_DESCRIPTIONS = {
+    "french": {
+        "reasoning": "Brève analyse du texte expliquant s'il promeut ou non de la désinformation climatique, avant de donner la réponse finale.",
+        "misinformation": "Le texte promeut-il de la désinformation climatique qui contredit le consensus scientifique établi, telle que définie ci-dessus ?",
+    },
+    "dutch": {
+        "reasoning": "Korte analyse van de tekst die uitlegt of hij klimaatdesinformatie verspreidt of niet, voordat het eindantwoord wordt gegeven.",
+        "misinformation": "Verspreidt de tekst klimaatdesinformatie die ingaat tegen de vastgestelde wetenschappelijke consensus, zoals hierboven gedefinieerd?",
+    },
+    "portuguese": {
+        "reasoning": "Breve análise do texto explicando se ele promove ou não desinformação climática, antes de dar a resposta final.",
+        "misinformation": "O texto promove desinformação climática que contradiz o consenso científico estabelecido, conforme definida acima?",
+    },
+    "german": {
+        "reasoning": "Kurze Analyse des Textes, die erklärt, ob er Klimadesinformation verbreitet oder nicht, bevor die endgültige Antwort gegeben wird.",
+        "misinformation": "Verbreitet der Text Klimadesinformation, die dem etablierten wissenschaftlichen Konsens widerspricht, wie oben definiert?",
+    },
+    "spanish": {
+        "reasoning": "Breve análisis del texto que explica si promueve o no desinformación climática, antes de dar la respuesta final.",
+        "misinformation": "¿Promueve el texto desinformación climática que contradice el consenso científico establecido, tal como se define arriba?",
+    },
+    "polish": {
+        "reasoning": "Krótka analiza tekstu wyjaśniająca, czy promuje on dezinformację klimatyczną, przed podaniem ostatecznej odpowiedzi.",
+        "misinformation": "Czy tekst promuje dezinformację klimatyczną przeczącą ugruntowanemu konsensusowi naukowemu, zgodnie z powyższą definicją?",
+    },
+}
+DEFAULT_SCHEMA_LANGUAGE = "french"
+
+
+@lru_cache(maxsize=None)
+def build_response_format(language: str = DEFAULT_SCHEMA_LANGUAGE):
+    """Mistral response_format for MisinformationClassification, described in `language`."""
+    descriptions = SCHEMA_DESCRIPTIONS.get(
+        language.lower(), SCHEMA_DESCRIPTIONS[DEFAULT_SCHEMA_LANGUAGE]
+    )
+    model = create_model(
+        "MisinformationClassification",
+        reasoning=(str, Field(description=descriptions["reasoning"])),
+        misinformation=(bool, Field(description=descriptions["misinformation"])),
+    )
+    return response_format_from_pydantic_model(model)
 MISINFORMATION_FIELD_RE = re.compile(r'"misinformation"\s*:\s*(true|false)', re.IGNORECASE)
 
 
@@ -151,6 +191,7 @@ class MistralSinglePromptPipeline(Pipeline):
         prompt_version: Optional[str] = None,
         use_async: bool = False,
         semaphore_limit: int = 5,
+        language: str = DEFAULT_SCHEMA_LANGUAGE,
     ) -> None:
         if not prompt:
             if not prompt_version:
@@ -161,6 +202,7 @@ class MistralSinglePromptPipeline(Pipeline):
 
         self._api_key = api_key if api_key else get_secret_docker("MISTRAL_API_KEY")
         self._model = model_name
+        self._response_format = build_response_format(language)
         self.use_async = use_async
         if self.use_async:
             self.semaphore_limit = semaphore_limit
@@ -200,7 +242,7 @@ class MistralSinglePromptPipeline(Pipeline):
         chat_response = self._client.chat.complete(
             model=self._model,
             messages=messages,
-            response_format=MISTRAL_RESPONSE_FORMAT,
+            response_format=self._response_format,
             temperature=temperature,
             max_tokens=512,
             presence_penalty=0.5,
@@ -213,7 +255,7 @@ class MistralSinglePromptPipeline(Pipeline):
         chat_response = await self._client.chat.complete_async(
             model=self._model,
             messages=messages,
-            response_format=MISTRAL_RESPONSE_FORMAT,
+            response_format=self._response_format,
             temperature=temperature,
             max_tokens=512,
             presence_penalty=0.5,
