@@ -1,6 +1,26 @@
 # This file is maintained automatically by "tofu init".
 # Manual edits may be lost in future updates.
 
+provider "registry.opentofu.org/hashicorp/scaleway" {
+  version = "2.89.0"
+  hashes = [
+    "h1:ft1lZQQiRT74HDL0rNGRIsoZ7GinrkkH5LzPonPismA=",
+    "zh:1ad8ccb13691f6e89e1bda4966faa32f404f511ad93717869e697a5c5cea39e7",
+    "zh:2463f21be5b6025982a645dcfb9e3159b293fef130c4b669bf0a644af16d9da5",
+    "zh:3393c83b3279dbe69f6471ade14a153101c1fec76b5abe8a7d4571577775c01a",
+    "zh:69874aaebd0d169ad8ce632ae3eb4a0afcefb926cf8d4867c61836400605df7f",
+    "zh:7e2150949cd5ae8fd66f31e652ece3d34f98f6fa14717ff587a2691e7e0d5528",
+    "zh:8c07685ce0df5394a6ec01c70b399ed036aa92683c1490f9e6de6563398ae05f",
+    "zh:901761da193e59ef09312147eb11228bebc6c0e0af68e3f5beb1e607a29440bd",
+    "zh:a4e06e765c344a8f37300d435bfd26775a1d9b88bbb6c51e508a6a6422ec24ff",
+    "zh:bb86cec823afc338754db50803b67daaed44fb1149d7dedea5e0b3669a0d89c1",
+    "zh:c60b9bbd7c5875bf705f8ffc966574266f7293daf1dc632b1f4443aea23c2fe2",
+    "zh:d71de279bfca078cb959d35e272cd4e2bf881aef63c2144423a1aaf2f394dce3",
+    "zh:e46f1a3ffd2ce4a3910c975f92ea3e3595279d1fed1e574ea4c92861b8ced340",
+    "zh:e894dcbb23e41dd0f52d85a3e6d82a5a9bd5632872e4d67eb096912d790033e6",
+  ]
+}
+
 provider "registry.opentofu.org/scaleway/scaleway" {
   version     = "2.70.0"
   constraints = "2.70.0"
