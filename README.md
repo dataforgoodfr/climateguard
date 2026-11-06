@@ -1,3 +1,5 @@
+# THIS REPOSITORY HAS BEEN ARCHIVED PLEASE REFER TO [dataforgoodfr/quotaclimat](https://github.com/dataforgoodfr/quotaclimat) TO FOLLOW THE PROJECT.
+
 # climateguard
 
 The repo contains the code for an AI media screening application. This service pulls data from the OME database, checks it with a simple prompt and gives a misinformation probability score. Scores >= 8 are flagged and saved on an object storage in order to be synced with labelstudio, that is here used as a journalist annotation platform.
